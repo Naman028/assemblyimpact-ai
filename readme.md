@@ -1,81 +1,170 @@
 # AssemblyImpact AI
 
-**Engineering Change, Material Availability & Cost Impact Intelligence**
+Engineering Change, Material Availability & Cost Impact Intelligence.
 
-AssemblyImpact AI is a SAP Fiori and Generative AI application designed to investigate the consequences of engineering changes in manufacturing assemblies.
+The project targets one integrated manufacturing scenario across Joule, S/4HANA +
+GenAI, AI-assisted Fiori development, and Fiori on BTP. **M03 implements only a
+local CAP Assembly Catalog foundation. No complete examination project or
+production deployment is demonstrated.**
 
-The platform aims to compare Bill of Materials (BOM) revisions, identify inconsistent work instructions, assess potential material shortages, estimate material-cost changes, and support evidence-based engineering reviews.
+## Current implementation
 
-## Four Integrated Examination Projects
+- SAP CAP 10 OData V4 Assembly Catalog, development SQLite, UUID identity and CAP-managed audit fields.
+- Database-enforced uniqueness of assembly code within a plant.
+- Plant-scoped viewer/maintainer access, native required/type/length/nonblank validation.
+- Conditional description updates using rotating UUID ETags.
+- Automated model, database, HTTP, authorization, concurrency and batch tests.
+- Existing CAP ESLint configuration and a minimal GitHub Actions workflow.
 
-| Project | Responsibility |
-|---|---|
-| P1 — Joule Skills & Agent | AI-assisted engineering change investigation using connected tools |
-| P2 — S/4HANA + GenAI | Authorized SAP business-data integration and grounded AI analysis |
-| P3 — AI-Assisted Fiori | Generated engineering case worklist using SAP development tools |
-| P4 — Fiori on BTP | Complete engineering investigation and review application |
+BOM revisions, deterministic comparison/stock/cost rules, work instructions,
+Fiori, Joule, S/4HANA/GenAI integrations and BTP deployment are not implemented.
+Future deterministic calculations will remain separate from generated explanations.
 
-All four projects are designed around a shared manufacturing scenario and reusable backend services.
+## Local development and verification
 
-## Technology Stack
+Use Node.js 24 and npm. From the existing checkout:
 
-- **Backend:** SAP Cloud Application Programming Model (CAP), Node.js, CDS, OData V4
-- **Frontend:** SAPUI5, SAP Fiori elements
-- **Development database:** SQLite
-- **Planned cloud database:** SAP HANA Cloud, subject to provisioning
-- **AI:** SAP Joule Studio and an authorized Generative AI inference service
-- **Development environment:** SAP Business Application Studio
-- **Version control:** Git and GitHub
+```bash
+npm ci
+npm run lint
+npm test
+npm audit --package-lock-only --audit-level=high
+npm start
+```
 
-## Project Structure
+Tests compile the CDS model and inspect OData metadata through the existing CAP
+API. No global CDS CLI or `/workspace/setup` files are needed. Tests start an
+isolated CAP server on an ephemeral port with an in-memory SQLite database and
+stop it afterwards. The production-authentication test runs in an isolated child
+process without service bindings. Expected negative cases produce CAP error logs;
+the Node test summary and command exit status determine success.
 
-- `db/` — CDS domain models and demonstration data
-- `srv/` — Business services, validation, calculations, and integrations
-- `app/` — SAP Fiori applications
-- `test/` — Automated tests, to be added
+`npm start` serves the development profile on port 4004 with transient SQLite.
+Only the explicitly configured `developer` mock account has development catalog
+access (password `development-only`, plant `1000`). These are public local-demo
+credentials, not real SAP credentials. Built-in CAP users and wildcard login are
+disabled. Test identities are synthetic and enabled only with the `test` profile.
+Do not use mocked authentication in production.
 
-## Current Implementation Status
+ESLint is the only additional direct development dependency, explicitly approved
+by the owner. Version 9.39.5 and the compatible existing CAP `@eslint/js` peer are
+locked: ESLint 10's dependency chain produced advisory GHSA-g3hv-75wg-m249, while
+9.39.5 passes the current audit and existing CAP configuration. ESLint 9 is marked
+unsupported by its publisher; upgrading to a maintained, advisory-free compatible
+release remains a tooling follow-up. No lint plugins or formatters were added.
 
-**Foundation development — not yet deployed**
+## Assembly Catalog contract
 
-Completed and verified:
+Base: `/odata/v4/assembly-catalog`. Entity set: `Assemblies`.
 
-- CAP Node.js project initialized
-- CAP and SQLite dependencies installed
-- Assembly domain entity defined
-- CDS model compilation successful
-- SQLite SQL schema generation successful
-- Assembly business-identifier uniqueness constraint generated in SQL
+| Operation | Result |
+| --- | --- |
+| GET collection/key, `$metadata` | Standard OData V4 responses; entity queries restricted to assigned plants |
+| POST collection | 201; server-generated ID/version and managed audit fields |
+| PATCH key | Description only; current `If-Match` required; returns updated representation by default |
+| PUT, DELETE, property writes, upsert | Unsupported; no mutation; operation guards apply inside batches |
 
-Not yet implemented or verified:
+The explicit projection exposes `ID`, `assemblyCode`, `plant`, `description`,
+`version`, `createdAt`, `createdBy`, `modifiedAt`, and `modifiedBy`.
 
-- Runtime database constraint tests
-- OData services and API tests
-- Synthetic BOM and inventory records
-- Stock and cost calculation services
-- Fiori applications
-- Joule Agent and GenAI integration
-- Actual S/4HANA connection
-- Authentication, authorization, and BTP deployment
+- Code/plant/description must be strings, required and nonblank. CAP maximum lengths are 40/4/160 respectively, using its installed string-length semantics (UTF-16 code units); these are project assumptions to check against actual S/4HANA fields.
+- No uppercase-only alphabet, exact plant length, trimming or case normalization. Case and whitespace are preserved; native database collation determines uniqueness. A whitespace-only string is invalid.
+- Code and plant cannot appear in PATCH, even unchanged. Unknown properties are rejected. PATCH requires description.
+- CREATE overwrites a supplied ID. On PATCH, CAP uses the URL ID and ignores a supplied payload ID; the key cannot be reassigned. Supplied version and audit fields are discarded; trusted server values prevail.
+- `version` is the UUID ETag, generated/rotated by CAP on OData writes. `modifiedAt` remains audit information. PATCH requires one UUID ETag, including its quotes (CAP may use `W/` weak syntax).
+- Default pagination is 100, maximum 1000. Use explicit ordering for stable paging. No draft handling or custom actions.
 
-## Development Setup
+| Failure | Status |
+| --- | --- |
+| Invalid/blank/type/length/unknown input, code/plant PATCH | 400 |
+| Missing authentication | 401 |
+| Missing role, invalid memberships, CREATE outside assigned plant | 403 |
+| Missing/out-of-scope keyed READ | 404 |
+| Unsupported mutation | 405 for authenticated maintainers; role checks may deny earlier |
+| Duplicate assembly code and plant | 409, `ASSEMBLY_ALREADY_EXISTS`, target `assemblyCode` |
+| Stale ETag or missing/out-of-scope conditional PATCH target | 412 |
+| Missing PATCH `If-Match` | 428 |
+| Wildcard/malformed/multiple PATCH ETags | 400 |
 
-Requirements: Node.js 24, npm, and SAP CAP development tools.
+## Access control and security boundaries
 
-1. Install project dependencies: `npm ci`
-2. Verify the CDS model: `cds compile db/schema.cds --to json`
-3. Inspect SQLite SQL generation: `cds compile db/schema.cds --to sql --dialect sqlite`
+`AssemblyViewer` reads assigned plants. `AssemblyMaintainer` reads, creates and
+updates assigned plants. Trusted `req.user.attr.plants` must be a nonempty array
+of nonblank strings of at most four characters with no wildcard. Missing, empty,
+mixed-type, string-valued or wildcard memberships deny all entity operations.
+Roles/memberships never come from payloads or custom client headers. CAP CDS
+restrictions constrain persisted rows; CREATE also checks the submitted plant.
 
-Runtime execution instructions will be added once the first CAP service is implemented and tested.
+The `production` profile requires JWT authentication. In this repository there
+is no real JWT provider/binding: startup fails before listening. The tests prove
+this missing-provider failure, not actual token verification. Real identity,
+claim mapping, roles, HANA persistence, deployment, operations and security review
+are required before any production-readiness claim.
 
-## Engineering Principles
+## Verification and limitations
 
-The project follows reusable domain modeling, separation of concerns, deterministic business calculations, secure API design, automated testing, and evidence-grounded Generative AI.
+The consolidated test file checks metadata/schema, DB constraints, relaxed input
+boundaries, role/plant isolation, system-field spoofing, immutable business keys,
+UUID ETag rotation, competing creates/updates, unsupported writes, JSON batch
+subrequests, changeset rollback and production missing-provider failure.
+CI runs `npm ci`, lint, tests and an advisory gate (high/critical fail). Workflow
+execution on GitHub remains unverified until publication is separately approved.
 
-Synthetic manufacturing data will be distinguished from actual SAP S/4HANA data. AI-generated explanations will not replace authoritative calculation or human review.
+- SQLite duplicate mapping deliberately recognizes only the observed assembly business-key error. There is no HANA error mapping yet. Keep its HTTP regression test when upgrading CAP/SQLite.
+- Batch method detection uses CAP's current subrequest transport reference (`req._.req`); direct and batch tests protect this runtime-dependent behavior.
+- JSON and multipart batch are exercised, including conditional updates and operation guards. Actual Fiori-client integration still needs verification; no Fiori application has been implemented.
+- Direct DB writes bypass service validation/auth/version generation. Constraint tests use such writes intentionally. Import/backfill/version requirements must be addressed before introducing persistent data or other writers.
+- SQLite is transient development storage, not HANA or durable deployment evidence.
+- Reusable cloud draft saving/publication and fresh-task restoration remain unconfirmed. Repository-local commands avoid reliance on local fallback scripts.
 
-## References
+## Examination evidence register
 
-- [SAP CAP Documentation](https://cap.cloud.sap/docs/)
-- [SAPUI5 Documentation](https://ui5.sap.com/)
-- [SAP Developers](https://developers.sap.com/)
+The following targets are based on the owner's supplied examination summary.
+The original professor PDFs have not been inspected here; exact prescribed
+artifacts, topic approval and rubric compliance remain verification gates.
+No M03 backend result substitutes for SAP-specific evidence.
+
+| Project | Required evidence | Current status |
+| --- | --- | --- |
+| P1 — Joule Skills & Agent | Working skills and agent; authorized tool connections; multi-step task inputs, tool results and outcome/demo | Not implemented |
+| P2 — S/4HANA + GenAI | Real authorized S/4HANA requests/results; grounded GenAI process; prescribed Project Accelerator steps/artifacts | Not implemented |
+| P3 — AI-assisted Fiori | Actual BAS/SAP AI-tool prompts and outputs; identified generated code; student modifications/review; working Fiori app | Not implemented |
+| P4 — Fiori on BTP | Integrated application running on BTP; UI/backend bindings; deterministic rules, tests and end-to-end demonstration | Backend foundation only |
+| Cross-project | Original scenario and any required professor/topic approval | Unverified |
+
+For each future evidence item record requirement/source page, tool and version,
+date, prompt/task, artifact or screenshot location, generated changes, student
+modifications, test/real integration outcome, and planned/captured/verified status.
+Do not record credentials, sensitive SAP records or unredacted tokens.
+
+M03 evidence captured in the Codex workspace on 2026-11-08: CAP/API source,
+consolidated executable tests, local command results and separate CAP, backend,
+security, QA and examination reviews. Codex generated these changes; student
+modification/review is pending owner review. No BAS, Project Accelerator, Joule,
+real S/4HANA, GenAI-service or BTP artifact has been produced. Original source is
+recoverable from Git HEAD; the uncommitted diff identifies generated changes.
+
+## GitHub and BAS handoff
+
+All M03 changes remain uncommitted for owner review. GitHub main protection is
+owner-confirmed. Commits, pushes, PR creation/merge, external configuration and
+deployment require separate authorization. BAS does not synchronize automatically.
+
+After an authorized merge, verify a clean existing BAS checkout on `main`, then
+run (use the actual BAS path):
+
+```bash
+cd /home/user/assemblyimpact-ai
+git status --short
+git branch --show-current
+# Stop if dirty or not on main; preserve local work.
+git fetch origin
+git pull --ff-only origin main
+git rev-parse HEAD
+git rev-parse origin/main
+git ls-remote origin refs/heads/main
+```
+
+Compare the full SHAs with the approved GitHub merge/main SHA. Investigate any
+difference or subsequent upstream commits; do not reset or force synchronization.
+Matching source does not prove matching dependencies or deployment state.
