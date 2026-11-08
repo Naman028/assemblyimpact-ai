@@ -6,10 +6,184 @@
     "@sap/cds": "^10"
   },
   "devDependencies": {
-    "@cap-js/sqlite": "^3"
+    "@cap-js/sqlite": "^3",
+    "eslint": "9.39.5"
   },
   "scripts": {
-    "start": "cds-serve"
+    "start": "cds-serve",
+    "test": "node --test test/assembly-service.test.js",
+    "lint": "eslint srv test --max-warnings=0"
   },
-  "private": true
+  "private": true,
+  "engines": {
+    "node": "24.x"
+  },
+  "cds": {
+    "runtime": {
+      "patch_as_upsert": false,
+      "put_as_upsert": false
+    },
+    "query": {
+      "limit": {
+        "default": 100,
+        "max": 1000
+      }
+    },
+    "requires": {
+      "[development]": {
+        "auth": {
+          "kind": "mocked",
+          "users": {
+            "*": false,
+            "developer": {
+              "password": "development-only",
+              "roles": [
+                "AssemblyMaintainer"
+              ],
+              "attr": {
+                "plants": [
+                  "1000"
+                ]
+              }
+            },
+            "alice": false,
+            "bob": false,
+            "carol": false,
+            "dave": false,
+            "erin": false,
+            "fred": false,
+            "me": false,
+            "yves": false
+          }
+        }
+      },
+      "[test]": {
+        "auth": {
+          "kind": "mocked",
+          "users": {
+            "*": false,
+            "maintainer": {
+              "password": "test",
+              "roles": [
+                "AssemblyMaintainer"
+              ],
+              "attr": {
+                "plants": [
+                  "1000",
+                  "a1",
+                  "abcd"
+                ]
+              }
+            },
+            "viewer": {
+              "password": "test",
+              "roles": [
+                "AssemblyViewer"
+              ],
+              "attr": {
+                "plants": [
+                  "1000"
+                ]
+              }
+            },
+            "other": {
+              "password": "test",
+              "roles": [
+                "AssemblyMaintainer"
+              ],
+              "attr": {
+                "plants": [
+                  "2000"
+                ]
+              }
+            },
+            "multi": {
+              "password": "test",
+              "roles": [
+                "AssemblyViewer",
+                "AssemblyMaintainer"
+              ],
+              "attr": {
+                "plants": [
+                  "1000",
+                  "2000"
+                ]
+              }
+            },
+            "norole": {
+              "password": "test",
+              "roles": [],
+              "attr": {
+                "plants": [
+                  "1000"
+                ]
+              }
+            },
+            "missing": {
+              "password": "test",
+              "roles": [
+                "AssemblyMaintainer"
+              ],
+              "attr": {}
+            },
+            "empty": {
+              "password": "test",
+              "roles": [
+                "AssemblyMaintainer"
+              ],
+              "attr": {
+                "plants": []
+              }
+            },
+            "malformed": {
+              "password": "test",
+              "roles": [
+                "AssemblyMaintainer"
+              ],
+              "attr": {
+                "plants": "1000"
+              }
+            },
+            "wildcard": {
+              "password": "test",
+              "roles": [
+                "AssemblyMaintainer"
+              ],
+              "attr": {
+                "plants": [
+                  "*"
+                ]
+              }
+            },
+            "alice": false,
+            "bob": false,
+            "carol": false,
+            "dave": false,
+            "erin": false,
+            "fred": false,
+            "me": false,
+            "yves": false,
+            "developer": false,
+            "mixed": {
+              "password": "test",
+              "roles": [
+                "AssemblyMaintainer"
+              ],
+              "attr": {
+                "plants": [
+                  "1000",
+                  null
+                ]
+              }
+            }
+          }
+        }
+      },
+      "[production]": {
+        "auth": {
+          "kind": "jwt"
+        }
+      }
+    }
+  }
 }

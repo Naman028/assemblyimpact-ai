@@ -11,6 +11,7 @@ entity Assemblies : cuid, managed {
     assemblyCode : String(40) not null;
     plant        : String(4) not null;
     description  : String(160) not null;
+    version      : UUID;
 }
 
 // A business assembly code must be unique within its plant.
