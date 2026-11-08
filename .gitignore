@@ -1,0 +1,22 @@
+# Installed dependencies
+node_modules/
+
+# Environment secrets
+.env
+.env.*
+!.env.example
+
+# Local IDE settings
+.vscode/
+
+# Local databases
+*.sqlite
+*.sqlite3
+*.db
+
+# Generated build outputs
+gen/
+target/
+_out/
+mta_archives/
+*.mtar
