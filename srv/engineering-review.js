@@ -6,6 +6,7 @@ import { decide, DecisionError, TRANSITIONS, submittersOf, availabilityFor } fro
 import { parseImport, validateBundle, commitBundle, checksum, ImportFormatError, ImportConflictError } from './lib/scenario-import.js';
 import { extract, transportFor, ErpConfigError, ErpTransportError, MODE_SOURCE_TYPE } from './integration/erp/erp-source.js';
 import { MappingError } from './integration/erp/s4-mapping.js';
+import { explain, providerFor, GenAiConfigError, GenAiTransportError } from './integration/genai/impact-explanation.js';
 
 // Calculations are deterministic server-side (lib/impact-calculator.js); no LLM is involved.
 export default class EngineeringReview extends cds.ApplicationService {
@@ -17,8 +18,58 @@ export default class EngineeringReview extends cds.ApplicationService {
     this.on('extractFromErp', req => this.#extractFromErp(req));
     this.after('READ', 'ReviewCases', (rows, req) => annotateAvailability(rows, req));
     this.on('myCapabilities', req => capabilitiesOf(req.user));
+    this.on('lookupCases', req => this.#lookupCases(req));
+    this.on('explainImpact', 'ReviewCases', req => this.#explainImpact(req));
     for (const action of Object.keys(TRANSITIONS)) this.on(action, 'ReviewCases', req => this.#decide(req, TRANSITIONS[action]));
     return super.init();
+  }
+
+  // P2: GenAI explanation of the latest run (lib: integration/genai/impact-explanation.js).
+  async #explainImpact(req) {
+    const key = req.params.at(-1);
+    const caseID = typeof key === 'object' ? key.ID : key;
+    const plants = userPlants(req.user);
+    if (!plants) return req.reject(404);
+    const { ReviewCases, ImpactRuns } = cds.entities('assemblyimpact');
+    const rc = await SELECT.one.from(ReviewCases).columns(c => { c.ID, c.caseNumber, c.title, c.plant, c.sourceType, c.status, c.latestRun_ID, c.assembly(a => { a.assemblyCode; }); })
+      .where({ ID: caseID, plant: { in: plants } });
+    if (!rc) return req.reject(404); // missing and foreign-plant cases are indistinguishable
+    if (!rc.latestRun_ID) return req.reject({ status: 409, code: 'NO_IMPACT_RUN', message: 'Run the impact calculation before requesting an explanation.' });
+    const run = await SELECT.one.from(ImpactRuns, rc.latestRun_ID).columns(r => { r('*'), r.findings('*'), r.materialLines('*'), r.comparisonLines('*'); });
+    let provider;
+    try { provider = providerFor(); } catch (error) {
+      if (error instanceof GenAiConfigError) return req.reject({ status: 409, code: 'GENAI_NOT_CONFIGURED', message: error.message });
+      throw error;
+    }
+    try {
+      return await explain({ ...rc, assemblyCode: rc.assembly?.assemblyCode }, run, provider);
+    } catch (error) {
+      if (error instanceof GenAiTransportError) return req.reject({ status: 502, code: 'GENAI_UNAVAILABLE', message: error.message });
+      throw error;
+    }
+  }
+
+  // P1: read-only case lookup with named parameters (Joule contract, ported from PR #11). Plant-filtered, max 50 rows.
+  async #lookupCases(req) {
+    // The OpenAPI spec (and so SAP Build) sends OData string literals as quoted query values (?caseNumber='EC-000485');
+    // CAP passes the quotes through for query-form function parameters. Accept both the quoted and the plain form.
+    const unquote = v => (typeof v === 'string' && /^'.*'$/s.test(v) ? v.slice(1, -1).replace(/''/g, "'") : v);
+    const [caseNumber, status, assemblyCode] = ['caseNumber', 'status', 'assemblyCode'].map(k => unquote(req.data[k]) || undefined);
+    if (caseNumber && !/^EC-\d{6}$/.test(caseNumber)) return req.reject(400, 'caseNumber must look like EC-000123.');
+    if (status && !['OPEN', 'IN_REVIEW', 'APPROVED', 'REJECTED'].includes(status)) return req.reject(400, 'status must be OPEN, IN_REVIEW, APPROVED or REJECTED.');
+    if (assemblyCode && !/^[A-Z][A-Z0-9-]{1,39}$/.test(assemblyCode)) return req.reject(400, 'assemblyCode has an invalid format.');
+    const plants = userPlants(req.user);
+    if (!plants) return []; // missing or malformed plant attribute = no access
+    const where = { plant: { in: plants } };
+    if (caseNumber) where.caseNumber = caseNumber;
+    if (status) where.status = status;
+    if (assemblyCode) where.assemblyCode = assemblyCode;
+    const rows = await SELECT.from(this.entities.ReviewCases).columns(c => {
+      c.ID, c.caseNumber, c.title, c.assemblyCode, c.plant, c.fromRevision, c.toRevision, c.status, c.statusText, c.sourceType,
+      c.latestRun(r => { r.ID, r.status, r.asOfDate, r.costDeltaTotal, r.currency, r.materialsShort, r.instructionFindings; });
+    }).where(where).orderBy('caseNumber').limit(50);
+    return rows.map(({ latestRun: r, ...c }) => ({ ...c, latestRun_ID: r?.ID ?? null, latestRunStatus: r?.status ?? null, latestRunAsOf: r?.asOfDate ?? null,
+      costDeltaTotal: r?.costDeltaTotal ?? null, currency: r?.currency ?? null, materialsShort: r?.materialsShort ?? null, instructionFindings: r?.instructionFindings ?? null }));
   }
 
   // M04 Slice 2a: submitForReview / approve / reject (rules in lib/review-decisions.js).

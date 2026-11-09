@@ -21,7 +21,8 @@ sap.ui.define([
 
     /** The import button is offered only to users the server allows to import (feature flag + role). */
     _loadCapabilities: function () {
-      var fn = this.getView().getModel().bindContext("/myCapabilities()"), model = this.getView().getModel("caps");
+      // The view is not yet attached to the component in onInit; the OData model comes from the component.
+      var fn = this.getOwnerComponent().getModel().bindContext("/myCapabilities()"), model = this.getView().getModel("caps");
       fn.requestObject().then(function (caps) { model.setProperty("/canImport", !!(caps && caps.canImport)); })
         .catch(function () { model.setProperty("/canImport", false); })
         .finally(function () { fn.destroy(); });

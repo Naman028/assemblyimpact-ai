@@ -17,8 +17,12 @@ service EngineeringReview {
     @restrict: [
         { grant: 'READ', to: ['ChangeViewer', 'ChangeAnalyst', 'ChangeApprover'], where: 'plant = $user.plants' },
         // Instance check for the action is done in the handler (404 for foreign/missing cases, as in M03).
-        { grant: 'runImpact', to: 'ChangeAnalyst' },
+        { grant: 'runImpact', to: ['ChangeAnalyst', 'ImpactRunner'] },
+        // P1: ImpactRunner = run the deterministic calculation only (Joule assistant); no submit/approve/reject,
+        // no import. Combined with ChangeViewer for reading. Plant isolation applies unchanged.
         // M04 Slice 2a: review decisions. Plant, state and separation-of-duties checks are in the handler.
+        // P2: evidence-grounded GenAI explanation of the latest run (read-only; plant check in the handler).
+        { grant: 'explainImpact', to: ['ChangeViewer', 'ChangeAnalyst', 'ChangeApprover'] },
         { grant: 'submitForReview', to: 'ChangeAnalyst' },
         { grant: ['approve', 'reject'], to: 'ChangeApprover' }
     ]
@@ -48,6 +52,9 @@ service EngineeringReview {
         virtual submittedBy  : String(255)
     } actions {
         action runImpact(asOfDate : Date) returns ImpactRuns;
+        // P2: explains the latest persisted run with SAP Generative AI Hub; answers are validated against the run's
+        // evidence (citations, numbers) and withheld when ungrounded. 409 when no run exists or no provider is configured.
+        function explainImpact() returns ImpactExplanation;
         action submitForReview(comment : String(1000)) returns ReviewCases;
         // basedOnRun: the impact run the reviewer evaluated; must be the case's latest run (else 409 STALE_EVIDENCE).
         // acknowledgeWarnings (M05): required true when basedOnRun has status COMPLETE_WITH_WARNINGS; recorded on the event.
@@ -86,6 +93,44 @@ service EngineeringReview {
     // M05: global UI capabilities of the signed-in user (no data access).
     type Capabilities { canImport : Boolean; }
     function myCapabilities() returns Capabilities;
+
+    // ---- P1: read-only case lookup for Joule (ported from PR #11, without its technical identity) ----
+    // Named parameters, so a skill maps its inputs directly instead of building an OData $filter string.
+    // Runs as the signed-in user (principal propagation): business read roles only, caller's plants only.
+    type ImpactExplanation {
+        runID        : UUID;
+        caseNumber   : String(20);
+        status       : String(12);   // GROUNDED | WITHHELD
+        text         : LargeString;  // null when WITHHELD
+        issues       : String(1000); // validation findings, ';'-separated
+        citations    : String(500);  // fact ids cited by the answer
+        generatedBy  : String(30);   // SAP_GENAI_HUB | FIXTURE_LLM_RESPONSE
+        model        : String(100);
+        promptSha256 : String(64);
+        factCount    : Integer;
+        generatedAt  : Timestamp;
+    }
+    type CaseSummary {
+        ID                  : UUID;
+        caseNumber          : String(20);
+        title               : String(160);
+        assemblyCode        : String(40);
+        plant               : String(4);
+        fromRevision        : String(10);
+        toRevision          : String(10);
+        status              : String(12);
+        statusText          : String(20);
+        sourceType          : String(20);
+        latestRun_ID        : UUID;
+        latestRunStatus     : String(24);
+        latestRunAsOf       : Date;
+        costDeltaTotal      : Decimal(17, 2);
+        currency            : String(3);
+        materialsShort      : Integer;
+        instructionFindings : Integer;
+    }
+    @restrict: [{ to: ['ChangeViewer', 'ChangeAnalyst', 'ChangeApprover'] }]
+    function lookupCases(caseNumber : String(20), status : String(12), assemblyCode : String(40)) returns many CaseSummary;
 
     // Decision history: read-only to every client, written only by the three review actions.
     @readonly

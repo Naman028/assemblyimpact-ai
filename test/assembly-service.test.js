@@ -300,7 +300,9 @@ test('UUID ETag contract across direct, JSON and multipart PATCH requests', asyn
 test('production without a JWT provider fails before listening', async () => {
   const child = spawn(process.execPath, ['--input-type=module', '-e',
     "import {Server} from 'node:net'; const listen=Server.prototype.listen; Server.prototype.listen=function(...args){console.log('UNEXPECTED_LISTEN');return listen.apply(this,args)}; const {default:cds}=await import('@sap/cds'); await cds.server({port:0,in_memory:true});"], {
-    cwd: process.cwd(), env: { CDS_ENV: 'production', NODE_ENV: 'production' }, stdio: ['ignore', 'pipe', 'pipe']
+    // BTP prep: production now also requires SAP HANA; an in-memory database isolates the authentication check.
+    cwd: process.cwd(), env: { CDS_ENV: 'production', NODE_ENV: 'production', CDS_CONFIG: JSON.stringify({ requires: { db: { kind: 'sqlite', credentials: { url: ':memory:' } } } }) },
+    stdio: ['ignore', 'pipe', 'pipe']
   });
   let output = '';
   child.stdout.on('data', chunk => { output += chunk; });

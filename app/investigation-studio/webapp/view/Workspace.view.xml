@@ -22,6 +22,7 @@
 					<Button id="btnReject" text="Reject" icon="sap-icon://decline" type="Reject" press=".onReject" visible="{= !!${ws>/case/canDecide} }"/>
 				</f:actions>
 				<f:navigationActions>
+					<Button id="btnOpenInWorklist" icon="sap-icon://list" type="Transparent" press=".onOpenInWorklist" tooltip="Open this case in the Case Worklist (object page)"/>
 					<Button icon="sap-icon://full-screen" type="Transparent" press=".onToggleFullScreen" tooltip="Toggle full screen"/>
 					<Button icon="sap-icon://decline" type="Transparent" press=".onClose" tooltip="Close workspace"/>
 				</f:navigationActions>
@@ -213,6 +214,16 @@
 						<MessageStrip class="sapUiSmallMarginTop" type="Information" showIcon="true"
 							text="Material cost from synthetic standard prices valid on the as-of date ({ws>/run/asOfDate}), calculated by the CAP ruleset {ws>/run/ruleset}. Labour and overhead are not included."/>
 					</IconTabFilter>
+					<IconTabFilter key="explain" text="AI Explanation" icon="sap-icon://ai">
+						<VBox class="sapUiSmallMargin">
+							<MessageStrip type="Information" showIcon="true" text="P2 GenAI: SAP Generative AI Hub explains the latest impact run using only that run's figures, findings, shortages and BOM changes. The server checks citations, figures, cost direction and decision wording against the run and withholds answers that fail; this is a safeguard, not proof of correctness. Read it together with the BOM, Materials and Findings tabs. The model does not calculate or decide."/>
+							<Button id="btnExplain" text="Explain latest run" icon="sap-icon://ai" type="Emphasized" press=".onExplain" enabled="{= !!${ws>/run} }" class="sapUiSmallMarginTop"/>
+							<MessageStrip type="Warning" showIcon="true" visible="{= ${ws>/explanation/status} === 'WITHHELD' }" text="The model's answer was withheld because it did not match the run evidence ({ws>/explanation/issues})." class="sapUiSmallMarginTop"/>
+							<Text text="{ws>/explanation/text}" visible="{= !!${ws>/explanation/text} }" wrapping="true" class="sapUiSmallMarginTop"/>
+							<Text visible="{= !!${ws>/explanation} }" class="sapUiTinyMarginTop" wrapping="true"
+								text="{= 'Source: ' + ${ws>/explanation/generatedBy} + ' (' + ${ws>/explanation/model} + '), cites: ' + (${ws>/explanation/citations} || 'none') + '. Fact ids refer to the BOM, Materials and Findings of run ' + ${ws>/explanation/runID} + '.' }"/>
+						</VBox>
+					</IconTabFilter>
 					<IconTabFilter key="instructions" text="Work Instructions" icon="sap-icon://document-text" count="{= ${ws>/run/instructionFindings} > 0 ? ${ws>/run/instructionFindings} : '' }">
 						<List items="{ws>/instructions}" noDataText="No work instructions for this assembly.">
 							<items>
@@ -294,8 +305,8 @@
 									<VBox><Label text="Case evidence reference"/><Text text="{ws>/case/evidenceRef}" class="aiEvidence" wrapping="true"/></VBox>
 									<VBox visible="{= !!${ws>/case/sourceImport} }"><Label text="Imported"/><Text text="{ws>/case/sourceImport/fileName} by {ws>/case/sourceImport/importedBy}, { path: 'ws>/case/sourceImport/importedAt', formatter: '.fmt.dateTime' }"/></VBox>
 									<VBox visible="{= !!${ws>/case/sourceImport} }"><Label text="Import checksum"/><Text text="{ws>/case/sourceImport/checksum}" class="aiEvidence" wrapping="true"/></VBox>
-									<VBox><Label text="Data label"/><Text text="Synthetic demo data — fictional NovaMotion Manufacturing; not SAP S/4HANA records" wrapping="true"/></VBox>
-									<VBox><Label text="AI explanation"/><Text text="None — deterministic findings only (no LLM involved in calculation or decisions)." wrapping="true"/></VBox>
+									<VBox><Label text="Data label"/><Text wrapping="true" text="{= ${ws>/case/sourceType} === 'S4_IMPORT' ? 'Extract from an SAP S/4HANA system (see import reference)' : ${ws>/case/sourceType} === 'SANDBOX_IMPORT' ? 'SAP Business Accelerator Hub sandbox data; not a customer S/4HANA system' : 'Synthetic demo data — fictional NovaMotion Manufacturing; not SAP S/4HANA records' }"/></VBox>
+									<VBox><Label text="AI involvement"/><Text text="Calculation, findings and decisions are deterministic or human. GenAI only writes the optional explanation in the AI Explanation tab, which is checked against this run." wrapping="true"/></VBox>
 								</l:Grid>
 							</f:content>
 						</f:Card>

@@ -17,14 +17,16 @@ projects and destinations are visible and were not used.
 
 Input spec: `assemblyimpact-engineering-actions.openapi.json`, generated from the CAP model with
 `@cap-js/openapi` 1.7.0 (`engineering-review.openapi.full.json`) and reduced by `make-actions-spec.mjs`.
-SAP Build accepted all three operations (0 unsupported), including the bound OData V4 action, so no
+SAP Build accepted the original three operations (0 unsupported), including the bound OData V4 action, so no
 adapter is needed and the service contract is unchanged.
 
 | Action (operationId) | HTTP | Path (relative to destination) | Input | Output | Errors |
 | --- | --- | --- | --- | --- | --- |
 | `FindEngineeringCases` | GET | `/ReviewCases` | `$filter` (e.g. `status eq 'IN_REVIEW'`), `$select`, `$expand=latestRun`, `$orderby`, `$top`, `$skip`, `$count`, `$search` | `value[]` of ReviewCases (caseNumber, assemblyCode, plant, revisions, status, latestRun_ID …) | 401 unauthenticated, 403 role missing |
 | `GetEngineeringImpact` | GET | `/ImpactRuns({ID})` | path `ID` (from `latestRun_ID` or RunEngineeringImpact), `$expand=findings,materialLines,comparisonLines`, `$select` | ImpactRun with cost per assembly, cost delta, materials short, findings, material lines, BOM comparison | 401, 403, 404 (unknown or other plant) |
-| `RunEngineeringImpact` | POST | `/ReviewCases({ID})/EngineeringReview.runImpact` | path `ID`; body `{"asOfDate":"YYYY-MM-DD"}` | new immutable ImpactRun | 400 bad date, 401, 403 (not ChangeAnalyst), 404 (other plant), 409 (concurrent change) |
+| `LookupEngineeringCases` | GET | `/lookupCases(caseNumber='…',status='…',assemblyCode='…')` | optional named filters | `value[]` (max 50) of case summaries with latest impact figures | 400 malformed filter, 401, 403 |
+| `GetDecisionHistory` | GET | `/ReviewCases({ID})/decisions` | path `ID`, `$orderby=at` | `value[]` of decision events | 401, 403, 404 (other plant) |
+| `RunEngineeringImpact` | POST | `/ReviewCases({ID})/EngineeringReview.runImpact` | path `ID`; body `{"asOfDate":"YYYY-MM-DD"}` | new immutable ImpactRun | 400 bad date, 401, 403 (not ChangeAnalyst or ImpactRunner), 404 (other plant), 409 (concurrent change) |
 
 Rules carried into the Actions and the future Joule skills:
 - All figures come from these responses. The agent never computes or invents stock, prices, findings or decisions.
