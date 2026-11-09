@@ -11,7 +11,7 @@
   },
   "scripts": {
     "start": "cds-serve",
-    "test": "node --test test/assembly-service.test.js test/impact-calculator.test.js test/engineering-review.test.js",
+    "test": "node --test test/assembly-service.test.js test/impact-calculator.test.js test/engineering-review.test.js test/seed-data.test.js",
     "lint": "eslint srv test --max-warnings=0"
   },
   "private": true,
@@ -53,7 +53,40 @@
             "erin": false,
             "fred": false,
             "me": false,
-            "yves": false
+            "yves": false,
+            "analyst": {
+              "password": "development-only",
+              "roles": [
+                "ChangeAnalyst"
+              ],
+              "attr": {
+                "plants": [
+                  "1000"
+                ]
+              }
+            },
+            "cviewer": {
+              "password": "development-only",
+              "roles": [
+                "ChangeViewer"
+              ],
+              "attr": {
+                "plants": [
+                  "1000"
+                ]
+              }
+            },
+            "analyst2000": {
+              "password": "development-only",
+              "roles": [
+                "ChangeAnalyst"
+              ],
+              "attr": {
+                "plants": [
+                  "2000"
+                ]
+              }
+            }
           }
         }
       },
@@ -243,6 +276,12 @@
               }
             }
           }
+        },
+        "db": {
+          "data": [
+            "db/data",
+            "db/csv"
+          ]
         }
       },
       "[production]": {
