@@ -108,7 +108,7 @@ annotate service.ReviewCases with @(
             $Type : 'UI.ReferenceFacet',
             ID    : 'Runs',
             Label : 'Impact Runs',
-            Target: 'runs/@UI.LineItem'
+            Target: 'runs/@UI.PresentationVariant'
         }
     ]
 );
@@ -186,19 +186,19 @@ annotate service.ImpactRuns with @(
             $Type : 'UI.ReferenceFacet',
             ID    : 'Findings',
             Label : 'Findings',
-            Target: 'findings/@UI.LineItem'
+            Target: 'findings/@UI.PresentationVariant'
         },
         {
             $Type : 'UI.ReferenceFacet',
             ID    : 'Materials',
             Label : 'Material Impact',
-            Target: 'materialLines/@UI.LineItem'
+            Target: 'materialLines/@UI.PresentationVariant'
         },
         {
             $Type : 'UI.ReferenceFacet',
             ID    : 'Comparison',
             Label : 'BOM Comparison',
-            Target: 'comparisonLines/@UI.LineItem'
+            Target: 'comparisonLines/@UI.PresentationVariant'
         }
     ]
 );
@@ -235,7 +235,7 @@ annotate service.Findings with @(
         {Value: evidenceRefs}
     ],
     UI.PresentationVariant: {
-        SortOrder     : [{Property: severity}, {Property: type}],
+        SortOrder     : [{Property: type}, {Property: material}], // alphabetical severity (HIGH, LOW, MEDIUM) would mislead; criticality icons mark HIGH
         Visualizations: ['@UI.LineItem']
     },
     UI.FieldGroup #Details: {Data: [

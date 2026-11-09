@@ -83,12 +83,14 @@ test('UI annotations implement the agreed worklist contract without draft', asyn
   assert.match(lineItem, /UI.DataFieldForAction[\s\S]*EngineeringReview.runImpact/);
   const filters = [...cases.match(/Term="UI.SelectionFields">[\s\S]*?<\/Collection>/)[0].matchAll(/<PropertyPath>([^<]+)</g)].map(m => m[1]);
   assert.deepEqual(filters, ['assemblyCode', 'plant', 'toRevision', 'status', 'sourceType']);
-  for (const facet of ['@UI.FieldGroup#General', '@UI.FieldGroup#Impact', 'runs/@UI.LineItem']) assert(cases.includes(facet), facet);
+  for (const facet of ['@UI.FieldGroup#General', '@UI.FieldGroup#Impact', 'runs/@UI.PresentationVariant']) assert(cases.includes(facet), facet);
   const runs = block('ImpactRuns');
-  for (const facet of ['findings/@UI.LineItem', 'materialLines/@UI.LineItem', 'comparisonLines/@UI.LineItem']) assert(runs.includes(facet), facet);
+  for (const facet of ['findings/@UI.PresentationVariant', 'materialLines/@UI.PresentationVariant', 'comparisonLines/@UI.PresentationVariant']) assert(runs.includes(facet), facet);
   assert.match(block('Findings'), /Property="Criticality">\s*<If>/, 'severity criticality');
-  for (const [target, first] of [['ImpactComparisonLines', 'itemNo'], ['ImpactMaterialLines', 'material'], ['Findings', 'severity']])
+  for (const [target, first] of [['ImpactComparisonLines', 'itemNo'], ['ImpactMaterialLines', 'material'], ['Findings', 'type'], ['ImpactRuns', 'computedAt']])
     assert.match(block(target), new RegExp(`UI.PresentationVariant[\\s\\S]*?<PropertyValue Property="Property" PropertyPath="${first}"`), `${target} sorted by ${first}`);
+  // Facets target the PresentationVariant so Fiori elements applies the sort order (LineItem targets ignore it).
+  assert.doesNotMatch(edmx, /Target="[a-zA-Z]+\/@UI.LineItem"|AnnotationPath="[a-zA-Z]+\/@UI.LineItem"/, 'no table facet bypasses its PresentationVariant');
   assert.doesNotMatch(edmx, /Draft/, 'service stays non-draft');
   const metadata = await request(`${SVC}/$metadata`);
   assert.equal(metadata.status, 200);
