@@ -48,7 +48,7 @@ after(async () => {
 test('manifest wires the illustration section and thumbnail column to existing fragments', () => {
   const targets = manifest['sap.ui5'].routing.targets;
   const section = targets.ReviewCasesObjectPage.options.settings.content.body.sections.AssemblyIllustration;
-  assert.deepEqual(section.position, { anchor: 'General', placement: 'After' });
+  assert.deepEqual(section.position, { anchor: 'InvestigationStudio', placement: 'After' });
   const column = targets.ReviewCasesList.options.settings.controlConfiguration['@com.sap.vocabularies.UI.v1.LineItem'].columns.AssemblyImage;
   assert.equal(column.position.anchor, 'DataField::assemblyCode');
   for (const template of [section.template, column.template]) {

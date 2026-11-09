@@ -22,6 +22,7 @@
 					<Button id="btnReject" text="Reject" icon="sap-icon://decline" type="Reject" press=".onReject" visible="{= !!${ws>/case/canDecide} }"/>
 				</f:actions>
 				<f:navigationActions>
+					<Button id="btnOpenInWorklist" icon="sap-icon://list" type="Transparent" press=".onOpenInWorklist" tooltip="Open this case in the Case Worklist (object page)"/>
 					<Button icon="sap-icon://full-screen" type="Transparent" press=".onToggleFullScreen" tooltip="Toggle full screen"/>
 					<Button icon="sap-icon://decline" type="Transparent" press=".onClose" tooltip="Close workspace"/>
 				</f:navigationActions>

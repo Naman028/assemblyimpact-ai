@@ -144,3 +144,24 @@ test('Object Page navigation paths: case -> runs -> findings / material lines, p
   assert.equal((await request(`${SVC}/ReviewCases(${CASE_2000})`, { user: 'analyst2' })).status, 200);
   assert.equal((await request(`${SVC}/ReviewCases`, { user: null })).status, 401);
 });
+
+test('P3 <-> P4 navigation keeps the case context in both directions', () => {
+  const root = join(import.meta.dirname, '..', 'app');
+  const wl = JSON.parse(readFileSync(join(root, 'case-worklist', 'webapp', 'manifest.json'), 'utf8'));
+  const st = JSON.parse(readFileSync(join(root, 'investigation-studio', 'webapp', 'manifest.json'), 'utf8'));
+  const section = wl['sap.ui5'].routing.targets.ReviewCasesObjectPage.options.settings.content.body.sections.InvestigationStudio;
+  assert.deepEqual(section.position, { anchor: 'General', placement: 'After' });
+  const xml = readFileSync(join(root, 'case-worklist', 'webapp', 'ext', 'fragment', 'OpenInStudio.fragment.xml'), 'utf8');
+  assert.doesNotMatch(xml, /core:require|formatter:/);
+  const href = xml.match(/href="\{= '([^']+)' \+ \$\{ID\} \}"/);
+  assert(href, 'link is built from the case key');
+  assert.equal(href[1], '../../investigation-studio/webapp/index.html#/cases/');
+  assert(st['sap.ui5'].routing.routes.some(r => r.name === 'workspace' && r.pattern.startsWith('cases/{caseId}')), 'Studio route matches the link');
+  const ctrl = readFileSync(join(root, 'investigation-studio', 'webapp', 'controller', 'Workspace.controller.js'), 'utf8');
+  assert.match(ctrl, /"\.\.\/\.\.\/case-worklist\/webapp\/index\.html#\/ReviewCases\(" \+ encodeURIComponent\(this\._caseId\) \+ "\)"/);
+  assert(wl['sap.ui5'].routing.routes.some(r => r.name === 'ReviewCasesObjectPage' && r.pattern.startsWith('ReviewCases({key})')), 'worklist route matches the button');
+  const view = readFileSync(join(root, 'investigation-studio', 'webapp', 'view', 'Workspace.view.xml'), 'utf8');
+  assert.match(view, /id="btnOpenInWorklist"[^>]*press="\.onOpenInWorklist"[^>]*tooltip="[^"]+"/, 'button has an accessible tooltip');
+  const xsApp = JSON.parse(readFileSync(join(root, 'router', 'xs-app.json'), 'utf8'));
+  for (const app of ['case-worklist', 'investigation-studio']) assert(xsApp.routes.some(r => r.source === `^/${app}/webapp/(.*)$`), `${app} served under the same relative layout`);
+});

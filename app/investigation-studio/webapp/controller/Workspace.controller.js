@@ -255,6 +255,11 @@ sap.ui.define([
 
     onClose: function () { this.getOwnerComponent().getRouter().navTo("cases"); },
 
+    /** P4 -> P3: the same case on the Fiori elements object page (keeps the case context across both apps). */
+    onOpenInWorklist: function () {
+      if (this._caseId) { window.open("../../case-worklist/webapp/index.html#/ReviewCases(" + encodeURIComponent(this._caseId) + ")", "_self"); }
+    },
+
     // ------------------------------------------------------------ CAP actions (server decides; UI only collects input)
     _execute: function (action, params, successText) {
       var ws = this.getView().getModel("ws"), that = this;
