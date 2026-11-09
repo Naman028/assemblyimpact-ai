@@ -20,3 +20,5 @@ target/
 _out/
 mta_archives/
 *.mtar
+app/router/resources/
+.mta/

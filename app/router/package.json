@@ -1,0 +1,8 @@
+{
+  "name": "assemblyimpact-approuter",
+  "private": true,
+  "description": "Application router: XSUAA login, serves the P3 worklist and P4 studio, forwards OData to the CAP service.",
+  "dependencies": { "@sap/approuter": "^23" },
+  "engines": { "node": "24.x" },
+  "scripts": { "start": "node node_modules/@sap/approuter/approuter.js" }
+}

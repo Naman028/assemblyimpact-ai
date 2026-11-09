@@ -1,0 +1,13 @@
+_schema-version: "3.1"
+ID: assemblyimpact-ai.demo
+extends: assemblyimpact-ai
+# Opt-in: ships the synthetic NovaMotion seed (labelled SYNTHETIC) for a demonstration space.
+# Usage: mbt build -e mta-demo.mtaext   (never for a space that holds real data)
+build-parameters:
+  before-all:
+    - builder: custom
+      commands:
+        - npm ci
+        - npx cds build --production
+        - node tools/btp/stage-ui.mjs
+        - node tools/btp/stage-demo-data.mjs
