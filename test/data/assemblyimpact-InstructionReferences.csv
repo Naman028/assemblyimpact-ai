@@ -1,0 +1,19 @@
+ID,instruction_ID,step,material,quantity,unit,text
+010f3672-609d-58a0-b5d6-1bd976ee186b,37af2dd0-250e-5cf5-ac92-44c4207fcc58,0010,FAN-A,1,PC,Mount fan FAN-A on housing
+ac1c5763-0025-5cd9-8ad7-aee3b6c04eeb,37af2dd0-250e-5cf5-ac92-44c4207fcc58,0020,BRKT-01,2,PC,Fix two brackets BRKT-01
+58ff3dda-fb71-57de-b79f-8ebebb460264,37af2dd0-250e-5cf5-ac92-44c4207fcc58,0030,SENS-01,1,PC,Install sensor SENS-01
+af855a67-ef42-5921-9ae3-967097ec4f6e,df9b70ce-a507-514c-a635-eb0b4bc85bba,0010,FAN-B,1,PC,Mount fan FAN-B on housing
+c91dda3a-f706-56d0-b619-08f2216086a0,df9b70ce-a507-514c-a635-eb0b4bc85bba,0020,BRKT-01,3,PC,Fix three brackets BRKT-01
+461d574b-b542-5c59-8539-3c4f56dc2f89,df9b70ce-a507-514c-a635-eb0b4bc85bba,0030,SENS-01,1,PC,Install sensor SENS-01
+1f4d8908-3133-59ef-b4ea-96a09ddebabd,df9b70ce-a507-514c-a635-eb0b4bc85bba,0040,SEAL-01,1,PC,Insert housing seal SEAL-01
+1352b62d-d6fc-5eef-81ed-b25d4a223b7b,d0fa5ee8-5f9e-5371-bd95-c312b96be8de,0010,SENS-01,1,PC,Check sensor SENS-01 reading
+6f750da8-f57a-5903-a3c6-8b288a79d232,d0fa5ee8-5f9e-5371-bd95-c312b96be8de,0030,FAN-A,1,PC,Run fan FAN-A at nominal speed for 60 s
+2ec29339-7416-5a45-ac77-4324e2a458e6,d1313fdf-06e2-5aef-8634-0232abb20d2f,0010,FAN-A,1,PC,Mount fan FAN-A on housing
+b5a73e84-d36b-5fbe-8962-7a93fc42f4dc,d1313fdf-06e2-5aef-8634-0232abb20d2f,0020,BRKT-01,2,PC,Fix two brackets BRKT-01
+d3ad18ec-c4a1-5cf9-8f62-30261bb7809e,d1313fdf-06e2-5aef-8634-0232abb20d2f,0030,SENS-01,1,PC,Install sensor SENS-01
+907b4f02-389e-59bc-b8e3-c61fdc14e34d,6225a4d4-1f22-5f27-9952-03ad4ff34922,0010,FAN-B,1,PC,Mount fan FAN-B on housing
+1cf21771-8607-587f-8635-807d6e5b969d,6225a4d4-1f22-5f27-9952-03ad4ff34922,0020,BRKT-01,3,PC,Fix three brackets BRKT-01
+7b3709d1-6765-5330-ad5b-d92549392856,6225a4d4-1f22-5f27-9952-03ad4ff34922,0030,SENS-01,1,PC,Install sensor SENS-01
+2d92ca30-a9dc-55d6-b130-7ef389127c6a,6225a4d4-1f22-5f27-9952-03ad4ff34922,0040,SEAL-01,1,PC,Insert housing seal SEAL-01
+31c7634a-b10c-585b-8159-d77b6ab3b858,96ce342f-a99a-56f3-813d-cf2eb38fad32,0010,SENS-01,1,PC,Check sensor SENS-01 reading
+985058a7-ac98-5881-a9b1-951cf84bdb92,96ce342f-a99a-56f3-813d-cf2eb38fad32,0030,FAN-A,1,PC,Run fan FAN-A at nominal speed for 60 s

@@ -1,0 +1,36 @@
+# E-05 runImpact on seeded EC-000473 (DS-ORACLE-01 oracle) 2026-11-09T02:45:03Z
+POST ReviewCases(7263f5aa-71cf-5325-8dd7-41ca2e1a0fd5)/runImpact {asOfDate: 2026-11-08} as analyst
+  status                COMPLETE
+  ruleset               1.1.0
+  asOfDate              2026-11-08
+  fromRevision          A
+  toRevision            B
+  productionQuantity    100
+  currency              EUR
+  fromCostPerAssembly   56.00
+  toCostPerAssembly     68.00
+  deltaPerAssembly      12.00
+  fromCostTotal         5600.00
+  toCostTotal           6800.00
+  costDeltaTotal        1200.00
+  costDeltaPercent      21.43
+  instructionFindings   1
+  instructionsToUpdate  1
+  materialsShort        2
+  materialsUnknown      0
+  inputFingerprint      sha256:29f94b7a7fdb1eebfc64b10b9bc2a5d382af5285ab6bcf5c7f08edf4bf25767b
+second run: same fingerprint = yes; runs now = 2
+ImpactMaterialLines (material | required | available | gap | status):
+  BRKT-01 | 300.000 | 250.000 | 50.000 | SHORT
+  FAN-B | 100.000 | 80.000 | 20.000 | SHORT
+  SEAL-01 | 100.000 | 150.000 | 0.000 | SUFFICIENT
+  SENS-01 | 100.000 | 120.000 | 0.000 | SUFFICIENT
+Findings (type | severity):
+  COMPONENT_ADDED | LOW | SEAL-01
+  COMPONENT_REPLACED | MEDIUM | FAN-B
+  COST_CHANGE | MEDIUM | 
+  OUTDATED_INSTRUCTION_REFERENCE | HIGH | FAN-A
+  QUANTITY_CHANGED | LOW | BRKT-01
+  STOCK_GAP | HIGH | FAN-B
+  STOCK_GAP | HIGH | BRKT-01
+Oracle (expected-results.json): fromPerAssembly 56.00 toPerAssembly 68.00 deltaTotal 1200.00 deltaPercent 21.43 materialsShort 2

@@ -1,0 +1,8 @@
+{"report_date":"2026-11-09",
+ "pr_url":"https://github.com/Naman028/assemblyimpact-ai/pull/4","pr_status":"verified: open, draft, not merged, base main, 40 files (+1693/-9), author Naman028",
+ "evidence_commit":"1c536289a0ca0dc66ccfe27381503233d6656bd1",
+ "ci_sha":"1c536289a0ca0dc66ccfe27381503233d6656bd1","ci_conclusion":"success","ci_name":"M03 verification / verify (pull_request): npm ci, lint, test, audit all success","ci_run_id":"42553591994",
+ "main_status":"verified unchanged after PR creation",
+ "extra_shots":[
+  ["E-08a","E-08a_github-push.jpg","GitHub publication: normal push of the feature branch from BAS","Pre-push check (both commits: author and committer Naman Patel, no trailers), passphrase entered by the owner (not shown), new branch feat/m04-slice1b at 1c53628, PUSH_EXIT=0. No force push."],
+  ["E-08b","E-08b_github-draft-pr-ci.jpg","GitHub draft pull request #4 with CI status","Draft PR into main with commits 68d6501 and 1c53628; All checks have passed (M03 verification / verify, pull_request, 10 s); draft pull requests cannot be merged."]]}

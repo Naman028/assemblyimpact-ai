@@ -1,0 +1,44 @@
+# E-07 npm test (BAS) - filtered: test names and summary only; CAP error logs from expected negative cases removed
+✔ model, SQLite constraint and service metadata (687.770768ms)
+✔ create, requiredness, format, types, lengths and relaxed identifiers (158.952167ms)
+✔ role and plant isolation on collection, counts, keys, creates and updates (91.388666ms)
+✔ server-owned fields, immutable identity and conditional PATCH (68.224547ms)
+✔ business uniqueness and concurrent create preserve one row (9.120381ms)
+✔ unsupported direct operations never change stored data (20.983554ms)
+✔ JSON batch checks inner authorization, methods, ETags and atomic rollback (49.828431ms)
+✔ multipart batch preserves method guards and conditional updates (18.565487ms)
+  ✔ direct (56.113944ms)
+  ✔ JSON batch (68.563889ms)
+  ✔ multipart batch (51.120079ms)
+✔ UUID ETag contract across direct, JSON and multipart PATCH requests (176.704859ms)
+✔ production without a JWT provider fails before listening (321.666221ms)
+✔ model compiles; metadata exposes read-only entities and the runImpact action (658.625317ms)
+✔ runImpact persists a snapshot that matches the independent oracle (83.431141ms)
+✔ same inputs give the same fingerprint; each run is a new immutable record (45.035018ms)
+✔ snapshot entities reject every client write (82.932748ms)
+✔ plant isolation on every exposed entity: collection, $count, key, $expand (90.185437ms)
+✔ runImpact authorization: roles, foreign plant, malformed memberships (28.449884ms)
+✔ invalid and non-comparable inputs are rejected without persisting a run (11.230647ms)
+✔ stale case version is detected by the database-level compare-and-set and rolls back (15.620668ms)
+✔ parallel runImpact requests never lose an update or leave orphans (54.02071ms)
+✔ calculator reproduces DS-ORACLE-01 expected results (5.322457ms)
+✔ calculator reproduces DS-DEMO-01 expected results (2.534328ms)
+✔ calculator reproduces all DS-NEG-01 outcomes (16.836585ms)
+✔ canonical COOL-100 values and mockup corrections (0.746366ms)
+✔ calculator is deterministic and does not mutate its input (3.822326ms)
+✔ exact arithmetic avoids binary floating point and rounds half away from zero (0.422692ms)
+✔ committed test/data CSVs are exactly the generator output (reproducible, no drift) (436.909961ms)
+✔ seed data is referentially and semantically consistent (0.873046ms)
+✔ CAP loads test/data; authenticated OData returns the seeded records per plant (126.846627ms)
+✔ runImpact on the persisted seed case reproduces DS-ORACLE-01 and is deterministic (110.748648ms)
+✔ seeded records keep authentication, role, plant and input checks (53.661878ms)
+✔ DS-DEMO-01 (test-only, not seeded) reproduces its expected results through persisted runImpact (30.222407ms)
+✔ production configuration never loads test/data (493.87175ms)
+ℹ tests 35
+ℹ suites 0
+ℹ pass 35
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1833.223016
