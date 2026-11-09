@@ -14,6 +14,7 @@
 //     PriceUnitQty, Currency, BaseUnit)
 // Work instructions are not part of these APIs; extracts carry no instructions (instruction checks then
 // report nothing for ERP cases, which the UI states as "No work instructions for this assembly").
+import { createHash } from 'node:crypto';
 import { Exact } from '../../lib/exact.js';
 
 export class MappingError extends Error {
@@ -49,30 +50,55 @@ const dec = (value, field) => {
 export const DEFAULT_UNIT_MAP = Object.freeze({ ST: 'PC', PCE: 'PC', EA: 'PC' });
 const unitOf = (u, map) => { const code = String(u ?? '').trim().toUpperCase(); return map[code] ?? code; };
 
-const validOn = (row, day, from = 'ValidityStartDate', to = 'ValidityEndDate') => {
-  const start = odataDate(row[from]) ?? '0001-01-01', end = odataDate(row[to]) ?? '9999-12-31';
-  return start <= day && day <= end;
-};
+
+/** Item rows that carry a stock component: not deleted, not text/document items, with a component. */
+export function isComponentItem(i) {
+  if (i.IsDeleted === true || String(i.IsDeleted ?? '').toUpperCase() === 'X') return false;
+  const category = String(i.BillOfMaterialItemCategory ?? 'L').trim().toUpperCase();
+  if (['T', 'D', 'K'].includes(category)) return false; // text, document, class items
+  return String(i.BillOfMaterialComponent ?? '').trim() !== '';
+}
+
+/**
+ * Item validity on `day`. `validityEnd` states how the system reports ValidityEndDate: 'inclusive' (last valid
+ * day) or 'exclusive' (first day of the successor). It is configuration (erp-source.validityEnd), to be confirmed
+ * against one real or sandbox record before go-live; no guessing per row.
+ */
+function validItems(items, day, validityEnd = 'inclusive') {
+  return items.filter(isComponentItem).filter(i => {
+    const start = odataDate(i.ValidityStartDate) ?? '0001-01-01', end = odataDate(i.ValidityEndDate) ?? '9999-12-31';
+    return start <= day && (validityEnd === 'exclusive' ? day < end : day <= end);
+  });
+}
+
+/** Stable, length-safe BOM state key per material BOM and effective date (reused by later extracts). */
+export function stateKeyFor(header, day) {
+  const key = `S4-${String(header.Material).trim()}-${header.BillOfMaterialVariantUsage}${String(header.BillOfMaterialVariant).padStart(2, '0')}-${day.replace(/-/g, '')}`;
+  if (key.length <= 40) return key;
+  return `S4-${createHash('sha256').update(key).digest('hex').slice(0, 24)}-${day.replace(/-/g, '')}`;
+}
 
 /**
  * Two date-effective BOM states of one material BOM: the configuration valid on `fromDate` (current) and on
- * `toDate` (after the engineering change). Items whose validity covers the date belong to that state.
+ * `toDate` (after the engineering change). Revision labels default to the effective dates (D<yyyymmdd>), so
+ * extracts of several changes of the same material never produce ambiguous states.
  */
-export function mapBomStates({ header, items, fromDate, toDate, fromRevision = 'CURRENT', toRevision = 'PROPOSED', unitMap = DEFAULT_UNIT_MAP, changeNumber }) {
+export function mapBomStates({ header, items, fromDate, toDate, fromRevision, toRevision, unitMap = DEFAULT_UNIT_MAP, changeNumber, validityEnd = 'inclusive' }) {
+  if (!['inclusive', 'exclusive'].includes(validityEnd)) throw new MappingError('ERP_CONFIG', 'validityEnd must be inclusive or exclusive.');
   if (!header) throw new MappingError('ERP_BOM_NOT_FOUND', 'No material BOM found for the selection.');
   if (!(fromDate < toDate)) throw new MappingError('ERP_DATES', 'fromDate must be before toDate.');
   const material = String(header.Material).trim(), plant = String(header.Plant).trim();
-  const key = rev => `S4-${material}-${plant}-${header.BillOfMaterialVariantUsage}-${header.BillOfMaterialVariant}-${rev}`.slice(0, 40);
+  const label = d => `D${d.replace(/-/g, '')}`;
   const dayBefore = d => new Date(Date.parse(`${d}T00:00:00Z`) - 86_400_000).toISOString().slice(0, 10);
   const states = [
-    { stateKey: key(fromRevision), revision: fromRevision, validFrom: fromDate, validTo: dayBefore(toDate), status: 'RELEASED', changeNumber: null, day: fromDate },
-    { stateKey: key(toRevision), revision: toRevision, validFrom: toDate, validTo: odataDate(header.HeaderValidityEndDate) ?? '9999-12-31',
-      status: 'PROPOSED', changeNumber: changeNumber ?? header.EngineeringChangeDocument ?? null, day: toDate },
+    { stateKey: stateKeyFor(header, fromDate), revision: fromRevision || label(fromDate), validFrom: fromDate, validTo: dayBefore(toDate), status: 'RELEASED', changeNumber: null, day: fromDate },
+    { stateKey: stateKeyFor(header, toDate), revision: toRevision || label(toDate), validFrom: toDate, validTo: odataDate(header.HeaderValidityEndDate) ?? '9999-12-31',
+      status: 'PROPOSED', changeNumber: changeNumber || header.EngineeringChangeDocument || null, day: toDate },
   ];
   const bomStates = [], bomItems = [];
   for (const s of states) {
-    const rows = items.filter(i => validOn(i, s.day));
-    if (!rows.length) throw new MappingError('ERP_EMPTY_BOM', `The BOM of ${material} has no items valid on ${s.day}.`);
+    const rows = validItems(items, s.day, validityEnd);
+    if (!rows.length) throw new MappingError('ERP_EMPTY_BOM', `The BOM of ${material} has no component items valid on ${s.day}.`);
     bomStates.push({ stateKey: s.stateKey, assemblyCode: material, plant, bomUsage: String(header.BillOfMaterialVariantUsage),
       alternative: String(header.BillOfMaterialVariant).padStart(2, '0'), revision: s.revision, validFrom: s.validFrom, validTo: s.validTo,
       status: s.status, ...(s.changeNumber ? { changeNumber: s.changeNumber } : {}) });
@@ -113,8 +139,8 @@ export function mapPrices(rows, { plant, validFrom, unitMap = DEFAULT_UNIT_MAP }
 
 /** Complete import bundle for one engineering change extracted from S/4HANA. */
 export function toImportBundle({ header, items, stockRows, valuationRows, selection, retrievedAt, source }) {
-  const { fromDate, toDate, caseNumber, title, productionQuantity, fromRevision, toRevision, changeNumber, description } = selection;
-  const { bomStates, bomItems } = mapBomStates({ header, items, fromDate, toDate, fromRevision, toRevision, changeNumber });
+  const { fromDate, toDate, caseNumber, title, productionQuantity, fromRevision, toRevision, changeNumber, description, validityEnd } = selection;
+  const { bomStates, bomItems } = mapBomStates({ header, items, fromDate, toDate, fromRevision, toRevision, changeNumber, validityEnd });
   const plant = bomStates[0].plant, material = bomStates[0].assemblyCode;
   const materials = new Set(bomItems.map(i => i.material));
   return {

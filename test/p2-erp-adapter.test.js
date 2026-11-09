@@ -12,8 +12,8 @@ process.env.CDS_ENV = 'test';
 process.env.CDS_CONFIG = JSON.stringify({ requires: { db: { data: ['db/data', 'db/csv', 'test/data'] } } });
 const { default: cds } = await import('@sap/cds');
 const { rowsOf, odataDate, mapBomStates, mapStock, mapPrices, MappingError } = await import('../srv/integration/erp/s4-mapping.js');
-const { extract, httpTransport, fixtureTransport, transportFor, queries, ErpConfigError, MODE_SOURCE_TYPE } = await import('../srv/integration/erp/erp-source.js');
-const { validateBundle } = await import('../srv/lib/scenario-import.js');
+const { extract, httpTransport, fixtureTransport, transportFor, queries, readAll, ErpConfigError, ErpTransportError, MODE_SOURCE_TYPE } = await import('../srv/integration/erp/erp-source.js');
+const { validateBundle, commitBundle } = await import('../srv/lib/scenario-import.js');
 const { calculateImpact } = await import('../srv/lib/impact-calculator.js');
 const DIR = join(import.meta.dirname, 'fixtures', 'p2', 's4-contract');
 const fx = name => JSON.parse(readFileSync(join(DIR, `${name}.json`), 'utf8'));
@@ -67,10 +67,11 @@ test('BOM: date-effective items give the current and the proposed state; units m
   const header = rowsOf(fx('A_BillOfMaterial'))[0];
   const { bomStates, bomItems } = mapBomStates({ header, items: rowsOf(fx('A_BillOfMaterialItem')), fromDate: '2026-12-01', toDate: '2027-01-01' });
   assert.deepEqual(bomStates.map(s => [s.revision, s.validFrom, s.validTo, s.status, s.changeNumber ?? null, s.alternative]),
-    [['CURRENT', '2026-12-01', '2026-12-31', 'RELEASED', null, '01'], ['PROPOSED', '2027-01-01', '9999-12-31', 'PROPOSED', null, '01']]);
-  const byState = rev => bomItems.filter(i => i.stateKey.endsWith(rev)).map(i => `${i.itemNo}:${i.material}x${i.quantity}${i.unit}`);
-  assert.deepEqual(byState('CURRENT'), ['0010:HSG-4711x1PC', '0020:IMP-4711-Ax1PC', '0030:SCREW-M5x6PC', '0050:CLIP-4711x2PC']);
-  assert.deepEqual(byState('PROPOSED'), ['0010:HSG-4711x1PC', '0020:IMP-4711-Bx1PC', '0030:SCREW-M5x8PC', '0040:SEAL-4711x1PC']);
+    [['D20261201', '2026-12-01', '2026-12-31', 'RELEASED', null, '01'], ['D20270101', '2027-01-01', '9999-12-31', 'PROPOSED', null, '01']]);
+  assert.deepEqual(bomStates.map(s => s.stateKey), ['S4-PMP-4711-101-20261201', 'S4-PMP-4711-101-20270101']);
+  const byState = day => bomItems.filter(i => i.stateKey.endsWith(day)).map(i => `${i.itemNo}:${i.material}x${i.quantity}${i.unit}`);
+  assert.deepEqual(byState('20261201'), ['0010:HSG-4711x1PC', '0020:IMP-4711-Ax1PC', '0030:SCREW-M5x6PC', '0050:CLIP-4711x2PC']);
+  assert.deepEqual(byState('20270101'), ['0010:HSG-4711x1PC', '0020:IMP-4711-Bx1PC', '0030:SCREW-M5x8PC', '0040:SEAL-4711x1PC']);
   assert.throws(() => mapBomStates({ header, items: [], fromDate: '2026-12-01', toDate: '2027-01-01' }), { code: 'ERP_EMPTY_BOM' });
   assert.throws(() => mapBomStates({ header, items: [], fromDate: '2027-01-01', toDate: '2026-12-01' }), { code: 'ERP_DATES' });
 });
@@ -111,7 +112,7 @@ test('extract over HTTP (mock S/4 OData V2): exact query contract, validated bun
     ['COMPLETE', '76.04', '83.02', '698.00', '9.18', 2]);
   assert.deepEqual(Object.fromEntries(r.comparison.map(l => [l.itemNo, l.change])),
     { '0010': 'UNCHANGED', '0020': 'REPLACED', '0030': 'QUANTITY_CHANGED', '0040': 'ADDED', '0050': 'REMOVED' });
-  await assert.rejects(extract({ transport: httpTransport({ baseUrl: mockUrl, headers: { APIKey: 'wrong' } }), mode: 'sandbox', selection: SELECTION }), { code: 'ERP_HTTP' });
+  await assert.rejects(extract({ transport: httpTransport({ baseUrl: mockUrl, headers: { APIKey: 'wrong' } }), mode: 'sandbox', selection: SELECTION }), { code: 'ERP_UNAVAILABLE' });
 });
 
 test('modes: unconfigured sandbox and S/4 are refused; source types never mislabel sandbox or synthetic data', () => {
@@ -134,7 +135,7 @@ test('CAP action: role and plant checks, dry run, commit with provenance, then r
   const dry = await request('/extractFromErp', { method: 'POST', body });
   assert.equal(dry.status, 200, JSON.stringify(dry.data));
   assert.equal(dry.data.accepted, true, JSON.stringify(dry.data.errors));
-  assert.deepEqual(dry.data.preview.map(p => [p.caseNumber, p.fromRevision, p.toRevision, p.fromItems, p.toItems]), [['EC-S4-0001', 'CURRENT', 'PROPOSED', 4, 4]]);
+  assert.deepEqual(dry.data.preview.map(p => [p.caseNumber, p.fromRevision, p.toRevision, p.fromItems, p.toItems]), [['EC-S4-0001', 'D20261201', 'D20270101', 4, 4]]);
   const commit = await request('/extractFromErp', { method: 'POST', body: { ...body, dryRun: false } });
   assert.equal(commit.status, 200, JSON.stringify(commit.data));
   const id = commit.data.caseIds[0];
@@ -146,5 +147,79 @@ test('CAP action: role and plant checks, dry run, commit with provenance, then r
   assert.equal(run.status, 200, JSON.stringify(run.data));
   assert.deepEqual([run.data.costDeltaTotal, run.data.materialsShort], ['698.00', 2]);
   const again = await request('/extractFromErp', { method: 'POST', body: { ...body, dryRun: false } });
-  assert.equal(again.status, 400, 'no overwrite of an existing extract');
+  assert.equal(again.status, 400, 'the same case number is not imported twice');
+});
+
+test('real-world item rows: text and deleted items ignored; configured validity-end convention applied consistently', () => {
+  const header = rowsOf(fx('A_BillOfMaterial'))[0];
+  const items = rowsOf(fx('A_BillOfMaterialItem'));
+  const end = '/Date(' + Date.parse('2027-01-01T00:00:00Z') + ')/';
+  // S/4 variant: the superseded record ends ON the successor's start date.
+  const exclusive = items.map(i => (/2026-12-31|1798675200000/.test(String(i.ValidityEndDate)) || odataDate(i.ValidityEndDate) === '2026-12-31' ? { ...i, ValidityEndDate: end } : i));
+  const extra = [
+    { ...items[0], BillOfMaterialItemNumber: '0090', BillOfMaterialItemCategory: 'T', BillOfMaterialComponent: '' },
+    { ...items[0], BillOfMaterialItemNumber: '0095', BillOfMaterialComponent: 'OLD-PART', IsDeleted: true },
+  ];
+  // CLIP-4711 (removed) also ends on 2027-01-01 in the exclusive representation, so it must disappear too.
+  const { bomItems } = mapBomStates({ header, items: [...exclusive, ...extra], fromDate: '2026-12-01', toDate: '2027-01-01', validityEnd: 'exclusive' });
+  const proposed = bomItems.filter(i => i.stateKey.endsWith('20270101')).map(i => `${i.itemNo}:${i.material}x${i.quantity}`);
+  assert.deepEqual(proposed, ['0010:HSG-4711x1', '0020:IMP-4711-Bx1', '0030:SCREW-M5x8', '0040:SEAL-4711x1']);
+  assert(!bomItems.some(i => ['OLD-PART', ''].includes(i.material)));
+  // The same rows read with the wrong convention are detectably wrong (duplicate item numbers), not silently merged.
+  const wrong = mapBomStates({ header, items: exclusive, fromDate: '2026-12-01', toDate: '2027-01-01' }).bomItems.filter(i => i.stateKey.endsWith('20270101'));
+  assert(wrong.length > new Set(wrong.map(i => i.itemNo)).size);
+  assert.throws(() => mapBomStates({ header, items, fromDate: '2026-12-01', toDate: '2027-01-01', validityEnd: 'maybe' }), { code: 'ERP_CONFIG' });
+});
+
+test('paging and chunking: __next links are followed, long material lists are split, truncation is refused', async () => {
+  const pages = { '/p1': { d: { results: [{ a: 1 }], __next: 'http://mock/p2' } }, '/p2': { d: { results: [{ a: 2 }] } } };
+  const transport = async path => pages[path.replace('http://mock', '')];
+  assert.deepEqual((await readAll(transport, '/p1')).map(r => r.a), [1, 2]);
+  const endless = async () => ({ d: { results: [{}], __next: '/again' } });
+  await assert.rejects(readAll(endless, '/again'), { code: 'ERP_TOO_LARGE' });
+  const seen = [];
+  const recording = async path => { seen.push(path); return { d: { results: path.includes('A_BillOfMaterial?') ? rowsOf(fx('A_BillOfMaterial')) : path.includes('A_BillOfMaterialItem') ? manyItems : [] } }; };
+  const base = rowsOf(fx('A_BillOfMaterialItem'))[0];
+  const manyItems = Array.from({ length: 95 }, (_, k) => ({ ...base, BillOfMaterialItemNumber: String(10 * (k + 1)).padStart(4, '0'), BillOfMaterialComponent: `PART-${k}` }));
+  await extract({ transport: recording, mode: 'synthetic', selection: SELECTION, now: NOW });
+  assert.equal(seen.filter(p => p.includes('A_MatlStkInAcctMod')).length, 3, '95 materials -> 3 chunks of at most 40');
+  assert(seen.every(p => p.length < 4000), 'URLs stay short');
+});
+
+test('upstream failures are reported as 502-class transport errors, not as client errors', async () => {
+  await assert.rejects(extract({ transport: httpTransport({ baseUrl: mockUrl, headers: { APIKey: 'wrong' } }), mode: 'sandbox', selection: SELECTION }),
+    e => e instanceof ErpTransportError && e.upstreamStatus === 401);
+  await assert.rejects(extract({ transport: httpTransport({ baseUrl: 'http://127.0.0.1:9', timeoutMs: 2000 }), mode: 'sandbox', selection: SELECTION }),
+    e => e instanceof ErpTransportError);
+  await assert.rejects(httpTransport({ baseUrl: mockUrl })('https://evil.example/x'), e => e instanceof ErpTransportError);
+});
+
+test('a second engineering change of the same material, and shared components, are extracted (merge policy)', async () => {
+  const body = { mode: 'synthetic', ...SELECTION, caseNumber: 'EC-S4-0002', title: 'Second change PMP-4711', dryRun: false };
+  const first = await request('/extractFromErp', { method: 'POST', body: { ...body, caseNumber: 'EC-S4-0003', title: 'Baseline', fromDate: '2026-11-01', toDate: '2026-12-01' } });
+  assert.equal(first.status, 200, JSON.stringify(first.data));
+  const second = await request('/extractFromErp', { method: 'POST', body });
+  assert.equal(second.status, 200, JSON.stringify(second.data));
+  const { Assemblies, BOMStates, CostPrices } = cds.entities('assemblyimpact');
+  assert.equal((await SELECT.from(Assemblies).where({ assemblyCode: 'PMP-4711', plant: '1000' })).length, 1, 'assembly reused');
+  assert.equal((await SELECT.from(BOMStates).where({ stateKey: 'S4-PMP-4711-101-20261201', plant: '1000' })).length, 1, 'same-date state reused');
+  const prices = await SELECT.from(CostPrices).where({ material: 'HSG-4711', plant: '1000' });
+  assert.equal(prices.length, 1, 'identical price reused, not duplicated');
+  // A changed ERP price closes the previous period instead of being refused.
+  const v = fx('A_ProductValuation');
+  const later = { ...SELECTION, caseNumber: 'EC-S4-0004', title: 'Price moved' };
+  const changed = { d: { results: v.d.results.map(r => (r.Product === 'HSG-4711' && r.ValuationArea === '1000' && !r.ValuationType ? { ...r, StandardPrice: '48.00' } : r)) } };
+  const transport = async path => (path.includes('A_ProductValuation') ? changed : fixtureTransport(DIR)(path));
+  // Next day (within the one-day clock tolerance of the validator), so the new price starts after the existing one.
+  const nextDay = new Date(Date.now() + 20 * 3600_000).toISOString();
+  const bundle = await extract({ transport, mode: 'synthetic', selection: later, now: nextDay });
+  const result = await cds.tx(async () => {
+    const validated = await validateBundle({ records: Object.fromEntries(Object.entries(bundle).filter(([, x]) => Array.isArray(x))) }, { plants: ['1000'], sourceType: 'DEMO_IMPORT', policy: 'erp-merge' });
+    assert.deepEqual(validated.errors, []);
+    await commitBundle(validated, { importId: cds.utils.uuid(), user: 'erp', format: 'odata', content: JSON.stringify(bundle), meta: {} });
+    return SELECT.from(CostPrices).columns('price', 'validFrom', 'validTo').where({ material: 'HSG-4711', plant: '1000' }).orderBy('validFrom');
+  });
+  assert.deepEqual(result.map(p => [String(Number(p.price)), String(p.validFrom).slice(0, 10), String(p.validTo).slice(0, 10)]),
+    [['45', new Date().toISOString().slice(0, 10), new Date(Date.parse(`${nextDay.slice(0, 10)}T00:00:00Z`) - 86_400_000).toISOString().slice(0, 10)],
+      ['48', nextDay.slice(0, 10), '9999-12-31']]);
 });

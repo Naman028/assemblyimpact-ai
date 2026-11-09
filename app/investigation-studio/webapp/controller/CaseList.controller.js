@@ -8,15 +8,34 @@ sap.ui.define([
     fmt: format,
 
     onInit: function () {
-      this.getOwnerComponent().getRouter().getRoute("workspace").attachPatternMatched(this._syncSelection, this);
+      var router = this.getOwnerComponent().getRouter();
+      router.getRoute("workspace").attachPatternMatched(function (event) { this._selectedId = event.getParameter("arguments").caseId; this._syncSelection(); }, this);
+      router.getRoute("cases").attachPatternMatched(function () { this._selectedId = null; this._syncSelection(); }, this);
+      this.getOwnerComponent().getEventBus().subscribe("studio", "casesChanged", function () {
+        this.byId("caseList").getBinding("items").refresh();
+      }, this);
       this.getView().setModel(new JSONModel(this._emptyImport()), "import");
+      this.getView().setModel(new JSONModel({ canImport: false }), "caps");
+      this._loadCapabilities();
     },
 
-    _syncSelection: function (event) {
-      var id = event.getParameter("arguments").caseId, list = this.byId("caseList");
-      list.getItems().forEach(function (item) { item.setSelected(item.getBindingContext().getProperty("ID") === id); });
+    /** The import button is offered only to users the server allows to import (feature flag + role). */
+    _loadCapabilities: function () {
+      var fn = this.getView().getModel().bindContext("/myCapabilities()"), model = this.getView().getModel("caps");
+      fn.requestObject().then(function (caps) { model.setProperty("/canImport", !!(caps && caps.canImport)); })
+        .catch(function () { model.setProperty("/canImport", false); })
+        .finally(function () { fn.destroy(); });
     },
 
+    /** Highlights the open case (also after a deep link, once the items have arrived). */
+    _syncSelection: function () {
+      var id = this._selectedId, list = this.byId("caseList");
+      list.getItems().forEach(function (item) { item.setSelected(!!id && item.getBindingContext().getProperty("ID") === id); });
+    },
+
+    onUpdateFinished: function () { this._syncSelection(); },
+
+    /** itemPress (not selectionChange) so that the same case can be reopened after closing it. */
     onSelect: function (event) {
       var ctx = event.getParameter("listItem").getBindingContext();
       this.getOwnerComponent().getRouter().navTo("workspace", { caseId: ctx.getProperty("ID") });
@@ -84,6 +103,7 @@ sap.ui.define([
       return action.execute().then(function () {
         var result = action.getBoundContext().getObject();
         var counts = result.counts ? JSON.parse(result.counts) : {};
+        if (!dryRun) { model.setProperty("/accepted", false); }
         model.setProperty("/validated", true);
         model.setProperty("/accepted", dryRun && result.accepted);
         model.setProperty("/errors", result.errors || []);
@@ -97,7 +117,7 @@ sap.ui.define([
         }
       }.bind(this)).catch(function (error) {
         MessageBox.error(error.message || "The import failed; nothing was saved.");
-      }).finally(function () { if (dialog) { dialog.setBusy(false); } });
+      }).finally(function () { if (dialog) { dialog.setBusy(false); } action.destroy(); });
     },
 
     onImportConfirm: function () {
