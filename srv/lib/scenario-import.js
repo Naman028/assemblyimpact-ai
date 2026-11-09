@@ -126,6 +126,7 @@ export function parseImport(content, format) {
 // ------------------------------------------------------------ validation
 
 const str = v => (v === undefined || v === null ? '' : String(v).trim());
+const dayBefore = d => new Date(Date.parse(`${d}T00:00:00Z`) - 86_400_000).toISOString().slice(0, 10);
 const isDate = v => RE.date.test(v) && !Number.isNaN(Date.parse(`${v}T00:00:00Z`)) && new Date(`${v}T00:00:00Z`).toISOString().startsWith(v);
 function decimal(v, { scale, intDigits, min, allowZero }) {
   const s = str(v);
@@ -142,7 +143,13 @@ function decimal(v, { scale, intDigits, min, allowZero }) {
  * existing database. Returns { errors, plan, preview, counts } where plan holds normalised rows.
  * `existing` lets callers inject lookups (tests); default reads the database.
  */
-export async function validateBundle(parsed, { plants, sourceType = 'DEMO_IMPORT' } = {}) {
+/**
+ * policy 'append-only' (file imports): every record must be new. policy 'erp-merge' (ERP extracts, P2): an
+ * extract describes one engineering change of master data that may already exist, so an existing assembly is
+ * reused, an existing BOM state with identical items is reused, an identical price is reused and an older
+ * open-ended price of the same material is closed the day before the new one starts (price history).
+ */
+export async function validateBundle(parsed, { plants, sourceType = 'DEMO_IMPORT', policy = 'append-only' } = {}) {
   const errors = [];
   const err = (record, field, code, message) => { if (errors.length < IMPORT_LIMITS.maxErrors) errors.push({ line: record?._line ?? null, field: field ?? null, code, message }); };
   const { records } = parsed;
@@ -211,24 +218,56 @@ export async function validateBundle(parsed, { plants, sourceType = 'DEMO_IMPORT
   const { CostPrices, Assemblies, BOMStates, ReviewCases, Instructions, StockSnapshots } = cds.entities('assemblyimpact');
   const materials = [...new Set(plan.costPrices.map(p => p.material))];
   const dbPrices = materials.length && plant ? await SELECT.from(CostPrices).columns('material', 'validFrom', 'validTo').where({ plant, material: { in: materials } }) : [];
+  const merge = policy === 'erp-merge';
+  const day = v => String(v).slice(0, 10);
+  const sameValue = (a, b) => Exact.of(String(a.price)).cmp(String(b.price)) === 0 && a.currency === b.currency &&
+    Number(a.priceUnit) === Number(b.priceUnit) && a.unit === b.unit;
+  const dbFull = merge && materials.length && plant ? await SELECT.from(CostPrices).where({ plant, material: { in: materials } }) : [];
+  plan.reusePrices = []; plan.closePrices = [];
   for (const p of plan.costPrices) {
-    const day = v => String(v).slice(0, 10);
-    const overlaps = [...dbPrices.map(d => ({ ...d, _line: 'database' })), ...plan.costPrices.filter(o => o !== p)]
-      .filter(o => o.material === p.material && day(o.validFrom) <= p.validTo && p.validFrom <= day(o.validTo));
-    if (overlaps.length) err(p, 'validFrom', 'OVERLAPPING_PRICE', `Price for ${p.material} overlaps another price (${overlaps[0]._line}).`);
+    const fileOverlap = plan.costPrices.filter(o => o !== p && o.material === p.material && day(o.validFrom) <= p.validTo && p.validFrom <= day(o.validTo));
+    if (fileOverlap.length) { err(p, 'validFrom', 'OVERLAPPING_PRICE', `Price for ${p.material} overlaps another price (${fileOverlap[0]._line}).`); continue; }
+    const dbOverlap = dbPrices.filter(o => o.material === p.material && day(o.validFrom) <= p.validTo && p.validFrom <= day(o.validTo));
+    if (!dbOverlap.length) continue;
+    if (merge) {
+      const rows = dbFull.filter(o => o.material === p.material && day(o.validFrom) <= p.validTo && p.validFrom <= day(o.validTo));
+      const covering = rows.find(o => day(o.validFrom) <= p.validFrom && p.validFrom <= day(o.validTo));
+      if (rows.length === 1 && covering && sameValue(covering, p)) { p._reuse = covering.ID; plan.reusePrices.push(p); continue; }
+      if (rows.length === 1 && covering && day(covering.validFrom) < p.validFrom) { plan.closePrices.push({ ID: covering.ID, validTo: dayBefore(p.validFrom), material: p.material }); continue; }
+    }
+    err(p, 'validFrom', 'OVERLAPPING_PRICE', `Price for ${p.material} overlaps another price (database).`);
   }
+  plan.costPrices = plan.costPrices.filter(p => !p._reuse);
 
   // 6) no overwrite of existing records (imports only add data)
   if (plant) {
     const exists = async (entity, where) => !!(await SELECT.one.from(entity).columns('ID').where(where));
-    for (const a of plan.assemblies) if (await exists(Assemblies, { assemblyCode: a.assemblyCode, plant: a.plant })) err(a, 'assemblyCode', 'ALREADY_EXISTS', `Assembly ${a.assemblyCode} already exists in plant ${a.plant}.`);
+    for (const a of plan.assemblies) {
+      const existing = await SELECT.one.from(Assemblies).columns('ID').where({ assemblyCode: a.assemblyCode, plant: a.plant });
+      if (existing && merge) a._reuse = existing.ID;
+      else if (existing) err(a, 'assemblyCode', 'ALREADY_EXISTS', `Assembly ${a.assemblyCode} already exists in plant ${a.plant}.`);
+    }
     // Keys are global: a key used in another plant is reported neutrally, without confirming that it exists there.
     const taken = async (entity, field, value, label, r) => {
       if (await exists(entity, { [field]: value, plant: { in: plants } })) err(r, field, 'ALREADY_EXISTS', `${label} ${value} already exists.`);
       else if (await exists(entity, { [field]: value })) err(r, field, 'IDENTIFIER_NOT_AVAILABLE', `${label} ${value} cannot be used; choose another identifier.`);
     };
     // BOM state keys are unique per plant (no information about other plants is involved).
-    for (const s of plan.bomStates) if (await exists(BOMStates, { stateKey: s.stateKey, plant: s.plant })) err(s, 'stateKey', 'ALREADY_EXISTS', `BOM state ${s.stateKey} already exists.`);
+    for (const s of plan.bomStates) {
+      const existing = await SELECT.one.from(BOMStates).columns('ID').where({ stateKey: s.stateKey, plant: s.plant });
+      if (!existing) continue;
+      if (merge) {
+        // Same material BOM on the same effective date: reuse it if the stored items are identical.
+        const { BOMItems } = cds.entities('assemblyimpact');
+        const stored = (await SELECT.from(BOMItems).columns('itemNo', 'material', 'quantity', 'unit').where({ bomState_ID: existing.ID }))
+          .map(i => `${i.itemNo}|${i.material}|${Exact.of(String(i.quantity)).toPlain()}|${i.unit}`).sort().join(';');
+        const incoming = plan.bomItems.filter(i => i.stateKey === s.stateKey).map(i => `${i.itemNo}|${i.material}|${i.quantity}|${i.unit}`).sort().join(';');
+        if (stored === incoming) { s._reuse = existing.ID; continue; }
+        err(s, 'stateKey', 'ERP_STATE_CHANGED', `The stored BOM state ${s.stateKey} differs from the ERP data for the same date; review it before importing.`);
+        continue;
+      }
+      err(s, 'stateKey', 'ALREADY_EXISTS', `BOM state ${s.stateKey} already exists.`);
+    }
     for (const c of plan.reviewCases) await taken(ReviewCases, 'caseNumber', c.caseNumber, 'Review case', c);
     for (const i of plan.instructions) if (await exists(Instructions, { instructionId: i.instructionId, version: i.version, plant: i.plant })) err(i, 'instructionId', 'ALREADY_EXISTS', `Instruction ${i.instructionId} v${i.version} already exists.`);
     for (const s of plan.stockSnapshots) if (await exists(StockSnapshots, { material: s.material, plant: s.plant, snapshotAt: s.snapshotAt })) err(s, 'snapshotAt', 'ALREADY_EXISTS', `Stock snapshot ${s.material} at ${s.snapshotAt} already exists.`);
@@ -336,20 +375,29 @@ export async function commitBundle(validated, { importId, user, fileName, format
     source: str(meta?.source).slice(0, 200) || null, importedBy: user, importedAt: now,
     counts: JSON.stringify(validated.counts) });
 
+  const label = { S4_IMPORT: 'S/4HANA extract', SANDBOX_IMPORT: 'SAP API sandbox extract - not business data' }[sourceType] ?? 'imported demo data';
   const assemblyIds = new Map();
   for (const a of plan.assemblies) {
+    if (a._reuse) { assemblyIds.set(`${a.assemblyCode}/${a.plant}`, a._reuse); continue; }
     const ID = id(); assemblyIds.set(`${a.assemblyCode}/${a.plant}`, ID);
     await INSERT.into(E.Assemblies).entries({ ID, assemblyCode: a.assemblyCode, plant: a.plant,
-      description: `${a.description} [${sourceType === 'S4_IMPORT' ? 'ERP extract' : 'imported demo data'}]`.slice(0, 160), version: id() });
+      description: `${a.description} [${label}]`.slice(0, 160), version: id() });
   }
   const stateIds = new Map();
   for (const s of plan.bomStates) {
+    if (s._reuse) { stateIds.set(s.stateKey, s._reuse); continue; }
     const ID = id(); stateIds.set(s.stateKey, ID);
     await INSERT.into(E.BOMStates).entries({ ID, stateKey: s.stateKey, assembly_ID: assemblyIds.get(`${s.assemblyCode}/${s.plant}`), plant: s.plant,
       bomUsage: s.bomUsage, alternative: s.alternative, revision: s.revision, validFrom: s.validFrom, validTo: s.validTo,
       status: s.status, changeNumber: s.changeNumber, sourceType, evidenceRef: ev(`bom_states/${s.stateKey}`) });
   }
-  if (plan.bomItems.length) await INSERT.into(E.BOMItems).entries(plan.bomItems.map(i => ({ ID: id(), bomState_ID: stateIds.get(i.stateKey),
+  const reusedStates = new Set(plan.bomStates.filter(s => s._reuse).map(s => s.stateKey));
+  const newItems = plan.bomItems.filter(i => !reusedStates.has(i.stateKey));
+  for (const c of plan.closePrices ?? []) {
+    // Price history: the previous price of the material ends the day before the extracted price starts.
+    await UPDATE(E.CostPrices).set({ validTo: c.validTo }).where({ ID: c.ID });
+  }
+  if (newItems.length) await INSERT.into(E.BOMItems).entries(newItems.map(i => ({ ID: id(), bomState_ID: stateIds.get(i.stateKey),
     itemNo: i.itemNo, material: i.material, quantity: i.quantity, unit: i.unit, evidenceRef: ev(`bom_items/${i.stateKey}/${i.itemNo}`) })));
   if (plan.costPrices.length) await INSERT.into(E.CostPrices).entries(plan.costPrices.map(p => ({ ID: id(), material: p.material, plant: p.plant,
     price: p.price, currency: p.currency, priceUnit: p.priceUnit, unit: p.unit, priceBasis: p.priceBasis, validFrom: p.validFrom,
