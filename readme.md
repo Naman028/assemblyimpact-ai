@@ -34,7 +34,13 @@ complete examination project or production deployment is demonstrated.**
 - Impact runs are not seeded: every run is produced by `runImpact`.
 - Development mock users for the review service: `analyst` (ChangeAnalyst, 1000), `cviewer` (ChangeViewer, 1000), `analyst2000` (ChangeAnalyst, 2000); password `development-only`.
 
-Not implemented: review/approval workflow, Fiori apps, Joule,
+### P3 — Engineering Change Case Worklist (Fiori elements, in progress)
+
+- `app/case-worklist`: SAP Fiori elements OData V4 List Report / Object Page app on the existing read-only `EngineeringReview` service: Review Cases (filters Assembly, Plant, Proposed Revision, Review Status, Source Type) -> Review Case -> Impact Run -> Finding, with the `runImpact` action. Open `http://localhost:4004/case-worklist/webapp/index.html` after `npm start`.
+- Generated first with SAP Project Accelerator in a separate sandbox; the generated draft-enabled service and data model were not imported, only the page structure was adopted (evidence in `docs/evidence/p3-case-worklist/`).
+- Decision history is not shown yet (no backend entity until the approval workflow slice).
+
+Not implemented: review/approval workflow, Fiori apps beyond the P3 worklist, Joule,
 S/4HANA/GenAI integrations, HANA persistence and BTP deployment. No LLM takes part
 in calculations or authorization.
 

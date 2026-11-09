@@ -1,0 +1,167 @@
+{
+  "_version": "1.65.0",
+  "sap.app": {
+    "id": "assemblyimpact.caseworklist",
+    "type": "application",
+    "i18n": "i18n/i18n.properties",
+    "applicationVersion": {
+      "version": "0.1.0"
+    },
+    "title": "{{appTitle}}",
+    "description": "{{appDescription}}",
+    "dataSources": {
+      "mainService": {
+        "uri": "/odata/v4/engineering-review/",
+        "type": "OData",
+        "settings": {
+          "odataVersion": "4.0"
+        }
+      }
+    }
+  },
+  "sap.ui": {
+    "technology": "UI5",
+    "deviceTypes": {
+      "desktop": true,
+      "tablet": true,
+      "phone": true
+    }
+  },
+  "sap.ui5": {
+    "flexEnabled": false,
+    "dependencies": {
+      "minUI5Version": "1.120.0",
+      "libs": {
+        "sap.m": {},
+        "sap.ui.core": {},
+        "sap.fe.templates": {}
+      }
+    },
+    "contentDensities": {
+      "compact": true,
+      "cozy": true
+    },
+    "models": {
+      "i18n": {
+        "type": "sap.ui.model.resource.ResourceModel",
+        "settings": {
+          "bundleName": "assemblyimpact.caseworklist.i18n.i18n"
+        }
+      },
+      "": {
+        "dataSource": "mainService",
+        "preload": true,
+        "settings": {
+          "operationMode": "Server",
+          "autoExpandSelect": true,
+          "earlyRequests": true
+        }
+      }
+    },
+    "routing": {
+      "config": {},
+      "routes": [
+        {
+          "pattern": ":?query:",
+          "name": "ReviewCasesList",
+          "target": "ReviewCasesList"
+        },
+        {
+          "pattern": "ReviewCases({key}):?query:",
+          "name": "ReviewCasesObjectPage",
+          "target": "ReviewCasesObjectPage"
+        },
+        {
+          "pattern": "ReviewCases({key})/runs({key2}):?query:",
+          "name": "ImpactRunsObjectPage",
+          "target": "ImpactRunsObjectPage"
+        },
+        {
+          "pattern": "ReviewCases({key})/runs({key2})/findings({key3}):?query:",
+          "name": "FindingsObjectPage",
+          "target": "FindingsObjectPage"
+        }
+      ],
+      "targets": {
+        "ReviewCasesList": {
+          "type": "Component",
+          "id": "ReviewCasesList",
+          "name": "sap.fe.templates.ListReport",
+          "options": {
+            "settings": {
+              "contextPath": "/ReviewCases",
+              "variantManagement": "Page",
+              "initialLoad": "Enabled",
+              "navigation": {
+                "ReviewCases": {
+                  "detail": {
+                    "route": "ReviewCasesObjectPage"
+                  }
+                }
+              },
+              "controlConfiguration": {
+                "@com.sap.vocabularies.UI.v1.LineItem": {
+                  "tableSettings": {
+                    "type": "ResponsiveTable",
+                    "selectionMode": "Single"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "ReviewCasesObjectPage": {
+          "type": "Component",
+          "id": "ReviewCasesObjectPage",
+          "name": "sap.fe.templates.ObjectPage",
+          "options": {
+            "settings": {
+              "contextPath": "/ReviewCases",
+              "editableHeaderContent": false,
+              "navigation": {
+                "runs": {
+                  "detail": {
+                    "route": "ImpactRunsObjectPage"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "ImpactRunsObjectPage": {
+          "type": "Component",
+          "id": "ImpactRunsObjectPage",
+          "name": "sap.fe.templates.ObjectPage",
+          "options": {
+            "settings": {
+              "contextPath": "/ReviewCases/runs",
+              "editableHeaderContent": false,
+              "navigation": {
+                "findings": {
+                  "detail": {
+                    "route": "FindingsObjectPage"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "FindingsObjectPage": {
+          "type": "Component",
+          "id": "FindingsObjectPage",
+          "name": "sap.fe.templates.ObjectPage",
+          "options": {
+            "settings": {
+              "contextPath": "/ReviewCases/runs/findings",
+              "editableHeaderContent": false
+            }
+          }
+        }
+      }
+    }
+  },
+  "sap.fiori": {
+    "registrationIds": [],
+    "archeType": "transactional"
+  }
+}
