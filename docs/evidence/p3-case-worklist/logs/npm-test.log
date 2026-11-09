@@ -1,0 +1,2720 @@
+# BAS 2026-11-09T08:47:35Z HEAD=377e46a node=v24.21.0
+
+> assemblyimpact-ai@1.0.0 test
+> node --test test/assembly-service.test.js test/impact-calculator.test.js test/engineering-review.test.js test/seed-data.test.js test/case-worklist-app.test.js
+
+/> successfully deployed to in-memory database. 
+
+[cds] - using auth strategy { kind: 'mocked' }
+[odata] - GET /odata/v4/assembly-catalog/$metadata 
+✔ model, SQLite constraint and service metadata (1028.286897ms)
+[odata] - POST /odata/v4/assembly-catalog/Assemblies 
+[odata] - POST /odata/v4/assembly-catalog/Assemblies 
+[odata] - POST /odata/v4/assembly-catalog/Assemblies 
+[odata] - POST /odata/v4/assembly-catalog/Assemblies 
+[odata] - 400 - [Value 😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀 is not a valid String(160)] {
+  code: 'ASSERT_DATA_TYPE',
+  args: [
+    '😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀',
+    'String(160)'
+  ],
+  target: 'description',
+  _i18n: 1
+}
+[odata] - POST /odata/v4/assembly-catalog/Assemblies 
+[odata] - 400 - [Provide the missing value.] {
+  code: 'ASSERT_MANDATORY',
+  target: 'assemblyCode',
+  _i18n: 1
+}
+[odata] - POST /odata/v4/assembly-catalog/Assemblies 
+[odata] - 400 - [Provide the missing value.] {
+  code: 'ASSERT_MANDATORY',
+  args: [ null ],
+  target: 'assemblyCode',
+  _i18n: 1
+}
+[odata] - POST /odata/v4/assembly-catalog/Assemblies 
+[odata] - 400 - [Error: Multiple errors occurred, see details below.] {
+  details: Errors(2) [
+    [Provide the missing value.] {
+      code: 'ASSERT_MANDATORY',
+      args: [ '' ],
+      target: 'assemblyCode',
+      _i18n: 1
+    },
+    [Enter a value matching the pattern ^[\s\S]*\S[\s\S]*$.] {
+      code: 'ASSERT_FORMAT',
+      args: [ '', '^[\\s\\S]*\\S[\\s\\S]*$' ],
+      target: 'assemblyCode',
+      _i18n: 1
+    }
+  ],
+  status: 400,
+  code: 'MULTIPLE_ERRORS',
+  _i18n: 1
+}
+[odata] - POST /odata/v4/assembly-catalog/Assemblies 
+[odata] - 400 - [Error: Multiple errors occurred, see details below.] {
+  details: Errors(2) [
+    [Provide the missing value.] {
+      code: 'ASSERT_MANDATORY',
+      args: [ '   ' ],
+      target: 'assemblyCode',
+      _i18n: 1
+    },
+    [Enter a value matching the pattern ^[\s\S]*\S[\s\S]*$.] {
+      code: 'ASSERT_FORMAT',
+      args: [ '   ', '^[\\s\\S]*\\S[\\s\\S]*$' ],
+      target: 'assemblyCode',
+      _i18n: 1
+    }
+  ],
+  status: 400,
+  code: 'MULTIPLE_ERRORS',
+  _i18n: 1
+}
+[odata] - POST /odata/v4/assembly-catalog/Assemblies 
+[odata] - 400 - [Value 42 is not a valid String(40)] {
+  code: 'ASSERT_DATA_TYPE',
+  args: [ 42, 'String(40)' ],
+  target: 'assemblyCode',
+  _i18n: 1
+}
+[odata] - POST /odata/v4/assembly-catalog/Assemblies 
+[odata] - 400 - [Value true is not a valid String(40)] {
+  code: 'ASSERT_DATA_TYPE',
+  args: [ true, 'String(40)' ],
+  target: 'assemblyCode',
+  _i18n: 1
+}
+[odata] - POST /odata/v4/assembly-catalog/Assemblies 
+[odata] - 400 - [Value [object Object] is not a valid String(40)] {
+  code: 'ASSERT_DATA_TYPE',
+  args: [ {}, 'String(40)' ],
+  target: 'assemblyCode',
+  _i18n: 1
+}
+[odata] - POST /odata/v4/assembly-catalog/Assemblies 
+[odata] - 400 - [Error: Multiple errors occurred, see details below.] {
+  details: Errors(2) [
+    [Value  is not a valid String(40)] {
+      code: 'ASSERT_DATA_TYPE',
+      args: [ [], 'String(40)' ],
+      target: 'assemblyCode',
+      _i18n: 1
+    },
+    [Enter a value matching the pattern ^[\s\S]*\S[\s\S]*$.] {
+      code: 'ASSERT_FORMAT',
+      args: [ [], '^[\\s\\S]*\\S[\\s\\S]*$' ],
+      target: 'assemblyCode',
+      _i18n: 1
+    }
+  ],
+  status: 400,
+  code: 'MULTIPLE_ERRORS',
+  _i18n: 1
+}
+[odata] - 400 - Error: Provide the missing value.
+    at AssemblyCatalog.handle (file:///home/user/projects/assemblyimpact-ai/srv/assembly-service.js:29:33)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:32:17)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:50
+    at AssemblyCatalog.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:36)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/create.js:74:24
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:48
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:65:14)
+    at cds._with (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/index.js:14:25)
+    at AssemblyCatalog.srv_tx [as tx] (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:16) {
+  code: 'ASSERT_MANDATORY',
+  target: 'plant',
+  status: 400,
+  _i18n: 1
+}
+[odata] - POST /odata/v4/assembly-catalog/Assemblies 
+[odata] - POST /odata/v4/assembly-catalog/Assemblies 
+[odata] - 400 - Error: Provide the missing value.
+    at AssemblyCatalog.handle (file:///home/user/projects/assemblyimpact-ai/srv/assembly-service.js:29:33)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:32:17)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:50
+    at AssemblyCatalog.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:36)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/create.js:74:24
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:48
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:65:14)
+    at cds._with (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/index.js:14:25)
+    at AssemblyCatalog.srv_tx [as tx] (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:16) {
+  code: 'ASSERT_MANDATORY',
+  target: 'plant',
+  status: 400,
+  _i18n: 1
+}
+[odata] - POST /odata/v4/assembly-catalog/Assemblies 
+[odata] - 400 - Error: Provide the missing value.
+    at AssemblyCatalog.handle (file:///home/user/projects/assemblyimpact-ai/srv/assembly-service.js:29:33)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:32:17)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:50
+    at AssemblyCatalog.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:36)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/create.js:74:24
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:48
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:65:14)
+    at cds._with (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/index.js:14:25)
+    at AssemblyCatalog.srv_tx [as tx] (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:16) {
+  code: 'ASSERT_MANDATORY',
+  target: 'plant',
+  status: 400,
+  _i18n: 1
+}
+[odata] - POST /odata/v4/assembly-catalog/Assemblies 
+[odata] - 400 - Error: Provide the missing value.
+    at AssemblyCatalog.handle (file:///home/user/projects/assemblyimpact-ai/srv/assembly-service.js:29:33)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:32:17)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:50
+    at AssemblyCatalog.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:36)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/create.js:74:24
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:48
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:65:14)
+    at cds._with (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/index.js:14:25)
+    at AssemblyCatalog.srv_tx [as tx] (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:16) {
+  code: 'ASSERT_MANDATORY',
+  target: 'plant',
+  status: 400,
+  _i18n: 1
+}
+[odata] - 400 - Error: Value {0} is not a valid {1}
+    at AssemblyCatalog.handle (file:///home/user/projects/assemblyimpact-ai/srv/assembly-service.js:29:33)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:32:17)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:50
+    at AssemblyCatalog.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:36)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/create.js:74:24
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:48
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:65:14)
+    at cds._with (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/index.js:14:25)
+    at AssemblyCatalog.srv_tx [as tx] (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:16) {
+  code: 'ASSERT_DATA_TYPE',
+  target: 'plant',
+  status: 400,
+  _i18n: 1
+}
+[odata] - 400 - Error: Value {0} is not a valid {1}
+    at AssemblyCatalog.handle (file:///home/user/projects/assemblyimpact-ai/srv/assembly-service.js:29:33)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:32:17)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:50
+    at AssemblyCatalog.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:36)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/create.js:74:24
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:48
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:65:14)
+    at cds._with (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/index.js:14:25)
+    at AssemblyCatalog.srv_tx [as tx] (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:16) {
+  code: 'ASSERT_DATA_TYPE',
+  target: 'plant',
+  status: 400,
+  _i18n: 1
+}
+[odata] - 400 - Error: Value {0} is not a valid {1}
+    at AssemblyCatalog.handle (file:///home/user/projects/assemblyimpact-ai/srv/assembly-service.js:29:33)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:32:17)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:50
+    at AssemblyCatalog.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:36)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/create.js:74:24
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:48
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:65:14)
+    at cds._with (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/index.js:14:25)
+    at AssemblyCatalog.srv_tx [as tx] (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:16) {
+  code: 'ASSERT_DATA_TYPE',
+  target: 'plant',
+  status: 400,
+  _i18n: 1
+}
+[odata] - 400 - Error: Value {0} is not a valid {1}
+    at AssemblyCatalog.handle (file:///home/user/projects/assemblyimpact-ai/srv/assembly-service.js:29:33)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:32:17)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:50
+    at AssemblyCatalog.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:36)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/create.js:74:24
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:48
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:65:14)
+    at cds._with (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/index.js:14:25)
+    at AssemblyCatalog.srv_tx [as tx] (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:16) {
+  code: 'ASSERT_DATA_TYPE',
+  target: 'plant',
+  status: 400,
+  _i18n: 1
+}
+[odata] - POST /odata/v4/assembly-catalog/Assemblies 
+[odata] - POST /odata/v4/assembly-catalog/Assemblies 
+[odata] - POST /odata/v4/assembly-catalog/Assemblies 
+[odata] - POST /odata/v4/assembly-catalog/Assemblies 
+[odata] - POST /odata/v4/assembly-catalog/Assemblies 
+[odata] - 400 - [Provide the missing value.] {
+  code: 'ASSERT_MANDATORY',
+  target: 'description',
+  _i18n: 1
+}
+[odata] - POST /odata/v4/assembly-catalog/Assemblies 
+[odata] - 400 - [Provide the missing value.] {
+  code: 'ASSERT_MANDATORY',
+  args: [ null ],
+  target: 'description',
+  _i18n: 1
+}
+[odata] - POST /odata/v4/assembly-catalog/Assemblies 
+[odata] - 400 - [Error: Multiple errors occurred, see details below.] {
+  details: Errors(2) [
+    [Provide the missing value.] {
+      code: 'ASSERT_MANDATORY',
+      args: [ '' ],
+      target: 'description',
+      _i18n: 1
+    },
+    [Enter a value matching the pattern ^[\s\S]*\S[\s\S]*$.] {
+      code: 'ASSERT_FORMAT',
+      args: [ '', '^[\\s\\S]*\\S[\\s\\S]*$' ],
+      target: 'description',
+      _i18n: 1
+    }
+  ],
+  status: 400,
+  code: 'MULTIPLE_ERRORS',
+  _i18n: 1
+}
+[odata] - POST /odata/v4/assembly-catalog/Assemblies 
+[odata] - 400 - [Error: Multiple errors occurred, see details below.] {
+  details: Errors(2) [
+    [Provide the missing value.] {
+      code: 'ASSERT_MANDATORY',
+      args: [ '   ' ],
+      target: 'description',
+      _i18n: 1
+    },
+    [Enter a value matching the pattern ^[\s\S]*\S[\s\S]*$.] {
+      code: 'ASSERT_FORMAT',
+      args: [ '   ', '^[\\s\\S]*\\S[\\s\\S]*$' ],
+      target: 'description',
+      _i18n: 1
+    }
+  ],
+  status: 400,
+  code: 'MULTIPLE_ERRORS',
+  _i18n: 1
+}
+[odata] - POST /odata/v4/assembly-catalog/Assemblies 
+[odata] - 400 - [Value 42 is not a valid String(160)] {
+  code: 'ASSERT_DATA_TYPE',
+  args: [ 42, 'String(160)' ],
+  target: 'description',
+  _i18n: 1
+}
+[odata] - POST /odata/v4/assembly-catalog/Assemblies 
+[odata] - 400 - [Value true is not a valid String(160)] {
+  code: 'ASSERT_DATA_TYPE',
+  args: [ true, 'String(160)' ],
+  target: 'description',
+  _i18n: 1
+}
+[odata] - POST /odata/v4/assembly-catalog/Assemblies 
+[odata] - 400 - [Value [object Object] is not a valid String(160)] {
+  code: 'ASSERT_DATA_TYPE',
+  args: [ {}, 'String(160)' ],
+  target: 'description',
+  _i18n: 1
+}
+[odata] - POST /odata/v4/assembly-catalog/Assemblies 
+[odata] - 400 - [Error: Multiple errors occurred, see details below.] {
+  details: Errors(2) [
+    [Value  is not a valid String(160)] {
+      code: 'ASSERT_DATA_TYPE',
+      args: [ [], 'String(160)' ],
+      target: 'description',
+      _i18n: 1
+    },
+    [Enter a value matching the pattern ^[\s\S]*\S[\s\S]*$.] {
+      code: 'ASSERT_FORMAT',
+      args: [ [], '^[\\s\\S]*\\S[\\s\\S]*$' ],
+      target: 'description',
+      _i18n: 1
+    }
+  ],
+  status: 400,
+  code: 'MULTIPLE_ERRORS',
+  _i18n: 1
+}
+[odata] - POST /odata/v4/assembly-catalog/Assemblies 
+[odata] - 400 - [Value aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa is not a valid String(40)] {
+  code: 'ASSERT_DATA_TYPE',
+  args: [ 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', 'String(40)' ],
+  target: 'assemblyCode',
+  _i18n: 1
+}
+[odata] - POST /odata/v4/assembly-catalog/Assemblies 
+[odata] - 400 - Error: Value {0} is not a valid {1}
+    at AssemblyCatalog.handle (file:///home/user/projects/assemblyimpact-ai/srv/assembly-service.js:29:33)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:32:17)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:50
+    at AssemblyCatalog.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:36)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/create.js:74:24
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:48
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:65:14)
+    at cds._with (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/index.js:14:25)
+    at AssemblyCatalog.srv_tx [as tx] (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:16) {
+  code: 'ASSERT_DATA_TYPE',
+  target: 'plant',
+  status: 400,
+  _i18n: 1
+}
+[odata] - 400 - [Value aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa is not a valid String(160)] {
+  code: 'ASSERT_DATA_TYPE',
+  args: [
+    'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+    'String(160)'
+  ],
+  target: 'description',
+  _i18n: 1
+}
+[odata] - 400 - Error: UNKNOWN_PROPERTY
+    at AssemblyCatalog.handle (file:///home/user/projects/assemblyimpact-ai/srv/assembly-service.js:24:36)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:32:17)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:50
+    at AssemblyCatalog.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:36)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/create.js:74:24
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:48
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:65:14)
+    at cds._with (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/index.js:14:25)
+    at AssemblyCatalog.srv_tx [as tx] (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:16) {
+  code: '400',
+  target: 'unknown',
+  status: 400
+}
+[odata] - POST /odata/v4/assembly-catalog/Assemblies 
+[odata] - POST /odata/v4/assembly-catalog/Assemblies 
+✔ create, requiredness, format, types, lengths and relaxed identifiers (248.987021ms)
+[odata] - POST /odata/v4/assembly-catalog/Assemblies 
+[odata] - POST /odata/v4/assembly-catalog/Assemblies 
+[odata] - GET /odata/v4/assembly-catalog/Assemblies 
+[odata] - 403 - Error: Forbidden
+    at AssemblyCatalog.handle (file:///home/user/projects/assemblyimpact-ai/srv/assembly-service.js:12:83)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:32:17)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:50
+    at AssemblyCatalog.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:36)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/read.js:262:24
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:48
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:65:14)
+    at cds._with (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/index.js:14:25)
+    at AssemblyCatalog.srv_tx [as tx] (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:16) {
+  code: '403',
+  status: 403,
+  _i18n: 1
+}
+[odata] - POST /odata/v4/assembly-catalog/Assemblies 
+[odata] - 403 - Error: Forbidden
+    at AssemblyCatalog.handle (file:///home/user/projects/assemblyimpact-ai/srv/assembly-service.js:12:83)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:32:17)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:50
+    at AssemblyCatalog.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:36)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/create.js:74:24
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:48
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:65:14)
+    at cds._with (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/index.js:14:25)
+    at AssemblyCatalog.srv_tx [as tx] (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:16) {
+  code: '403',
+  status: 403,
+  _i18n: 1
+}
+[odata] - GET /odata/v4/assembly-catalog/Assemblies(feab923b-9ea6-4c27-b537-4c9d3a405ddf) 
+[odata] - 403 - Error: Forbidden
+    at AssemblyCatalog.handle (file:///home/user/projects/assemblyimpact-ai/srv/assembly-service.js:12:83)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:32:17)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:50
+    at AssemblyCatalog.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:36)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/read.js:262:24
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:48
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:65:14)
+    at cds._with (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/index.js:14:25)
+    at AssemblyCatalog.srv_tx [as tx] (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:16) {
+  code: '403',
+  status: 403,
+  _i18n: 1
+}
+[odata] - PATCH /odata/v4/assembly-catalog/Assemblies(feab923b-9ea6-4c27-b537-4c9d3a405ddf) 
+[odata] - 403 - Error: Forbidden
+    at AssemblyCatalog.handle (file:///home/user/projects/assemblyimpact-ai/srv/assembly-service.js:12:83)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:32:17)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:50
+    at AssemblyCatalog.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:36)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/update.js:121:24
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:48
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:65:14)
+    at cds._with (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/index.js:14:25)
+    at AssemblyCatalog.srv_tx [as tx] (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:16) {
+  code: '403',
+  status: 403,
+  _i18n: 1
+}
+[odata] - GET /odata/v4/assembly-catalog/Assemblies 
+[odata] - 403 - Error: Forbidden
+    at AssemblyCatalog.handle (file:///home/user/projects/assemblyimpact-ai/srv/assembly-service.js:16:83)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:32:17)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:50
+    at AssemblyCatalog.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:36)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/read.js:262:24
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:48
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:65:14)
+    at cds._with (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/index.js:14:25)
+    at AssemblyCatalog.srv_tx [as tx] (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:16) {
+  code: '403',
+  status: 403,
+  _i18n: 1
+}
+[odata] - POST /odata/v4/assembly-catalog/Assemblies 
+[odata] - 403 - Error: Forbidden
+    at AssemblyCatalog.handle (file:///home/user/projects/assemblyimpact-ai/srv/assembly-service.js:16:83)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:32:17)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:50
+    at AssemblyCatalog.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:36)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/create.js:74:24
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:48
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:65:14)
+    at cds._with (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/index.js:14:25)
+    at AssemblyCatalog.srv_tx [as tx] (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:16) {
+  code: '403',
+  status: 403,
+  _i18n: 1
+}
+[odata] - GET /odata/v4/assembly-catalog/Assemblies(feab923b-9ea6-4c27-b537-4c9d3a405ddf) 
+[odata] - 403 - Error: Forbidden
+    at AssemblyCatalog.handle (file:///home/user/projects/assemblyimpact-ai/srv/assembly-service.js:16:83)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:32:17)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:50
+    at AssemblyCatalog.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:36)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/read.js:262:24
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:48
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:65:14)
+    at cds._with (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/index.js:14:25)
+    at AssemblyCatalog.srv_tx [as tx] (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:16) {
+  code: '403',
+  status: 403,
+  _i18n: 1
+}
+[odata] - PATCH /odata/v4/assembly-catalog/Assemblies(feab923b-9ea6-4c27-b537-4c9d3a405ddf) 
+[odata] - 403 - Error: Forbidden
+    at AssemblyCatalog.handle (file:///home/user/projects/assemblyimpact-ai/srv/assembly-service.js:16:83)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:32:17)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:50
+    at AssemblyCatalog.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:36)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/update.js:121:24
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:48
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:65:14)
+    at cds._with (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/index.js:14:25)
+    at AssemblyCatalog.srv_tx [as tx] (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:16) {
+  code: '403',
+  status: 403,
+  _i18n: 1
+}
+[odata] - GET /odata/v4/assembly-catalog/Assemblies 
+[odata] - 403 - Error: Forbidden
+    at AssemblyCatalog.handle (file:///home/user/projects/assemblyimpact-ai/srv/assembly-service.js:16:83)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:32:17)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:50
+    at AssemblyCatalog.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:36)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/read.js:262:24
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:48
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:65:14)
+    at cds._with (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/index.js:14:25)
+    at AssemblyCatalog.srv_tx [as tx] (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:16) {
+  code: '403',
+  status: 403,
+  _i18n: 1
+}
+[odata] - 403 - Error: Forbidden
+    at AssemblyCatalog.handle (file:///home/user/projects/assemblyimpact-ai/srv/assembly-service.js:16:83)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:32:17)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:50
+    at AssemblyCatalog.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:36)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/create.js:74:24
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:48
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:65:14)
+    at cds._with (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/index.js:14:25)
+    at AssemblyCatalog.srv_tx [as tx] (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:16) {
+  code: '403',
+  status: 403,
+  _i18n: 1
+}
+[odata] - POST /odata/v4/assembly-catalog/Assemblies 
+[odata] - GET /odata/v4/assembly-catalog/Assemblies(feab923b-9ea6-4c27-b537-4c9d3a405ddf) 
+[odata] - 403 - Error: Forbidden
+    at AssemblyCatalog.handle (file:///home/user/projects/assemblyimpact-ai/srv/assembly-service.js:16:83)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:32:17)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:50
+    at AssemblyCatalog.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:36)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/read.js:262:24
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:48
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:65:14)
+    at cds._with (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/index.js:14:25)
+    at AssemblyCatalog.srv_tx [as tx] (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:16) {
+  code: '403',
+  status: 403,
+  _i18n: 1
+}
+[odata] - PATCH /odata/v4/assembly-catalog/Assemblies(feab923b-9ea6-4c27-b537-4c9d3a405ddf) 
+[odata] - 403 - Error: Forbidden
+    at AssemblyCatalog.handle (file:///home/user/projects/assemblyimpact-ai/srv/assembly-service.js:16:83)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:32:17)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:50
+    at AssemblyCatalog.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:36)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/update.js:121:24
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:48
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:65:14)
+    at cds._with (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/index.js:14:25)
+    at AssemblyCatalog.srv_tx [as tx] (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:16) {
+  code: '403',
+  status: 403,
+  _i18n: 1
+}
+[odata] - GET /odata/v4/assembly-catalog/Assemblies 
+[odata] - 403 - Error: Forbidden
+    at AssemblyCatalog.handle (file:///home/user/projects/assemblyimpact-ai/srv/assembly-service.js:16:83)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:32:17)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:50
+    at AssemblyCatalog.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:36)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/read.js:262:24
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:48
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:65:14)
+    at cds._with (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/index.js:14:25)
+    at AssemblyCatalog.srv_tx [as tx] (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:16) {
+  code: '403',
+  status: 403,
+  _i18n: 1
+}
+[odata] - POST /odata/v4/assembly-catalog/Assemblies 
+[odata] - 403 - Error: Forbidden
+    at AssemblyCatalog.handle (file:///home/user/projects/assemblyimpact-ai/srv/assembly-service.js:16:83)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:32:17)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:50
+    at AssemblyCatalog.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:36)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/create.js:74:24
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:48
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:65:14)
+    at cds._with (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/index.js:14:25)
+    at AssemblyCatalog.srv_tx [as tx] (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:16) {
+  code: '403',
+  status: 403,
+  _i18n: 1
+}
+[odata] - GET /odata/v4/assembly-catalog/Assemblies(feab923b-9ea6-4c27-b537-4c9d3a405ddf) 
+[odata] - 403 - Error: Forbidden
+    at AssemblyCatalog.handle (file:///home/user/projects/assemblyimpact-ai/srv/assembly-service.js:16:83)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:32:17)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:50
+    at AssemblyCatalog.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:36)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/read.js:262:24
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:48
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:65:14)
+    at cds._with (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/index.js:14:25)
+    at AssemblyCatalog.srv_tx [as tx] (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:16) {
+  code: '403',
+  status: 403,
+  _i18n: 1
+}
+[odata] - PATCH /odata/v4/assembly-catalog/Assemblies(feab923b-9ea6-4c27-b537-4c9d3a405ddf) 
+[odata] - 403 - Error: Forbidden
+    at AssemblyCatalog.handle (file:///home/user/projects/assemblyimpact-ai/srv/assembly-service.js:16:83)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:32:17)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:50
+    at AssemblyCatalog.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:36)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/update.js:121:24
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:48
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:65:14)
+    at cds._with (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/index.js:14:25)
+    at AssemblyCatalog.srv_tx [as tx] (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:16) {
+  code: '403',
+  status: 403,
+  _i18n: 1
+}
+[odata] - GET /odata/v4/assembly-catalog/Assemblies 
+[odata] - 403 - Error: Forbidden
+    at AssemblyCatalog.handle (file:///home/user/projects/assemblyimpact-ai/srv/assembly-service.js:16:83)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:32:17)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:50
+    at AssemblyCatalog.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:36)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/read.js:262:24
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:48
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:65:14)
+    at cds._with (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/index.js:14:25)
+    at AssemblyCatalog.srv_tx [as tx] (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:16) {
+  code: '403',
+  status: 403,
+  _i18n: 1
+}
+[odata] - POST /odata/v4/assembly-catalog/Assemblies 
+[odata] - 403 - Error: Forbidden
+    at AssemblyCatalog.handle (file:///home/user/projects/assemblyimpact-ai/srv/assembly-service.js:16:83)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:32:17)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:50
+    at AssemblyCatalog.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:36)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/create.js:74:24
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:48
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:65:14)
+    at cds._with (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/index.js:14:25)
+    at AssemblyCatalog.srv_tx [as tx] (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:16) {
+  code: '403',
+  status: 403,
+  _i18n: 1
+}
+[odata] - GET /odata/v4/assembly-catalog/Assemblies(feab923b-9ea6-4c27-b537-4c9d3a405ddf) 
+[odata] - 403 - Error: Forbidden
+    at AssemblyCatalog.handle (file:///home/user/projects/assemblyimpact-ai/srv/assembly-service.js:16:83)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:32:17)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:50
+    at AssemblyCatalog.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:36)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/read.js:262:24
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:48
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:65:14)
+    at cds._with (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/index.js:14:25)
+    at AssemblyCatalog.srv_tx [as tx] (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:16) {
+  code: '403',
+  status: 403,
+  _i18n: 1
+}
+[odata] - PATCH /odata/v4/assembly-catalog/Assemblies(feab923b-9ea6-4c27-b537-4c9d3a405ddf) 
+[odata] - 403 - Error: Forbidden
+    at AssemblyCatalog.handle (file:///home/user/projects/assemblyimpact-ai/srv/assembly-service.js:16:83)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:32:17)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:50
+    at AssemblyCatalog.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:36)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/update.js:121:24
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:48
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:65:14)
+    at cds._with (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/index.js:14:25)
+    at AssemblyCatalog.srv_tx [as tx] (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:16) {
+  code: '403',
+  status: 403,
+  _i18n: 1
+}
+[odata] - GET /odata/v4/assembly-catalog/Assemblies 
+[odata] - 403 - Error: Forbidden
+    at AssemblyCatalog.handle (file:///home/user/projects/assemblyimpact-ai/srv/assembly-service.js:16:83)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:32:17)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:50
+    at AssemblyCatalog.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:36)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/read.js:262:24
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:48
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:65:14)
+    at cds._with (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/index.js:14:25)
+    at AssemblyCatalog.srv_tx [as tx] (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:16) {
+  code: '403',
+  status: 403,
+  _i18n: 1
+}
+[odata] - POST /odata/v4/assembly-catalog/Assemblies 
+[odata] - 403 - Error: Forbidden
+    at AssemblyCatalog.handle (file:///home/user/projects/assemblyimpact-ai/srv/assembly-service.js:16:83)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:32:17)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:50
+    at AssemblyCatalog.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:36)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/create.js:74:24
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:48
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:65:14)
+    at cds._with (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/index.js:14:25)
+    at AssemblyCatalog.srv_tx [as tx] (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:16) {
+  code: '403',
+  status: 403,
+  _i18n: 1
+}
+[odata] - GET /odata/v4/assembly-catalog/Assemblies(feab923b-9ea6-4c27-b537-4c9d3a405ddf) 
+[odata] - 403 - Error: Forbidden
+    at AssemblyCatalog.handle (file:///home/user/projects/assemblyimpact-ai/srv/assembly-service.js:16:83)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:32:17)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:50
+    at AssemblyCatalog.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:36)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/read.js:262:24
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:48
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:65:14)
+    at cds._with (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/index.js:14:25)
+    at AssemblyCatalog.srv_tx [as tx] (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:16) {
+  code: '403',
+  status: 403,
+  _i18n: 1
+}
+[odata] - PATCH /odata/v4/assembly-catalog/Assemblies(feab923b-9ea6-4c27-b537-4c9d3a405ddf) 
+[odata] - 403 - Error: Forbidden
+    at AssemblyCatalog.handle (file:///home/user/projects/assemblyimpact-ai/srv/assembly-service.js:16:83)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:32:17)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:50
+    at AssemblyCatalog.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:36)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/update.js:121:24
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:48
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:65:14)
+    at cds._with (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/index.js:14:25)
+    at AssemblyCatalog.srv_tx [as tx] (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:16) {
+  code: '403',
+  status: 403,
+  _i18n: 1
+}
+[odata] - GET /odata/v4/assembly-catalog/Assemblies { '$count': 'true', '$orderby': 'assemblyCode', '$top': '1000' }
+[odata] - GET /odata/v4/assembly-catalog/Assemblies { '$filter': "plant eq '2000'" }
+[odata] - GET /odata/v4/assembly-catalog/Assemblies(631c0aa2-7158-4ecb-9b09-a05baec46631) 
+[odata] - 404 - Error: Not Found
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/read.js:265:19 {
+  status: 404,
+  code: '404',
+  _i18n: 1
+}
+[odata] - POST /odata/v4/assembly-catalog/Assemblies 
+[odata] - 403 - Error: Forbidden
+    at AssemblyCatalog.handle (file:///home/user/projects/assemblyimpact-ai/srv/assembly-service.js:13:73)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:32:17)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:50
+    at AssemblyCatalog.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:36)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/create.js:74:24
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:48
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:65:14)
+    at cds._with (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/index.js:14:25)
+    at AssemblyCatalog.srv_tx [as tx] (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:16) {
+  code: '403',
+  status: 403,
+  _i18n: 1
+}
+[odata] - POST /odata/v4/assembly-catalog/Assemblies 
+[odata] - 403 - Error: Forbidden
+    at AssemblyCatalog.handle (file:///home/user/projects/assemblyimpact-ai/srv/assembly-service.js:30:47)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:32:17)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:50
+    at AssemblyCatalog.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:36)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/create.js:74:24
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:48
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:65:14)
+    at cds._with (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/index.js:14:25)
+    at AssemblyCatalog.srv_tx [as tx] (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:16) {
+  code: '403',
+  status: 403,
+  _i18n: 1
+}
+[odata] - PATCH /odata/v4/assembly-catalog/Assemblies(feab923b-9ea6-4c27-b537-4c9d3a405ddf) 
+[odata] - 403 - Error: Forbidden
+    at AssemblyCatalog.handle (file:///home/user/projects/assemblyimpact-ai/srv/assembly-service.js:13:73)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:32:17)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:50
+    at AssemblyCatalog.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:36)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/update.js:121:24
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:48
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:65:14)
+    at cds._with (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/index.js:14:25)
+    at AssemblyCatalog.srv_tx [as tx] (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:16) {
+  code: '403',
+  status: 403,
+  _i18n: 1
+}
+[odata] - PATCH /odata/v4/assembly-catalog/Assemblies(631c0aa2-7158-4ecb-9b09-a05baec46631) 
+[odata] - 412 - Error: Precondition Failed
+    at AssemblyCatalog.handle (file:///home/user/projects/assemblyimpact-ai/srv/assembly-service.js:51:13)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5) {
+  code: '412',
+  status: 412,
+  _i18n: 1
+}
+[odata] - GET /odata/v4/assembly-catalog/Assemblies(631c0aa2-7158-4ecb-9b09-a05baec46631) 
+[odata] - GET /odata/v4/assembly-catalog/Assemblies(631c0aa2-7158-4ecb-9b09-a05baec46631) 
+[odata] - GET /odata/v4/assembly-catalog/Assemblies { '$count': 'true' }
+[odata] - GET /odata/v4/assembly-catalog/Assemblies 
+✔ role and plant isolation on collection, counts, keys, creates and updates (139.065226ms)
+[odata] - POST /odata/v4/assembly-catalog/Assemblies 
+[odata] - PATCH /odata/v4/assembly-catalog/Assemblies(bf1e6aba-c265-4c22-bd55-391555f31522) 
+[odata] - 428 - Error: Precondition Required
+    at AssemblyCatalog.handle (file:///home/user/projects/assemblyimpact-ai/srv/assembly-service.js:39:25)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:32:17)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:50
+    at AssemblyCatalog.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:36)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/update.js:121:24
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:48
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:65:14)
+    at cds._with (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/index.js:14:25)
+    at AssemblyCatalog.srv_tx [as tx] (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:16) {
+  code: '428',
+  status: 428,
+  _i18n: 1
+}
+[odata] - PATCH /odata/v4/assembly-catalog/Assemblies(bf1e6aba-c265-4c22-bd55-391555f31522) 
+[odata] - 400 - Error: INVALID_ETAG
+    at AssemblyCatalog.handle (file:///home/user/projects/assemblyimpact-ai/srv/assembly-service.js:41:15)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:32:17)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:50
+    at AssemblyCatalog.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:36)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/update.js:121:24
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:48
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:65:14)
+    at cds._with (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/index.js:14:25)
+    at AssemblyCatalog.srv_tx [as tx] (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:16) {
+  code: '400',
+  status: 400
+}
+[odata] - PATCH /odata/v4/assembly-catalog/Assemblies(bf1e6aba-c265-4c22-bd55-391555f31522) 
+[odata] - 400 - Error: INVALID_ETAG
+    at AssemblyCatalog.handle (file:///home/user/projects/assemblyimpact-ai/srv/assembly-service.js:41:15)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:32:17)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:50
+    at AssemblyCatalog.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:36)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/update.js:121:24
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:48
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:65:14)
+    at cds._with (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/index.js:14:25)
+    at AssemblyCatalog.srv_tx [as tx] (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:16) {
+  code: '400',
+  status: 400
+}
+[odata] - PATCH /odata/v4/assembly-catalog/Assemblies(bf1e6aba-c265-4c22-bd55-391555f31522) 
+[odata] - 400 - Error: INVALID_ETAG
+    at AssemblyCatalog.handle (file:///home/user/projects/assemblyimpact-ai/srv/assembly-service.js:41:15)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:32:17)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:50
+    at AssemblyCatalog.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:36)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/update.js:121:24
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:48
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:65:14)
+    at cds._with (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/index.js:14:25)
+    at AssemblyCatalog.srv_tx [as tx] (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:16) {
+  code: '400',
+  status: 400
+}
+[odata] - PATCH /odata/v4/assembly-catalog/Assemblies(bf1e6aba-c265-4c22-bd55-391555f31522) 
+[odata] - 400 - Error: IMMUTABLE_PROPERTY
+    at AssemblyCatalog.handle (file:///home/user/projects/assemblyimpact-ai/srv/assembly-service.js:35:15)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:32:17)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:50
+    at AssemblyCatalog.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:36)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/update.js:121:24
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:48
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:65:14)
+    at cds._with (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/index.js:14:25)
+    at AssemblyCatalog.srv_tx [as tx] (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:16) {
+  code: '400',
+  status: 400
+}
+[odata] - PATCH /odata/v4/assembly-catalog/Assemblies(bf1e6aba-c265-4c22-bd55-391555f31522) 
+[odata] - 400 - Error: IMMUTABLE_PROPERTY
+    at AssemblyCatalog.handle (file:///home/user/projects/assemblyimpact-ai/srv/assembly-service.js:35:15)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:32:17)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:50
+    at AssemblyCatalog.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:36)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/update.js:121:24
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:48
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:65:14)
+    at cds._with (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/index.js:14:25)
+    at AssemblyCatalog.srv_tx [as tx] (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:16) {
+  code: '400',
+  status: 400
+}
+[odata] - PATCH /odata/v4/assembly-catalog/Assemblies(bf1e6aba-c265-4c22-bd55-391555f31522) 
+[odata] - 400 - [Error: Multiple errors occurred, see details below.] {
+  details: Errors(2) [
+    [Provide the missing value.] {
+      code: 'ASSERT_MANDATORY',
+      args: [ '' ],
+      target: 'description',
+      _i18n: 1
+    },
+    [Enter a value matching the pattern ^[\s\S]*\S[\s\S]*$.] {
+      code: 'ASSERT_FORMAT',
+      args: [ '', '^[\\s\\S]*\\S[\\s\\S]*$' ],
+      target: 'description',
+      _i18n: 1
+    }
+  ],
+  status: 400,
+  code: 'MULTIPLE_ERRORS',
+  _i18n: 1
+}
+[odata] - PATCH /odata/v4/assembly-catalog/Assemblies(bf1e6aba-c265-4c22-bd55-391555f31522) 
+[odata] - 400 - [Error: Multiple errors occurred, see details below.] {
+  details: Errors(2) [
+    [Provide the missing value.] {
+      code: 'ASSERT_MANDATORY',
+      args: [ ' ' ],
+      target: 'description',
+      _i18n: 1
+    },
+    [Enter a value matching the pattern ^[\s\S]*\S[\s\S]*$.] {
+      code: 'ASSERT_FORMAT',
+      args: [ ' ', '^[\\s\\S]*\\S[\\s\\S]*$' ],
+      target: 'description',
+      _i18n: 1
+    }
+  ],
+  status: 400,
+  code: 'MULTIPLE_ERRORS',
+  _i18n: 1
+}
+[odata] - PATCH /odata/v4/assembly-catalog/Assemblies(bf1e6aba-c265-4c22-bd55-391555f31522) 
+[odata] - 400 - [Provide the missing value.] {
+  code: 'ASSERT_MANDATORY',
+  args: [ null ],
+  target: 'description',
+  _i18n: 1
+}
+[odata] - PATCH /odata/v4/assembly-catalog/Assemblies(bf1e6aba-c265-4c22-bd55-391555f31522) 
+[odata] - 400 - [Value 12 is not a valid String(160)] {
+  code: 'ASSERT_DATA_TYPE',
+  args: [ 12, 'String(160)' ],
+  target: 'description',
+  _i18n: 1
+}
+[odata] - PATCH /odata/v4/assembly-catalog/Assemblies(bf1e6aba-c265-4c22-bd55-391555f31522) 
+[odata] - 400 - [Value xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx is not a valid String(160)] {
+  code: 'ASSERT_DATA_TYPE',
+  args: [
+    'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+    'String(160)'
+  ],
+  target: 'description',
+  _i18n: 1
+}
+[odata] - PATCH /odata/v4/assembly-catalog/Assemblies(bf1e6aba-c265-4c22-bd55-391555f31522) 
+[odata] - GET /odata/v4/assembly-catalog/Assemblies(bf1e6aba-c265-4c22-bd55-391555f31522) 
+[odata] - PATCH /odata/v4/assembly-catalog/Assemblies(bf1e6aba-c265-4c22-bd55-391555f31522) 
+[odata] - 412 - Error: Precondition Failed
+    at Function.new_behavior [as _handle_result] (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/generic/crud.js:69:53)
+    at AssemblyCatalog.handle_crud_requests (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/generic/crud.js:36:26)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async next (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:57:19)
+    at async AssemblyCatalog.handle (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:55:12)
+    at async AssemblyCatalog.handle (file:///home/user/projects/assemblyimpact-ai/srv/assembly-service.js:47:14) {
+  code: '412',
+  status: 412,
+  _i18n: 1
+}
+[odata] - PATCH /odata/v4/assembly-catalog/Assemblies(bf1e6aba-c265-4c22-bd55-391555f31522) 
+[odata] - PATCH /odata/v4/assembly-catalog/Assemblies(bf1e6aba-c265-4c22-bd55-391555f31522) 
+[odata] - 412 - Error: Precondition Failed
+    at Function.new_behavior [as _handle_result] (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/generic/crud.js:69:53)
+    at AssemblyCatalog.handle_crud_requests (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/generic/crud.js:36:26)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async next (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:57:19)
+    at async AssemblyCatalog.handle (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:55:12)
+    at async AssemblyCatalog.handle (file:///home/user/projects/assemblyimpact-ai/srv/assembly-service.js:47:14) {
+  code: '412',
+  status: 412,
+  _i18n: 1
+}
+[odata] - GET /odata/v4/assembly-catalog/Assemblies(bf1e6aba-c265-4c22-bd55-391555f31522) 
+✔ server-owned fields, immutable identity and conditional PATCH (82.090046ms)
+[odata] - POST /odata/v4/assembly-catalog/Assemblies 
+[odata] - POST /odata/v4/assembly-catalog/Assemblies 
+[odata] - 409 - Error: An assembly with this code and plant already exists.
+    at AssemblyCatalog.handle (file:///home/user/projects/assemblyimpact-ai/srv/assembly-service.js:55:13)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5) {
+  status: 409,
+  code: 'ASSEMBLY_ALREADY_EXISTS',
+  target: 'assemblyCode'
+}
+✔ business uniqueness and concurrent create preserve one row (7.296837ms)
+[odata] - POST /odata/v4/assembly-catalog/Assemblies 
+[odata] - PUT /odata/v4/assembly-catalog/Assemblies(6d0c1787-b5e4-4b78-97c3-78b9dac8242c) 
+[odata] - 405 - Error: Method Not Allowed
+    at AssemblyCatalog.handle (file:///home/user/projects/assemblyimpact-ai/srv/assembly-service.js:20:61)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:32:17)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:50
+    at AssemblyCatalog.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:36)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/update.js:121:24
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:48
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:65:14)
+    at cds._with (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/index.js:14:25)
+    at AssemblyCatalog.srv_tx [as tx] (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:16) {
+  code: '405',
+  status: 405,
+  _i18n: 1
+}
+[odata] - DELETE /odata/v4/assembly-catalog/Assemblies(6d0c1787-b5e4-4b78-97c3-78b9dac8242c) 
+[odata] - 405 - Error: Method Not Allowed
+    at AssemblyCatalog.handle (file:///home/user/projects/assemblyimpact-ai/srv/assembly-service.js:20:61)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:32:17)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:50
+    at AssemblyCatalog.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:36)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/delete.js:55:24
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:48
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:65:14)
+    at cds._with (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/index.js:14:25)
+    at AssemblyCatalog.srv_tx [as tx] (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:16) {
+  code: '405',
+  status: 405,
+  _i18n: 1
+}
+[odata] - PUT /odata/v4/assembly-catalog/Assemblies(6d0c1787-b5e4-4b78-97c3-78b9dac8242c)/description 
+[odata] - 405 - Error: Method Not Allowed
+    at AssemblyCatalog.handle (file:///home/user/projects/assemblyimpact-ai/srv/assembly-service.js:20:61)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:32:17)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:50
+    at AssemblyCatalog.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:36)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/update.js:121:24
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:48
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:65:14)
+    at cds._with (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/index.js:14:25)
+    at AssemblyCatalog.srv_tx [as tx] (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:16) {
+  code: '405',
+  status: 405,
+  _i18n: 1
+}
+[odata] - PATCH /odata/v4/assembly-catalog/Assemblies(6d0c1787-b5e4-4b78-97c3-78b9dac8242c)/description 
+[odata] - 405 - Error: Method PATCH is not allowed for properties
+    at odata_update (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/update.js:86:13)
+    at Layer.handleRequest (/home/user/projects/assemblyimpact-ai/node_modules/router/lib/layer.js:152:17)
+    at next (/home/user/projects/assemblyimpact-ai/node_modules/router/lib/route.js:157:13)
+    at Route.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/router/lib/route.js:117:3)
+    at handle (/home/user/projects/assemblyimpact-ai/node_modules/router/index.js:435:11)
+    at Layer.handleRequest (/home/user/projects/assemblyimpact-ai/node_modules/router/lib/layer.js:152:17)
+    at /home/user/projects/assemblyimpact-ai/node_modules/router/index.js:295:15
+    at param (/home/user/projects/assemblyimpact-ai/node_modules/router/index.js:600:14)
+    at param (/home/user/projects/assemblyimpact-ai/node_modules/router/index.js:610:14)
+    at processParams (/home/user/projects/assemblyimpact-ai/node_modules/router/index.js:664:3) {
+  status: 405,
+  code: '405'
+}
+[odata] - DELETE /odata/v4/assembly-catalog/Assemblies(6d0c1787-b5e4-4b78-97c3-78b9dac8242c)/description 
+[odata] - 405 - Error: Method Not Allowed
+    at AssemblyCatalog.handle (file:///home/user/projects/assemblyimpact-ai/srv/assembly-service.js:20:61)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:32:17)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:50
+    at AssemblyCatalog.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:36)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/delete.js:55:24
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:48
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:65:14)
+    at cds._with (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/index.js:14:25)
+    at AssemblyCatalog.srv_tx [as tx] (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:16) {
+  code: '405',
+  status: 405,
+  _i18n: 1
+}
+[odata] - PUT /odata/v4/assembly-catalog/Assemblies(6d0c1787-b5e4-4b78-97c3-78b9dac8242c)/description/$value 
+[odata] - 405 - Error: Method Not Allowed
+    at AssemblyCatalog.handle (file:///home/user/projects/assemblyimpact-ai/srv/assembly-service.js:20:61)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:32:17)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:50
+    at AssemblyCatalog.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:36)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/update.js:121:24
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:48
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:65:14)
+    at cds._with (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/index.js:14:25)
+    at AssemblyCatalog.srv_tx [as tx] (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:16) {
+  code: '405',
+  status: 405,
+  _i18n: 1
+}
+[odata] - PATCH /odata/v4/assembly-catalog/Assemblies(6d0c1787-b5e4-4b78-97c3-78b9dac8242c)/description/$value 
+[odata] - 405 - Error: Method PATCH is not allowed for properties
+    at odata_update (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/update.js:86:13)
+    at Layer.handleRequest (/home/user/projects/assemblyimpact-ai/node_modules/router/lib/layer.js:152:17)
+    at next (/home/user/projects/assemblyimpact-ai/node_modules/router/lib/route.js:157:13)
+    at Route.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/router/lib/route.js:117:3)
+    at handle (/home/user/projects/assemblyimpact-ai/node_modules/router/index.js:435:11)
+    at Layer.handleRequest (/home/user/projects/assemblyimpact-ai/node_modules/router/lib/layer.js:152:17)
+    at /home/user/projects/assemblyimpact-ai/node_modules/router/index.js:295:15
+    at param (/home/user/projects/assemblyimpact-ai/node_modules/router/index.js:600:14)
+    at param (/home/user/projects/assemblyimpact-ai/node_modules/router/index.js:610:14)
+    at processParams (/home/user/projects/assemblyimpact-ai/node_modules/router/index.js:664:3) {
+  status: 405,
+  code: '405'
+}
+[odata] - DELETE /odata/v4/assembly-catalog/Assemblies(6d0c1787-b5e4-4b78-97c3-78b9dac8242c)/description/$value 
+[odata] - 405 - Error: Method Not Allowed
+    at AssemblyCatalog.handle (file:///home/user/projects/assemblyimpact-ai/srv/assembly-service.js:20:61)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:32:17)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:50
+    at AssemblyCatalog.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:36)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/delete.js:55:24
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:48
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:65:14)
+    at cds._with (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/index.js:14:25)
+    at AssemblyCatalog.srv_tx [as tx] (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:16) {
+  code: '405',
+  status: 405,
+  _i18n: 1
+}
+[odata] - PATCH /odata/v4/assembly-catalog/Assemblies(34f0f3e7-1f24-459c-b19e-fa95f50f37ff) 
+[odata] - 412 - Error: Precondition Failed
+    at AssemblyCatalog.handle (file:///home/user/projects/assemblyimpact-ai/srv/assembly-service.js:51:13)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5) {
+  code: '412',
+  status: 412,
+  _i18n: 1
+}
+[odata] - GET /odata/v4/assembly-catalog/Assemblies(6d0c1787-b5e4-4b78-97c3-78b9dac8242c) 
+✔ unsupported direct operations never change stored data (32.507705ms)
+[odata] - POST /odata/v4/assembly-catalog/Assemblies 
+[odata] - POST /odata/v4/assembly-catalog/Assemblies 
+[odata] - POST /odata/v4/assembly-catalog/$batch 
+[odata] - > DELETE Assemblies(89fce865-5e0a-4618-aef7-e15910cd1a80) 
+[odata] - 405 - Error: Method Not Allowed
+    at AssemblyCatalog.handle (file:///home/user/projects/assemblyimpact-ai/srv/assembly-service.js:20:61)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:32:17)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:50
+    at AssemblyCatalog.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:36)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/delete.js:55:24
+    at AssemblyCatalog.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at odata_delete (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/delete.js:54:8)
+    at Layer.handleRequest (/home/user/projects/assemblyimpact-ai/node_modules/router/lib/layer.js:152:17)
+    at next (/home/user/projects/assemblyimpact-ai/node_modules/router/lib/route.js:157:13) {
+  code: '405',
+  status: 405,
+  _i18n: 1
+}
+[odata] - POST /odata/v4/assembly-catalog/$batch 
+[odata] - > PUT Assemblies(89fce865-5e0a-4618-aef7-e15910cd1a80) 
+[odata] - 405 - Error: Method Not Allowed
+    at AssemblyCatalog.handle (file:///home/user/projects/assemblyimpact-ai/srv/assembly-service.js:20:61)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:32:17)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:50
+    at AssemblyCatalog.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:36)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/update.js:121:24
+    at AssemblyCatalog.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at odata_update (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/update.js:120:8)
+    at Layer.handleRequest (/home/user/projects/assemblyimpact-ai/node_modules/router/lib/layer.js:152:17)
+    at next (/home/user/projects/assemblyimpact-ai/node_modules/router/lib/route.js:157:13) {
+  code: '405',
+  status: 405,
+  _i18n: 1
+}
+[odata] - POST /odata/v4/assembly-catalog/$batch 
+[odata] - > PUT Assemblies(89fce865-5e0a-4618-aef7-e15910cd1a80)/description 
+[odata] - 405 - Error: Method Not Allowed
+    at AssemblyCatalog.handle (file:///home/user/projects/assemblyimpact-ai/srv/assembly-service.js:20:61)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:32:17)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:50
+    at AssemblyCatalog.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:36)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/update.js:121:24
+    at AssemblyCatalog.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at odata_update (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/update.js:120:8)
+    at Layer.handleRequest (/home/user/projects/assemblyimpact-ai/node_modules/router/lib/layer.js:152:17)
+    at next (/home/user/projects/assemblyimpact-ai/node_modules/router/lib/route.js:157:13) {
+  code: '405',
+  status: 405,
+  _i18n: 1
+}
+[odata] - POST /odata/v4/assembly-catalog/$batch 
+[odata] - > PATCH Assemblies(89fce865-5e0a-4618-aef7-e15910cd1a80)/description 
+[odata] - 405 - Error: Method PATCH is not allowed for properties
+    at odata_update (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/update.js:86:13)
+    at Layer.handleRequest (/home/user/projects/assemblyimpact-ai/node_modules/router/lib/layer.js:152:17)
+    at next (/home/user/projects/assemblyimpact-ai/node_modules/router/lib/route.js:157:13)
+    at Route.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/router/lib/route.js:117:3)
+    at handle (/home/user/projects/assemblyimpact-ai/node_modules/router/index.js:435:11)
+    at Layer.handleRequest (/home/user/projects/assemblyimpact-ai/node_modules/router/lib/layer.js:152:17)
+    at /home/user/projects/assemblyimpact-ai/node_modules/router/index.js:295:15
+    at param (/home/user/projects/assemblyimpact-ai/node_modules/router/index.js:600:14)
+    at param (/home/user/projects/assemblyimpact-ai/node_modules/router/index.js:610:14)
+    at processParams (/home/user/projects/assemblyimpact-ai/node_modules/router/index.js:664:3) {
+  status: 405,
+  code: '405'
+}
+[odata] - POST /odata/v4/assembly-catalog/$batch 
+[odata] - > DELETE Assemblies(89fce865-5e0a-4618-aef7-e15910cd1a80)/description 
+[odata] - 405 - Error: Method Not Allowed
+    at AssemblyCatalog.handle (file:///home/user/projects/assemblyimpact-ai/srv/assembly-service.js:20:61)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:32:17)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:50
+    at AssemblyCatalog.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:36)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/delete.js:55:24
+    at AssemblyCatalog.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at odata_delete (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/delete.js:54:8)
+    at Layer.handleRequest (/home/user/projects/assemblyimpact-ai/node_modules/router/lib/layer.js:152:17)
+    at next (/home/user/projects/assemblyimpact-ai/node_modules/router/lib/route.js:157:13) {
+  code: '405',
+  status: 405,
+  _i18n: 1
+}
+[odata] - POST /odata/v4/assembly-catalog/$batch 
+[odata] - > PUT Assemblies(89fce865-5e0a-4618-aef7-e15910cd1a80)/description/$value 
+[odata] - 405 - Error: Method Not Allowed
+    at AssemblyCatalog.handle (file:///home/user/projects/assemblyimpact-ai/srv/assembly-service.js:20:61)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:32:17)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:50
+    at AssemblyCatalog.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:36)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/update.js:121:24
+    at AssemblyCatalog.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at odata_update (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/update.js:120:8)
+    at Layer.handleRequest (/home/user/projects/assemblyimpact-ai/node_modules/router/lib/layer.js:152:17)
+    at next (/home/user/projects/assemblyimpact-ai/node_modules/router/lib/route.js:157:13) {
+  code: '405',
+  status: 405,
+  _i18n: 1
+}
+[odata] - POST /odata/v4/assembly-catalog/$batch 
+[odata] - > PATCH Assemblies(89fce865-5e0a-4618-aef7-e15910cd1a80)/description/$value 
+[odata] - 405 - Error: Method PATCH is not allowed for properties
+    at odata_update (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/update.js:86:13)
+    at Layer.handleRequest (/home/user/projects/assemblyimpact-ai/node_modules/router/lib/layer.js:152:17)
+    at next (/home/user/projects/assemblyimpact-ai/node_modules/router/lib/route.js:157:13)
+    at Route.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/router/lib/route.js:117:3)
+    at handle (/home/user/projects/assemblyimpact-ai/node_modules/router/index.js:435:11)
+    at Layer.handleRequest (/home/user/projects/assemblyimpact-ai/node_modules/router/lib/layer.js:152:17)
+    at /home/user/projects/assemblyimpact-ai/node_modules/router/index.js:295:15
+    at param (/home/user/projects/assemblyimpact-ai/node_modules/router/index.js:600:14)
+    at param (/home/user/projects/assemblyimpact-ai/node_modules/router/index.js:610:14)
+    at processParams (/home/user/projects/assemblyimpact-ai/node_modules/router/index.js:664:3) {
+  status: 405,
+  code: '405'
+}
+[odata] - POST /odata/v4/assembly-catalog/$batch 
+[odata] - > DELETE Assemblies(89fce865-5e0a-4618-aef7-e15910cd1a80)/description/$value 
+[odata] - 405 - Error: Method Not Allowed
+    at AssemblyCatalog.handle (file:///home/user/projects/assemblyimpact-ai/srv/assembly-service.js:20:61)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:32:17)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:50
+    at AssemblyCatalog.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:36)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/delete.js:55:24
+    at AssemblyCatalog.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at odata_delete (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/delete.js:54:8)
+    at Layer.handleRequest (/home/user/projects/assemblyimpact-ai/node_modules/router/lib/layer.js:152:17)
+    at next (/home/user/projects/assemblyimpact-ai/node_modules/router/lib/route.js:157:13) {
+  code: '405',
+  status: 405,
+  _i18n: 1
+}
+[odata] - POST /odata/v4/assembly-catalog/$batch 
+[odata] - > PATCH Assemblies(0e024eb3-2a3c-4332-a1e2-dd3f94230d28) 
+[odata] - 412 - Error: Precondition Failed
+    at AssemblyCatalog.handle (file:///home/user/projects/assemblyimpact-ai/srv/assembly-service.js:51:13)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5) {
+  code: '412',
+  status: 412,
+  _i18n: 1
+}
+[odata] - POST /odata/v4/assembly-catalog/$batch 
+[odata] - > PATCH Assemblies(89fce865-5e0a-4618-aef7-e15910cd1a80) 
+[odata] - 400 - Error: INVALID_ETAG
+    at AssemblyCatalog.handle (file:///home/user/projects/assemblyimpact-ai/srv/assembly-service.js:41:15)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:32:17)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:50
+    at AssemblyCatalog.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:36)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/update.js:121:24
+    at AssemblyCatalog.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at odata_update (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/update.js:120:8)
+    at Layer.handleRequest (/home/user/projects/assemblyimpact-ai/node_modules/router/lib/layer.js:152:17)
+    at next (/home/user/projects/assemblyimpact-ai/node_modules/router/lib/route.js:157:13) {
+  code: '400',
+  status: 400
+}
+[odata] - POST /odata/v4/assembly-catalog/$batch 
+[odata] - > PATCH Assemblies(6c5f39cc-720b-46b2-aeb3-0b4f11e68ba6) 
+[odata] - 412 - Error: Precondition Failed
+    at AssemblyCatalog.handle (file:///home/user/projects/assemblyimpact-ai/srv/assembly-service.js:51:13)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5) {
+  code: '412',
+  status: 412,
+  _i18n: 1
+}
+[odata] - POST /odata/v4/assembly-catalog/$batch 
+[odata] - > GET Assemblies { '$count': 'true' }
+[odata] - POST /odata/v4/assembly-catalog/$batch 
+[odata] - > POST Assemblies 
+[odata] - 403 - Error: Forbidden
+    at AssemblyCatalog.handle (file:///home/user/projects/assemblyimpact-ai/srv/assembly-service.js:13:73)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:32:17)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:50
+    at AssemblyCatalog.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:36)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/create.js:74:24
+    at AssemblyCatalog.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at odata_create (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/create.js:73:8)
+    at Layer.handleRequest (/home/user/projects/assemblyimpact-ai/node_modules/router/lib/layer.js:152:17)
+    at next (/home/user/projects/assemblyimpact-ai/node_modules/router/lib/route.js:157:13) {
+  code: '403',
+  status: 403,
+  _i18n: 1
+}
+[odata] - POST /odata/v4/assembly-catalog/$batch 
+[odata] - > PATCH Assemblies(89fce865-5e0a-4618-aef7-e15910cd1a80) 
+[odata] - GET /odata/v4/assembly-catalog/Assemblies(89fce865-5e0a-4618-aef7-e15910cd1a80) 
+[odata] - POST /odata/v4/assembly-catalog/$batch 
+[odata] - > POST Assemblies 
+[odata] - > POST Assemblies 
+[odata] - 409 - Error: An assembly with this code and plant already exists.
+    at AssemblyCatalog.handle (file:///home/user/projects/assemblyimpact-ai/srv/assembly-service.js:55:13)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5) {
+  status: 409,
+  code: 'ASSEMBLY_ALREADY_EXISTS',
+  target: 'assemblyCode'
+}
+[odata] - GET /odata/v4/assembly-catalog/Assemblies(89fce865-5e0a-4618-aef7-e15910cd1a80) 
+[odata] - GET /odata/v4/assembly-catalog/Assemblies(0e024eb3-2a3c-4332-a1e2-dd3f94230d28) 
+✔ JSON batch checks inner authorization, methods, ETags and atomic rollback (131.229747ms)
+[odata] - POST /odata/v4/assembly-catalog/Assemblies 
+[odata] - POST /odata/v4/assembly-catalog/$batch 
+[odata] - > PUT /Assemblies(f769c2f7-3f03-45c9-889b-50f4d74d596a) 
+[odata] - 405 - Error: Method Not Allowed
+    at AssemblyCatalog.handle (file:///home/user/projects/assemblyimpact-ai/srv/assembly-service.js:20:61)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:32:17)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:50
+    at AssemblyCatalog.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:36)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/update.js:121:24
+    at AssemblyCatalog.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at odata_update (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/update.js:120:8)
+    at Layer.handleRequest (/home/user/projects/assemblyimpact-ai/node_modules/router/lib/layer.js:152:17)
+    at next (/home/user/projects/assemblyimpact-ai/node_modules/router/lib/route.js:157:13) {
+  code: '405',
+  content_id: '1',
+  status: 405,
+  _i18n: 1
+}
+[odata] - GET /odata/v4/assembly-catalog/Assemblies(f769c2f7-3f03-45c9-889b-50f4d74d596a) 
+[odata] - POST /odata/v4/assembly-catalog/$batch 
+[odata] - > PATCH /Assemblies(f769c2f7-3f03-45c9-889b-50f4d74d596a) 
+[odata] - 400 - Error: INVALID_ETAG
+    at AssemblyCatalog.handle (file:///home/user/projects/assemblyimpact-ai/srv/assembly-service.js:41:15)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:32:17)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:50
+    at AssemblyCatalog.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:36)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/update.js:121:24
+    at AssemblyCatalog.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at odata_update (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/update.js:120:8)
+    at Layer.handleRequest (/home/user/projects/assemblyimpact-ai/node_modules/router/lib/layer.js:152:17)
+    at next (/home/user/projects/assemblyimpact-ai/node_modules/router/lib/route.js:157:13) {
+  code: '400',
+  content_id: '1',
+  status: 400
+}
+[odata] - POST /odata/v4/assembly-catalog/$batch 
+[odata] - > PATCH /Assemblies(f769c2f7-3f03-45c9-889b-50f4d74d596a) 
+[odata] - GET /odata/v4/assembly-catalog/Assemblies(f769c2f7-3f03-45c9-889b-50f4d74d596a) 
+✔ multipart batch preserves method guards and conditional updates (24.950296ms)
+[odata] - POST /odata/v4/assembly-catalog/Assemblies 
+[odata] - PATCH /odata/v4/assembly-catalog/Assemblies(edf5faf1-a337-4eb4-b70e-91d9d9fdf7e0) 
+[odata] - 428 - Error: Precondition Required
+    at AssemblyCatalog.handle (file:///home/user/projects/assemblyimpact-ai/srv/assembly-service.js:39:25)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:32:17)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:50
+    at AssemblyCatalog.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:36)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/update.js:121:24
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:48
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:65:14)
+    at cds._with (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/index.js:14:25)
+    at AssemblyCatalog.srv_tx [as tx] (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:16) {
+  code: '428',
+  status: 428,
+  _i18n: 1
+}
+[odata] - PATCH /odata/v4/assembly-catalog/Assemblies(edf5faf1-a337-4eb4-b70e-91d9d9fdf7e0) 
+[odata] - 400 - Error: INVALID_ETAG
+    at AssemblyCatalog.handle (file:///home/user/projects/assemblyimpact-ai/srv/assembly-service.js:41:15)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:32:17)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:50
+    at AssemblyCatalog.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:36)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/update.js:121:24
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:48
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:65:14)
+    at cds._with (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/index.js:14:25)
+    at AssemblyCatalog.srv_tx [as tx] (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:16) {
+  code: '400',
+  status: 400
+}
+[odata] - PATCH /odata/v4/assembly-catalog/Assemblies(edf5faf1-a337-4eb4-b70e-91d9d9fdf7e0) 
+[odata] - 400 - Error: INVALID_ETAG
+    at AssemblyCatalog.handle (file:///home/user/projects/assemblyimpact-ai/srv/assembly-service.js:41:15)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:32:17)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:50
+    at AssemblyCatalog.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:36)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/update.js:121:24
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:48
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:65:14)
+    at cds._with (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/index.js:14:25)
+    at AssemblyCatalog.srv_tx [as tx] (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:16) {
+  code: '400',
+  status: 400
+}
+[odata] - PATCH /odata/v4/assembly-catalog/Assemblies(edf5faf1-a337-4eb4-b70e-91d9d9fdf7e0) 
+[odata] - 400 - Error: INVALID_ETAG
+    at AssemblyCatalog.handle (file:///home/user/projects/assemblyimpact-ai/srv/assembly-service.js:41:15)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:32:17)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:50
+    at AssemblyCatalog.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:36)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/update.js:121:24
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:48
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:65:14)
+    at cds._with (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/index.js:14:25)
+    at AssemblyCatalog.srv_tx [as tx] (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:16) {
+  code: '400',
+  status: 400
+}
+[odata] - PATCH /odata/v4/assembly-catalog/Assemblies(edf5faf1-a337-4eb4-b70e-91d9d9fdf7e0) 
+[odata] - 400 - Error: INVALID_ETAG
+    at AssemblyCatalog.handle (file:///home/user/projects/assemblyimpact-ai/srv/assembly-service.js:41:15)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:32:17)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:50
+    at AssemblyCatalog.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:36)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/update.js:121:24
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:48
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:65:14)
+    at cds._with (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/index.js:14:25)
+    at AssemblyCatalog.srv_tx [as tx] (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:16) {
+  code: '400',
+  status: 400
+}
+[odata] - PATCH /odata/v4/assembly-catalog/Assemblies(edf5faf1-a337-4eb4-b70e-91d9d9fdf7e0) 
+[odata] - 400 - Error: INVALID_ETAG
+    at AssemblyCatalog.handle (file:///home/user/projects/assemblyimpact-ai/srv/assembly-service.js:41:15)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:32:17)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:50
+    at AssemblyCatalog.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:36)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/update.js:121:24
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:48
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:65:14)
+    at cds._with (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/index.js:14:25)
+    at AssemblyCatalog.srv_tx [as tx] (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:16) {
+  code: '400',
+  status: 400
+}
+[odata] - PATCH /odata/v4/assembly-catalog/Assemblies(edf5faf1-a337-4eb4-b70e-91d9d9fdf7e0) 
+[odata] - 400 - Error: INVALID_ETAG
+    at AssemblyCatalog.handle (file:///home/user/projects/assemblyimpact-ai/srv/assembly-service.js:41:15)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:32:17)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:50
+    at AssemblyCatalog.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:36)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/update.js:121:24
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:48
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:65:14)
+    at cds._with (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/index.js:14:25)
+    at AssemblyCatalog.srv_tx [as tx] (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:16) {
+  code: '400',
+  status: 400
+}
+[odata] - PATCH /odata/v4/assembly-catalog/Assemblies(edf5faf1-a337-4eb4-b70e-91d9d9fdf7e0) 
+[odata] - 400 - Error: INVALID_ETAG
+    at AssemblyCatalog.handle (file:///home/user/projects/assemblyimpact-ai/srv/assembly-service.js:41:15)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:32:17)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:50
+    at AssemblyCatalog.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:36)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/update.js:121:24
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:48
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:65:14)
+    at cds._with (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/index.js:14:25)
+    at AssemblyCatalog.srv_tx [as tx] (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:16) {
+  code: '400',
+  status: 400
+}
+[odata] - PATCH /odata/v4/assembly-catalog/Assemblies(edf5faf1-a337-4eb4-b70e-91d9d9fdf7e0) 
+[odata] - 412 - Error: Precondition Failed
+    at Function.new_behavior [as _handle_result] (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/generic/crud.js:69:53)
+    at AssemblyCatalog.handle_crud_requests (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/generic/crud.js:36:26)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async next (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:57:19)
+    at async AssemblyCatalog.handle (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:55:12)
+    at async AssemblyCatalog.handle (file:///home/user/projects/assemblyimpact-ai/srv/assembly-service.js:47:14) {
+  code: '412',
+  status: 412,
+  _i18n: 1
+}
+[odata] - PATCH /odata/v4/assembly-catalog/Assemblies(edf5faf1-a337-4eb4-b70e-91d9d9fdf7e0) 
+[odata] - GET /odata/v4/assembly-catalog/Assemblies(edf5faf1-a337-4eb4-b70e-91d9d9fdf7e0) 
+[odata] - PATCH /odata/v4/assembly-catalog/Assemblies(edf5faf1-a337-4eb4-b70e-91d9d9fdf7e0) 
+[odata] - 412 - Error: Precondition Failed
+    at Function.new_behavior [as _handle_result] (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/generic/crud.js:69:53)
+    at AssemblyCatalog.handle_crud_requests (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/generic/crud.js:36:26)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async next (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:57:19)
+    at async AssemblyCatalog.handle (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:55:12)
+    at async AssemblyCatalog.handle (file:///home/user/projects/assemblyimpact-ai/srv/assembly-service.js:47:14) {
+  code: '412',
+  status: 412,
+  _i18n: 1
+}
+[odata] - PATCH /odata/v4/assembly-catalog/Assemblies(edf5faf1-a337-4eb4-b70e-91d9d9fdf7e0) 
+[odata] - GET /odata/v4/assembly-catalog/Assemblies(edf5faf1-a337-4eb4-b70e-91d9d9fdf7e0) 
+[odata] - PATCH /odata/v4/assembly-catalog/Assemblies(edf5faf1-a337-4eb4-b70e-91d9d9fdf7e0) 
+[odata] - PATCH /odata/v4/assembly-catalog/Assemblies(edf5faf1-a337-4eb4-b70e-91d9d9fdf7e0) 
+[odata] - 412 - Error: Precondition Failed
+    at Function.new_behavior [as _handle_result] (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/generic/crud.js:69:53)
+    at AssemblyCatalog.handle_crud_requests (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/generic/crud.js:36:26)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async next (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:57:19)
+    at async AssemblyCatalog.handle (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:55:12)
+    at async AssemblyCatalog.handle (file:///home/user/projects/assemblyimpact-ai/srv/assembly-service.js:47:14) {
+  code: '412',
+  status: 412,
+  _i18n: 1
+}
+▶ UUID ETag contract across direct, JSON and multipart PATCH requests
+  ✔ direct (74.796568ms)
+[odata] - POST /odata/v4/assembly-catalog/Assemblies 
+[odata] - POST /odata/v4/assembly-catalog/$batch 
+[odata] - > PATCH Assemblies(d4c71d25-a53b-4196-8fbb-ca0943c97bc8) 
+[odata] - 428 - Error: Precondition Required
+    at AssemblyCatalog.handle (file:///home/user/projects/assemblyimpact-ai/srv/assembly-service.js:39:25)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:32:17)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:50
+    at AssemblyCatalog.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:36)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/update.js:121:24
+    at AssemblyCatalog.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at odata_update (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/update.js:120:8)
+    at Layer.handleRequest (/home/user/projects/assemblyimpact-ai/node_modules/router/lib/layer.js:152:17)
+    at next (/home/user/projects/assemblyimpact-ai/node_modules/router/lib/route.js:157:13) {
+  code: '428',
+  status: 428,
+  _i18n: 1
+}
+[odata] - 400 - Error: INVALID_ETAG
+    at AssemblyCatalog.handle (file:///home/user/projects/assemblyimpact-ai/srv/assembly-service.js:41:15)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:32:17)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:50
+    at AssemblyCatalog.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:36)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/update.js:121:24
+    at AssemblyCatalog.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at odata_update (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/update.js:120:8)
+    at Layer.handleRequest (/home/user/projects/assemblyimpact-ai/node_modules/router/lib/layer.js:152:17)
+    at next (/home/user/projects/assemblyimpact-ai/node_modules/router/lib/route.js:157:13) {
+  code: '400',
+  status: 400
+}
+[odata] - POST /odata/v4/assembly-catalog/$batch 
+[odata] - > PATCH Assemblies(d4c71d25-a53b-4196-8fbb-ca0943c97bc8) 
+[odata] - POST /odata/v4/assembly-catalog/$batch 
+[odata] - > PATCH Assemblies(d4c71d25-a53b-4196-8fbb-ca0943c97bc8) 
+[odata] - 400 - Error: INVALID_ETAG
+    at AssemblyCatalog.handle (file:///home/user/projects/assemblyimpact-ai/srv/assembly-service.js:41:15)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:32:17)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:50
+    at AssemblyCatalog.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:36)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/update.js:121:24
+    at AssemblyCatalog.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at odata_update (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/update.js:120:8)
+    at Layer.handleRequest (/home/user/projects/assemblyimpact-ai/node_modules/router/lib/layer.js:152:17)
+    at next (/home/user/projects/assemblyimpact-ai/node_modules/router/lib/route.js:157:13) {
+  code: '400',
+  status: 400
+}
+[odata] - POST /odata/v4/assembly-catalog/$batch 
+[odata] - > PATCH Assemblies(d4c71d25-a53b-4196-8fbb-ca0943c97bc8) 
+[odata] - POST /odata/v4/assembly-catalog/$batch 
+[odata] - > PATCH Assemblies(d4c71d25-a53b-4196-8fbb-ca0943c97bc8) 
+[odata] - 400 - Error: INVALID_ETAG
+    at AssemblyCatalog.handle (file:///home/user/projects/assemblyimpact-ai/srv/assembly-service.js:41:15)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:32:17)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:50
+    at AssemblyCatalog.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:36)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/update.js:121:24
+    at AssemblyCatalog.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at odata_update (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/update.js:120:8)
+    at Layer.handleRequest (/home/user/projects/assemblyimpact-ai/node_modules/router/lib/layer.js:152:17)
+    at next (/home/user/projects/assemblyimpact-ai/node_modules/router/lib/route.js:157:13) {
+  code: '400',
+  status: 400
+}
+[odata] - 400 - Error: INVALID_ETAG
+    at AssemblyCatalog.handle (file:///home/user/projects/assemblyimpact-ai/srv/assembly-service.js:41:15)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:32:17)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:50
+    at AssemblyCatalog.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:36)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/update.js:121:24
+    at AssemblyCatalog.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at odata_update (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/update.js:120:8)
+    at Layer.handleRequest (/home/user/projects/assemblyimpact-ai/node_modules/router/lib/layer.js:152:17)
+    at next (/home/user/projects/assemblyimpact-ai/node_modules/router/lib/route.js:157:13) {
+  code: '400',
+  status: 400
+}
+[odata] - POST /odata/v4/assembly-catalog/$batch 
+[odata] - > PATCH Assemblies(d4c71d25-a53b-4196-8fbb-ca0943c97bc8) 
+[odata] - 400 - Error: INVALID_ETAG
+    at AssemblyCatalog.handle (file:///home/user/projects/assemblyimpact-ai/srv/assembly-service.js:41:15)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:32:17)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:50
+    at AssemblyCatalog.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:36)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/update.js:121:24
+    at AssemblyCatalog.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at odata_update (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/update.js:120:8)
+    at Layer.handleRequest (/home/user/projects/assemblyimpact-ai/node_modules/router/lib/layer.js:152:17)
+    at next (/home/user/projects/assemblyimpact-ai/node_modules/router/lib/route.js:157:13) {
+  code: '400',
+  status: 400
+}
+[odata] - POST /odata/v4/assembly-catalog/$batch 
+[odata] - > PATCH Assemblies(d4c71d25-a53b-4196-8fbb-ca0943c97bc8) 
+[odata] - 400 - Error: INVALID_ETAG
+    at AssemblyCatalog.handle (file:///home/user/projects/assemblyimpact-ai/srv/assembly-service.js:41:15)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:32:17)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:50
+    at AssemblyCatalog.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:36)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/update.js:121:24
+    at AssemblyCatalog.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at odata_update (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/update.js:120:8)
+    at Layer.handleRequest (/home/user/projects/assemblyimpact-ai/node_modules/router/lib/layer.js:152:17)
+    at next (/home/user/projects/assemblyimpact-ai/node_modules/router/lib/route.js:157:13) {
+  code: '400',
+  status: 400
+}
+[odata] - POST /odata/v4/assembly-catalog/$batch 
+[odata] - > PATCH Assemblies(d4c71d25-a53b-4196-8fbb-ca0943c97bc8) 
+[odata] - 400 - Error: INVALID_ETAG
+    at AssemblyCatalog.handle (file:///home/user/projects/assemblyimpact-ai/srv/assembly-service.js:41:15)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:32:17)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:50
+    at AssemblyCatalog.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:36)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/update.js:121:24
+    at AssemblyCatalog.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at odata_update (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/update.js:120:8)
+    at Layer.handleRequest (/home/user/projects/assemblyimpact-ai/node_modules/router/lib/layer.js:152:17)
+    at next (/home/user/projects/assemblyimpact-ai/node_modules/router/lib/route.js:157:13) {
+  code: '400',
+  status: 400
+}
+[odata] - POST /odata/v4/assembly-catalog/$batch 
+[odata] - > PATCH Assemblies(d4c71d25-a53b-4196-8fbb-ca0943c97bc8) 
+[odata] - 412 - Error: Precondition Failed
+    at Function.new_behavior [as _handle_result] (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/generic/crud.js:69:53)
+    at AssemblyCatalog.handle_crud_requests (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/generic/crud.js:36:26)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async next (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:57:19)
+    at async AssemblyCatalog.handle (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:55:12)
+    at async AssemblyCatalog.handle (file:///home/user/projects/assemblyimpact-ai/srv/assembly-service.js:47:14) {
+  code: '412',
+  status: 412,
+  _i18n: 1
+}
+[odata] - POST /odata/v4/assembly-catalog/$batch 
+[odata] - > PATCH Assemblies(d4c71d25-a53b-4196-8fbb-ca0943c97bc8) 
+[odata] - GET /odata/v4/assembly-catalog/Assemblies(d4c71d25-a53b-4196-8fbb-ca0943c97bc8) 
+[odata] - POST /odata/v4/assembly-catalog/$batch 
+[odata] - > PATCH Assemblies(d4c71d25-a53b-4196-8fbb-ca0943c97bc8) 
+[odata] - 412 - Error: Precondition Failed
+    at Function.new_behavior [as _handle_result] (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/generic/crud.js:69:53)
+    at AssemblyCatalog.handle_crud_requests (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/generic/crud.js:36:26)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async next (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:57:19)
+    at async AssemblyCatalog.handle (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:55:12)
+    at async AssemblyCatalog.handle (file:///home/user/projects/assemblyimpact-ai/srv/assembly-service.js:47:14) {
+  code: '412',
+  status: 412,
+  _i18n: 1
+}
+[odata] - POST /odata/v4/assembly-catalog/$batch 
+[odata] - > PATCH Assemblies(d4c71d25-a53b-4196-8fbb-ca0943c97bc8) 
+[odata] - GET /odata/v4/assembly-catalog/Assemblies(d4c71d25-a53b-4196-8fbb-ca0943c97bc8) 
+[odata] - POST /odata/v4/assembly-catalog/$batch 
+[odata] - > PATCH Assemblies(d4c71d25-a53b-4196-8fbb-ca0943c97bc8) 
+[odata] - POST /odata/v4/assembly-catalog/$batch 
+[odata] - > PATCH Assemblies(d4c71d25-a53b-4196-8fbb-ca0943c97bc8) 
+[odata] - 412 - Error: Precondition Failed
+    at Function.new_behavior [as _handle_result] (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/generic/crud.js:69:53)
+    at AssemblyCatalog.handle_crud_requests (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/generic/crud.js:36:26)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async next (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:57:19)
+    at async AssemblyCatalog.handle (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:55:12)
+    at async AssemblyCatalog.handle (file:///home/user/projects/assemblyimpact-ai/srv/assembly-service.js:47:14) {
+  code: '412',
+  status: 412,
+  _i18n: 1
+}
+  ✔ JSON batch (54.976258ms)
+[odata] - POST /odata/v4/assembly-catalog/Assemblies 
+[odata] - POST /odata/v4/assembly-catalog/$batch 
+[odata] - > PATCH /Assemblies(a5eeebe3-d7f4-4518-8130-2115cf0d0c00) 
+[odata] - 428 - Error: Precondition Required
+    at AssemblyCatalog.handle (file:///home/user/projects/assemblyimpact-ai/srv/assembly-service.js:39:25)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:32:17)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:50
+    at AssemblyCatalog.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:36)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/update.js:121:24
+    at AssemblyCatalog.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at odata_update (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/update.js:120:8)
+    at Layer.handleRequest (/home/user/projects/assemblyimpact-ai/node_modules/router/lib/layer.js:152:17)
+    at next (/home/user/projects/assemblyimpact-ai/node_modules/router/lib/route.js:157:13) {
+  code: '428',
+  content_id: '1',
+  status: 428,
+  _i18n: 1
+}
+[odata] - POST /odata/v4/assembly-catalog/$batch 
+[odata] - > PATCH /Assemblies(a5eeebe3-d7f4-4518-8130-2115cf0d0c00) 
+[odata] - 400 - Error: INVALID_ETAG
+    at AssemblyCatalog.handle (file:///home/user/projects/assemblyimpact-ai/srv/assembly-service.js:41:15)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:32:17)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:50
+    at AssemblyCatalog.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:36)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/update.js:121:24
+    at AssemblyCatalog.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at odata_update (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/update.js:120:8)
+    at Layer.handleRequest (/home/user/projects/assemblyimpact-ai/node_modules/router/lib/layer.js:152:17)
+    at next (/home/user/projects/assemblyimpact-ai/node_modules/router/lib/route.js:157:13) {
+  code: '400',
+  content_id: '1',
+  status: 400
+}
+[odata] - POST /odata/v4/assembly-catalog/$batch 
+[odata] - > PATCH /Assemblies(a5eeebe3-d7f4-4518-8130-2115cf0d0c00) 
+[odata] - 400 - Error: INVALID_ETAG
+    at AssemblyCatalog.handle (file:///home/user/projects/assemblyimpact-ai/srv/assembly-service.js:41:15)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:32:17)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:50
+    at AssemblyCatalog.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:36)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/update.js:121:24
+    at AssemblyCatalog.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at odata_update (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/update.js:120:8)
+    at Layer.handleRequest (/home/user/projects/assemblyimpact-ai/node_modules/router/lib/layer.js:152:17)
+    at next (/home/user/projects/assemblyimpact-ai/node_modules/router/lib/route.js:157:13) {
+  code: '400',
+  content_id: '1',
+  status: 400
+}
+[odata] - POST /odata/v4/assembly-catalog/$batch 
+[odata] - > PATCH /Assemblies(a5eeebe3-d7f4-4518-8130-2115cf0d0c00) 
+[odata] - 400 - Error: INVALID_ETAG
+    at AssemblyCatalog.handle (file:///home/user/projects/assemblyimpact-ai/srv/assembly-service.js:41:15)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:32:17)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:50
+    at AssemblyCatalog.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:36)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/update.js:121:24
+    at AssemblyCatalog.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at odata_update (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/update.js:120:8)
+    at Layer.handleRequest (/home/user/projects/assemblyimpact-ai/node_modules/router/lib/layer.js:152:17)
+    at next (/home/user/projects/assemblyimpact-ai/node_modules/router/lib/route.js:157:13) {
+  code: '400',
+  content_id: '1',
+  status: 400
+}
+[odata] - POST /odata/v4/assembly-catalog/$batch 
+[odata] - > PATCH /Assemblies(a5eeebe3-d7f4-4518-8130-2115cf0d0c00) 
+[odata] - 400 - Error: INVALID_ETAG
+    at AssemblyCatalog.handle (file:///home/user/projects/assemblyimpact-ai/srv/assembly-service.js:41:15)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:32:17)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:50
+    at AssemblyCatalog.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:36)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/update.js:121:24
+    at AssemblyCatalog.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at odata_update (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/update.js:120:8)
+    at Layer.handleRequest (/home/user/projects/assemblyimpact-ai/node_modules/router/lib/layer.js:152:17)
+    at next (/home/user/projects/assemblyimpact-ai/node_modules/router/lib/route.js:157:13) {
+  code: '400',
+  content_id: '1',
+  status: 400
+}
+[odata] - POST /odata/v4/assembly-catalog/$batch 
+[odata] - > PATCH /Assemblies(a5eeebe3-d7f4-4518-8130-2115cf0d0c00) 
+[odata] - 400 - Error: INVALID_ETAG
+    at AssemblyCatalog.handle (file:///home/user/projects/assemblyimpact-ai/srv/assembly-service.js:41:15)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:32:17)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:50
+    at AssemblyCatalog.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:36)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/update.js:121:24
+    at AssemblyCatalog.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at odata_update (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/update.js:120:8)
+    at Layer.handleRequest (/home/user/projects/assemblyimpact-ai/node_modules/router/lib/layer.js:152:17)
+    at next (/home/user/projects/assemblyimpact-ai/node_modules/router/lib/route.js:157:13) {
+  code: '400',
+  content_id: '1',
+  status: 400
+}
+[odata] - POST /odata/v4/assembly-catalog/$batch 
+[odata] - > PATCH /Assemblies(a5eeebe3-d7f4-4518-8130-2115cf0d0c00) 
+[odata] - 400 - Error: INVALID_ETAG
+    at AssemblyCatalog.handle (file:///home/user/projects/assemblyimpact-ai/srv/assembly-service.js:41:15)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:32:17)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:50
+    at AssemblyCatalog.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:36)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/update.js:121:24
+    at AssemblyCatalog.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at odata_update (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/update.js:120:8)
+    at Layer.handleRequest (/home/user/projects/assemblyimpact-ai/node_modules/router/lib/layer.js:152:17)
+    at next (/home/user/projects/assemblyimpact-ai/node_modules/router/lib/route.js:157:13) {
+  code: '400',
+  content_id: '1',
+  status: 400
+}
+[odata] - POST /odata/v4/assembly-catalog/$batch 
+[odata] - > PATCH /Assemblies(a5eeebe3-d7f4-4518-8130-2115cf0d0c00) 
+[odata] - 400 - Error: INVALID_ETAG
+    at AssemblyCatalog.handle (file:///home/user/projects/assemblyimpact-ai/srv/assembly-service.js:41:15)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:32:17)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:50
+    at AssemblyCatalog.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at AssemblyCatalog.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:36)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/update.js:121:24
+    at AssemblyCatalog.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at odata_update (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/update.js:120:8)
+    at Layer.handleRequest (/home/user/projects/assemblyimpact-ai/node_modules/router/lib/layer.js:152:17)
+    at next (/home/user/projects/assemblyimpact-ai/node_modules/router/lib/route.js:157:13) {
+  code: '400',
+  content_id: '1',
+  status: 400
+}
+[odata] - POST /odata/v4/assembly-catalog/$batch 
+[odata] - > PATCH /Assemblies(a5eeebe3-d7f4-4518-8130-2115cf0d0c00) 
+[odata] - 412 - Error: Precondition Failed
+    at Function.new_behavior [as _handle_result] (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/generic/crud.js:69:53)
+    at AssemblyCatalog.handle_crud_requests (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/generic/crud.js:36:26)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async next (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:57:19)
+    at async AssemblyCatalog.handle (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:55:12)
+    at async AssemblyCatalog.handle (file:///home/user/projects/assemblyimpact-ai/srv/assembly-service.js:47:14) {
+  code: '412',
+  content_id: '1',
+  status: 412,
+  _i18n: 1
+}
+[odata] - POST /odata/v4/assembly-catalog/$batch 
+[odata] - > PATCH /Assemblies(a5eeebe3-d7f4-4518-8130-2115cf0d0c00) 
+[odata] - GET /odata/v4/assembly-catalog/Assemblies(a5eeebe3-d7f4-4518-8130-2115cf0d0c00) 
+[odata] - POST /odata/v4/assembly-catalog/$batch 
+[odata] - > PATCH /Assemblies(a5eeebe3-d7f4-4518-8130-2115cf0d0c00) 
+[odata] - 412 - Error: Precondition Failed
+    at Function.new_behavior [as _handle_result] (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/generic/crud.js:69:53)
+    at AssemblyCatalog.handle_crud_requests (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/generic/crud.js:36:26)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async next (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:57:19)
+    at async AssemblyCatalog.handle (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:55:12)
+    at async AssemblyCatalog.handle (file:///home/user/projects/assemblyimpact-ai/srv/assembly-service.js:47:14) {
+  code: '412',
+  content_id: '1',
+  status: 412,
+  _i18n: 1
+}
+[odata] - POST /odata/v4/assembly-catalog/$batch 
+[odata] - > PATCH /Assemblies(a5eeebe3-d7f4-4518-8130-2115cf0d0c00) 
+[odata] - GET /odata/v4/assembly-catalog/Assemblies(a5eeebe3-d7f4-4518-8130-2115cf0d0c00) 
+[odata] - POST /odata/v4/assembly-catalog/$batch 
+[odata] - > PATCH /Assemblies(a5eeebe3-d7f4-4518-8130-2115cf0d0c00) 
+[odata] - POST /odata/v4/assembly-catalog/$batch 
+[odata] - > PATCH /Assemblies(a5eeebe3-d7f4-4518-8130-2115cf0d0c00) 
+[odata] - 412 - Error: Precondition Failed
+    at Function.new_behavior [as _handle_result] (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/generic/crud.js:69:53)
+    at AssemblyCatalog.handle_crud_requests (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/generic/crud.js:36:26)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async next (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:57:19)
+    at async AssemblyCatalog.handle (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:55:12)
+    at async AssemblyCatalog.handle (file:///home/user/projects/assemblyimpact-ai/srv/assembly-service.js:47:14) {
+  code: '412',
+  content_id: '1',
+  status: 412,
+  _i18n: 1
+}
+  ✔ multipart batch (46.630559ms)
+✔ UUID ETag contract across direct, JSON and multipart PATCH requests (177.339605ms)
+✔ production without a JWT provider fails before listening (430.70667ms)
+  > init from test/data/assemblyimpact-StockSnapshots.csv 
+  > init from test/data/assemblyimpact-ReviewCases.csv 
+  > init from test/data/assemblyimpact-Instructions.csv 
+  > init from test/data/assemblyimpact-InstructionReferences.csv 
+  > init from test/data/assemblyimpact-CostPrices.csv 
+  > init from test/data/assemblyimpact-BOMStates.csv 
+  > init from test/data/assemblyimpact-BOMItems.csv 
+  > init from test/data/assemblyimpact-Assemblies.csv 
+/> successfully deployed to in-memory database. 
+
+[cds] - using auth strategy { kind: 'mocked' }
+✔ manifest targets the existing EngineeringReview service and resolves against the model (608.063517ms)
+[odata] - GET /odata/v4/engineering-review/$metadata 
+✔ UI annotations implement the agreed worklist contract without draft (214.185774ms)
+✔ CAP serves the app statically (67.222751ms)
+[odata] - GET /odata/v4/engineering-review/ReviewCases {
+  '$select': 'ID,assemblyCode,caseNumber,fromRevision,toRevision,sourceType,status',
+  '$expand': 'latestRun($select=ID,instructionFindings,materialsShort,costDeltaTotal)',
+  '$orderby': 'caseNumber',
+  '$count': 'true'
+}
+[odata] - GET /odata/v4/engineering-review/ReviewCases {
+  '$select': 'ID,assemblyCode,caseNumber,fromRevision,toRevision,sourceType,status',
+  '$expand': 'latestRun($select=ID,instructionFindings,materialsShort,costDeltaTotal)',
+  '$orderby': 'caseNumber',
+  '$count': 'true'
+}
+[odata] - POST /odata/v4/engineering-review/ReviewCases(7263f5aa-71cf-5325-8dd7-41ca2e1a0fd5)/EngineeringReview.runImpact 
+[odata] - POST /odata/v4/engineering-review/ReviewCases(7263f5aa-71cf-5325-8dd7-41ca2e1a0fd5)/EngineeringReview.runImpact 
+[odata] - 403 - Error: Forbidden
+    at reject (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/generic/auth/utils.js:10:19)
+    at EngineeringReview.enforce_auth (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/generic/auth/restrict.js:229:5)
+    at EngineeringReview.handle_authorization (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/generic/auth/index.js:79:27)
+    at EngineeringReview.handle (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/Service.js:73:47)
+    at EngineeringReview.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:32:17)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:50
+    at EngineeringReview.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at EngineeringReview.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:36)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/operation.js:127:17
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:48 {
+  internal: null,
+  code: '403',
+  status: 403,
+  _i18n: 1
+}
+[odata] - POST /odata/v4/engineering-review/ReviewCases(7263f5aa-71cf-5325-8dd7-41ca2e1a0fd5)/EngineeringReview.runImpact 
+[odata] - 404 - Error: Not Found
+    at #runImpact (file:///home/user/projects/assemblyimpact-ai/srv/engineering-review.js:22:29)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async next (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:57:19)
+    at async EngineeringReview.handle (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:55:12) {
+  code: '404',
+  status: 404,
+  _i18n: 1
+}
+[odata] - GET /odata/v4/engineering-review/ReviewCases {
+  '$select': 'ID,assemblyCode,caseNumber,fromRevision,toRevision,sourceType,status',
+  '$expand': 'latestRun($select=ID,instructionFindings,materialsShort,costDeltaTotal)',
+  '$orderby': 'caseNumber',
+  '$count': 'true'
+}
+✔ List Report request returns only the user's plant; runImpact fills the columns (126.498982ms)
+[odata] - GET /odata/v4/engineering-review/ReviewCases(7263f5aa-71cf-5325-8dd7-41ca2e1a0fd5)/runs { '$orderby': 'computedAt desc' }
+[odata] - GET /odata/v4/engineering-review/ReviewCases(7263f5aa-71cf-5325-8dd7-41ca2e1a0fd5)/runs(abb99a71-20fe-4cb6-9707-23d0e6d8d134)/findings 
+[odata] - GET /odata/v4/engineering-review/ReviewCases(7263f5aa-71cf-5325-8dd7-41ca2e1a0fd5)/runs(abb99a71-20fe-4cb6-9707-23d0e6d8d134)/findings(3a9ddf7e-608d-47e1-940b-8cacf7b434b7) 
+[odata] - GET /odata/v4/engineering-review/ReviewCases(7263f5aa-71cf-5325-8dd7-41ca2e1a0fd5)/runs(abb99a71-20fe-4cb6-9707-23d0e6d8d134)/materialLines { '$orderby': 'material' }
+[odata] - GET /odata/v4/engineering-review/ReviewCases(7263f5aa-71cf-5325-8dd7-41ca2e1a0fd5) 
+[odata] - 404 - Error: Not Found
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/read.js:265:19 {
+  status: 404,
+  code: '404',
+  _i18n: 1
+}
+[odata] - GET /odata/v4/engineering-review/ReviewCases(7263f5aa-71cf-5325-8dd7-41ca2e1a0fd5)/runs 
+[odata] - 404 - Error: Not Found
+    at Function.new_behavior [as _handle_result] (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/generic/crud.js:63:117)
+    at async EngineeringReview.handle_crud_requests (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/generic/crud.js:36:12)
+    at async next (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:57:19)
+    at async EngineeringReview.handle (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:55:12) {
+  code: '404',
+  status: 404,
+  _i18n: 1
+}
+[odata] - GET /odata/v4/engineering-review/ImpactRuns(abb99a71-20fe-4cb6-9707-23d0e6d8d134) 
+[odata] - 404 - Error: Not Found
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/read.js:265:19 {
+  status: 404,
+  code: '404',
+  _i18n: 1
+}
+[odata] - GET /odata/v4/engineering-review/Findings(3a9ddf7e-608d-47e1-940b-8cacf7b434b7) 
+[odata] - 404 - Error: Not Found
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/read.js:265:19 {
+  status: 404,
+  code: '404',
+  _i18n: 1
+}
+[odata] - GET /odata/v4/engineering-review/ReviewCases(de4c98ab-fdc6-50f6-ae2a-47b8018b0f7a) 
+✔ Object Page navigation paths: case -> runs -> findings / material lines, plant-isolated (98.759123ms)
+/> successfully deployed to in-memory database. 
+
+[cds] - using auth strategy { kind: 'mocked' }
+[odata] - GET /odata/v4/engineering-review/$metadata 
+✔ model compiles; metadata exposes read-only entities and the runImpact action (1120.455684ms)
+[odata] - POST /odata/v4/engineering-review/ReviewCases(6af2070c-0c25-55c9-9e3a-1406f3997144)/runImpact 
+[odata] - GET /odata/v4/engineering-review/ImpactMaterialLines {
+  '$filter': 'run_ID eq 130d5936-e595-4b7b-93be-d125d43d0444',
+  '$orderby': 'material'
+}
+[odata] - GET /odata/v4/engineering-review/ImpactComparisonLines {
+  '$filter': 'run_ID eq 130d5936-e595-4b7b-93be-d125d43d0444',
+  '$orderby': 'itemNo'
+}
+[odata] - GET /odata/v4/engineering-review/Findings { '$filter': 'run_ID eq 130d5936-e595-4b7b-93be-d125d43d0444' }
+[odata] - GET /odata/v4/engineering-review/ReviewCases(6af2070c-0c25-55c9-9e3a-1406f3997144) { '$expand': 'latestRun($select=ID,costDeltaTotal)' }
+✔ runImpact persists a snapshot that matches the independent oracle (252.515195ms)
+[odata] - POST /odata/v4/engineering-review/ReviewCases(6af2070c-0c25-55c9-9e3a-1406f3997144)/runImpact 
+[odata] - POST /odata/v4/engineering-review/ReviewCases(6af2070c-0c25-55c9-9e3a-1406f3997144)/runImpact 
+[odata] - POST /odata/v4/engineering-review/ReviewCases(6af2070c-0c25-55c9-9e3a-1406f3997144)/runImpact 
+[odata] - GET /odata/v4/engineering-review/ImpactRuns(23f00f06-ab86-4fe7-b390-f2c9aff2203a) 
+[odata] - GET /odata/v4/engineering-review/ImpactMaterialLines {
+  '$filter': "run_ID eq 23f00f06-ab86-4fe7-b390-f2c9aff2203a and material eq 'FAN-B'"
+}
+✔ same inputs give the same fingerprint; each run is a new immutable record (134.751231ms)
+[odata] - POST /odata/v4/engineering-review/ReviewCases(6af2070c-0c25-55c9-9e3a-1406f3997144)/runImpact 
+[odata] - GET /odata/v4/engineering-review/ImpactMaterialLines {
+  '$filter': 'run_ID eq 362404f6-13cf-471d-ac3c-2367835b01bf',
+  '$top': '1'
+}
+[odata] - PATCH /odata/v4/engineering-review/ImpactRuns(362404f6-13cf-471d-ac3c-2367835b01bf) 
+[odata] - 405 - Error: Entity "EngineeringReview.ImpactRuns" is read-only
+    at EngineeringReview.check_readonly (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/generic/auth/readOnly.js:10:61)
+    at EngineeringReview.handle_authorization (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/generic/auth/index.js:73:21)
+    at EngineeringReview.handle (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/Service.js:73:47)
+    at EngineeringReview.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:32:17)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:50
+    at EngineeringReview.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at EngineeringReview.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:36)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/update.js:121:24
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:48
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:65:14) {
+  code: 'ENTITY_IS_READ_ONLY',
+  args: [ 'EngineeringReview.ImpactRuns' ],
+  status: 405,
+  _i18n: 1
+}
+[odata] - PUT /odata/v4/engineering-review/ImpactRuns(362404f6-13cf-471d-ac3c-2367835b01bf) 
+[odata] - 405 - Error: Entity "EngineeringReview.ImpactRuns" is read-only
+    at EngineeringReview.check_readonly (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/generic/auth/readOnly.js:10:61)
+    at EngineeringReview.handle_authorization (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/generic/auth/index.js:73:21)
+    at EngineeringReview.handle (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/Service.js:73:47)
+    at EngineeringReview.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:32:17)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:50
+    at EngineeringReview.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at EngineeringReview.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:36)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/update.js:121:24
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:48
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:65:14) {
+  code: 'ENTITY_IS_READ_ONLY',
+  args: [ 'EngineeringReview.ImpactRuns' ],
+  status: 405,
+  _i18n: 1
+}
+[odata] - DELETE /odata/v4/engineering-review/ImpactRuns(362404f6-13cf-471d-ac3c-2367835b01bf) 
+[odata] - 405 - Error: Entity "EngineeringReview.ImpactRuns" is read-only
+    at EngineeringReview.check_readonly (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/generic/auth/readOnly.js:10:61)
+    at EngineeringReview.handle_authorization (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/generic/auth/index.js:73:21)
+    at EngineeringReview.handle (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/Service.js:73:47)
+    at EngineeringReview.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:32:17)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:50
+    at EngineeringReview.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at EngineeringReview.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:36)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/delete.js:55:24
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:48
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:65:14) {
+  code: 'ENTITY_IS_READ_ONLY',
+  args: [ 'EngineeringReview.ImpactRuns' ],
+  status: 405,
+  _i18n: 1
+}
+[odata] - PATCH /odata/v4/engineering-review/ImpactMaterialLines(22107692-7eb9-4907-a049-e691d85dd342) 
+[odata] - 405 - Error: Entity "EngineeringReview.ImpactMaterialLines" is read-only
+    at EngineeringReview.check_readonly (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/generic/auth/readOnly.js:10:61)
+    at EngineeringReview.handle_authorization (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/generic/auth/index.js:73:21)
+    at EngineeringReview.handle (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/Service.js:73:47)
+    at EngineeringReview.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:32:17)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:50
+    at EngineeringReview.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at EngineeringReview.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:36)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/update.js:121:24
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:48
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:65:14) {
+  code: 'ENTITY_IS_READ_ONLY',
+  args: [ 'EngineeringReview.ImpactMaterialLines' ],
+  status: 405,
+  _i18n: 1
+}
+[odata] - PUT /odata/v4/engineering-review/ImpactMaterialLines(22107692-7eb9-4907-a049-e691d85dd342) 
+[odata] - 405 - Error: Entity "EngineeringReview.ImpactMaterialLines" is read-only
+    at EngineeringReview.check_readonly (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/generic/auth/readOnly.js:10:61)
+    at EngineeringReview.handle_authorization (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/generic/auth/index.js:73:21)
+    at EngineeringReview.handle (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/Service.js:73:47)
+    at EngineeringReview.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:32:17)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:50
+    at EngineeringReview.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at EngineeringReview.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:36)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/update.js:121:24
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:48
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:65:14) {
+  code: 'ENTITY_IS_READ_ONLY',
+  args: [ 'EngineeringReview.ImpactMaterialLines' ],
+  status: 405,
+  _i18n: 1
+}
+[odata] - DELETE /odata/v4/engineering-review/ImpactMaterialLines(22107692-7eb9-4907-a049-e691d85dd342) 
+[odata] - 405 - Error: Entity "EngineeringReview.ImpactMaterialLines" is read-only
+    at EngineeringReview.check_readonly (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/generic/auth/readOnly.js:10:61)
+    at EngineeringReview.handle_authorization (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/generic/auth/index.js:73:21)
+    at EngineeringReview.handle (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/Service.js:73:47)
+    at EngineeringReview.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:32:17)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:50
+    at EngineeringReview.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at EngineeringReview.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:36)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/delete.js:55:24
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:48
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:65:14) {
+  code: 'ENTITY_IS_READ_ONLY',
+  args: [ 'EngineeringReview.ImpactMaterialLines' ],
+  status: 405,
+  _i18n: 1
+}
+[odata] - PATCH /odata/v4/engineering-review/ReviewCases(6af2070c-0c25-55c9-9e3a-1406f3997144) 
+[odata] - 405 - Error: Entity "EngineeringReview.ReviewCases" is read-only
+    at EngineeringReview.check_readonly (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/generic/auth/readOnly.js:10:61)
+    at EngineeringReview.handle_authorization (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/generic/auth/index.js:73:21)
+    at EngineeringReview.handle (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/Service.js:73:47)
+    at EngineeringReview.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:32:17)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:50
+    at EngineeringReview.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at EngineeringReview.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:36)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/update.js:121:24
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:48
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:65:14) {
+  code: 'ENTITY_IS_READ_ONLY',
+  args: [ 'EngineeringReview.ReviewCases' ],
+  status: 405,
+  _i18n: 1
+}
+[odata] - PUT /odata/v4/engineering-review/ReviewCases(6af2070c-0c25-55c9-9e3a-1406f3997144) 
+[odata] - 405 - Error: Entity "EngineeringReview.ReviewCases" is read-only
+    at EngineeringReview.check_readonly (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/generic/auth/readOnly.js:10:61)
+    at EngineeringReview.handle_authorization (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/generic/auth/index.js:73:21)
+    at EngineeringReview.handle (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/Service.js:73:47)
+    at EngineeringReview.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:32:17)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:50
+    at EngineeringReview.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at EngineeringReview.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:36)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/update.js:121:24
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:48
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:65:14) {
+  code: 'ENTITY_IS_READ_ONLY',
+  args: [ 'EngineeringReview.ReviewCases' ],
+  status: 405,
+  _i18n: 1
+}
+[odata] - DELETE /odata/v4/engineering-review/ReviewCases(6af2070c-0c25-55c9-9e3a-1406f3997144) 
+[odata] - 405 - Error: Entity "EngineeringReview.ReviewCases" is read-only
+    at EngineeringReview.check_readonly (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/generic/auth/readOnly.js:10:61)
+    at EngineeringReview.handle_authorization (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/generic/auth/index.js:73:21)
+    at EngineeringReview.handle (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/Service.js:73:47)
+    at EngineeringReview.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:32:17)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:50
+    at EngineeringReview.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at EngineeringReview.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:36)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/delete.js:55:24
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:48
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:65:14) {
+  code: 'ENTITY_IS_READ_ONLY',
+  args: [ 'EngineeringReview.ReviewCases' ],
+  status: 405,
+  _i18n: 1
+}
+[odata] - POST /odata/v4/engineering-review/ImpactRuns 
+[odata] - 405 - Error: Entity "EngineeringReview.ImpactRuns" is read-only
+    at EngineeringReview.check_readonly (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/generic/auth/readOnly.js:10:61)
+    at EngineeringReview.handle_authorization (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/generic/auth/index.js:73:21)
+    at EngineeringReview.handle (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/Service.js:73:47)
+    at EngineeringReview.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:32:17)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:50
+    at EngineeringReview.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at EngineeringReview.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:36)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/create.js:74:24
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:48
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:65:14) {
+  code: 'ENTITY_IS_READ_ONLY',
+  args: [ 'EngineeringReview.ImpactRuns' ],
+  status: 405,
+  _i18n: 1
+}
+[odata] - POST /odata/v4/engineering-review/Findings 
+[odata] - 405 - Error: Entity "EngineeringReview.Findings" is read-only
+    at EngineeringReview.check_readonly (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/generic/auth/readOnly.js:10:61)
+    at EngineeringReview.handle_authorization (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/generic/auth/index.js:73:21)
+    at EngineeringReview.handle (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/Service.js:73:47)
+    at EngineeringReview.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:32:17)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:50
+    at EngineeringReview.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at EngineeringReview.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:36)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/create.js:74:24
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:48
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:65:14) {
+  code: 'ENTITY_IS_READ_ONLY',
+  args: [ 'EngineeringReview.Findings' ],
+  status: 405,
+  _i18n: 1
+}
+[odata] - POST /odata/v4/engineering-review/ReviewCases 
+[odata] - 405 - Error: Entity "EngineeringReview.ReviewCases" is read-only
+    at EngineeringReview.check_readonly (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/generic/auth/readOnly.js:10:61)
+    at EngineeringReview.handle_authorization (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/generic/auth/index.js:73:21)
+    at EngineeringReview.handle (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/Service.js:73:47)
+    at EngineeringReview.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:32:17)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:50
+    at EngineeringReview.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at EngineeringReview.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:36)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/create.js:74:24
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:48
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:65:14) {
+  code: 'ENTITY_IS_READ_ONLY',
+  args: [ 'EngineeringReview.ReviewCases' ],
+  status: 405,
+  _i18n: 1
+}
+[odata] - POST /odata/v4/engineering-review/BOMItems 
+[odata] - 405 - Error: Entity "EngineeringReview.BOMItems" is read-only
+    at EngineeringReview.check_readonly (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/generic/auth/readOnly.js:10:61)
+    at EngineeringReview.handle_authorization (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/generic/auth/index.js:73:21)
+    at EngineeringReview.handle (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/Service.js:73:47)
+    at EngineeringReview.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:32:17)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:50
+    at EngineeringReview.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at EngineeringReview.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:36)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/create.js:74:24
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:48
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:65:14) {
+  code: 'ENTITY_IS_READ_ONLY',
+  args: [ 'EngineeringReview.BOMItems' ],
+  status: 405,
+  _i18n: 1
+}
+[odata] - POST /odata/v4/engineering-review/CostPrices 
+[odata] - GET /odata/v4/engineering-review/ImpactRuns(362404f6-13cf-471d-ac3c-2367835b01bf) 
+[odata] - 405 - Error: Entity "EngineeringReview.CostPrices" is read-only
+    at EngineeringReview.check_readonly (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/generic/auth/readOnly.js:10:61)
+    at EngineeringReview.handle_authorization (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/generic/auth/index.js:73:21)
+    at EngineeringReview.handle (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/Service.js:73:47)
+    at EngineeringReview.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:32:17)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:50
+    at EngineeringReview.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at EngineeringReview.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:36)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/create.js:74:24
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:48
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:65:14) {
+  code: 'ENTITY_IS_READ_ONLY',
+  args: [ 'EngineeringReview.CostPrices' ],
+  status: 405,
+  _i18n: 1
+}
+✔ snapshot entities reject every client write (72.930556ms)
+[odata] - POST /odata/v4/engineering-review/ReviewCases(31ab8047-1c2c-5ce9-9217-ae35128846b0)/runImpact 
+[odata] - GET /odata/v4/engineering-review/ReviewCases { '$count': 'true' }
+[odata] - GET /odata/v4/engineering-review/ReviewCases { '$count': 'true' }
+[odata] - GET /odata/v4/engineering-review/ImpactRuns { '$count': 'true' }
+[odata] - GET /odata/v4/engineering-review/ImpactRuns { '$count': 'true' }
+[odata] - GET /odata/v4/engineering-review/ImpactComparisonLines { '$count': 'true' }
+[odata] - GET /odata/v4/engineering-review/ImpactComparisonLines { '$count': 'true' }
+[odata] - GET /odata/v4/engineering-review/ImpactMaterialLines { '$count': 'true' }
+[odata] - GET /odata/v4/engineering-review/ImpactMaterialLines { '$count': 'true' }
+[odata] - GET /odata/v4/engineering-review/Findings { '$count': 'true' }
+[odata] - GET /odata/v4/engineering-review/Findings { '$count': 'true' }
+[odata] - GET /odata/v4/engineering-review/BOMStates { '$count': 'true' }
+[odata] - GET /odata/v4/engineering-review/BOMStates { '$count': 'true' }
+[odata] - GET /odata/v4/engineering-review/BOMItems { '$count': 'true' }
+[odata] - GET /odata/v4/engineering-review/BOMItems { '$count': 'true' }
+[odata] - GET /odata/v4/engineering-review/CostPrices { '$count': 'true' }
+[odata] - GET /odata/v4/engineering-review/CostPrices { '$count': 'true' }
+[odata] - GET /odata/v4/engineering-review/StockSnapshots { '$count': 'true' }
+[odata] - GET /odata/v4/engineering-review/StockSnapshots { '$count': 'true' }
+[odata] - GET /odata/v4/engineering-review/Instructions { '$count': 'true' }
+[odata] - GET /odata/v4/engineering-review/Instructions { '$count': 'true' }
+[odata] - GET /odata/v4/engineering-review/InstructionReferences { '$count': 'true' }
+[odata] - GET /odata/v4/engineering-review/InstructionReferences { '$count': 'true' }
+[odata] - GET /odata/v4/engineering-review/ReviewCases(6af2070c-0c25-55c9-9e3a-1406f3997144) 
+[odata] - 404 - Error: Not Found
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/read.js:265:19 {
+  status: 404,
+  code: '404',
+  _i18n: 1
+}
+[odata] - GET /odata/v4/engineering-review/ReviewCases { '$expand': 'runs($expand=findings,materialLines)' }
+[odata] - GET /odata/v4/engineering-review/ImpactRuns { '$top': '1' }
+[odata] - GET /odata/v4/engineering-review/ImpactRuns(130d5936-e595-4b7b-93be-d125d43d0444) 
+[odata] - 404 - Error: Not Found
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/read.js:265:19 {
+  status: 404,
+  code: '404',
+  _i18n: 1
+}
+[odata] - GET /odata/v4/engineering-review/Findings { '$filter': 'run_ID eq 130d5936-e595-4b7b-93be-d125d43d0444' }
+✔ plant isolation on every exposed entity: collection, $count, key, $expand (156.657575ms)
+[odata] - POST /odata/v4/engineering-review/ReviewCases(6af2070c-0c25-55c9-9e3a-1406f3997144)/runImpact 
+[odata] - 403 - Error: Forbidden
+    at reject (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/generic/auth/utils.js:10:19)
+    at EngineeringReview.enforce_auth (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/generic/auth/restrict.js:229:5)
+    at EngineeringReview.handle_authorization (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/generic/auth/index.js:79:27)
+    at EngineeringReview.handle (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/Service.js:73:47)
+    at EngineeringReview.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:32:17)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:50
+    at EngineeringReview.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at EngineeringReview.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:36)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/operation.js:127:17
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:48 {
+  internal: null,
+  code: '403',
+  status: 403,
+  _i18n: 1
+}
+[odata] - POST /odata/v4/engineering-review/ReviewCases(6af2070c-0c25-55c9-9e3a-1406f3997144)/runImpact 
+[odata] - 403 - Error: Forbidden
+    at reject (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/generic/auth/utils.js:10:19)
+    at EngineeringReview.enforce_auth (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/generic/auth/restrict.js:229:5)
+    at EngineeringReview.handle_authorization (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/generic/auth/index.js:79:27)
+    at EngineeringReview.handle (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/Service.js:73:47)
+    at EngineeringReview.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:32:17)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:50
+    at EngineeringReview.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at EngineeringReview.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:36)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/operation.js:127:17
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:48 {
+  internal: null,
+  code: '403',
+  status: 403,
+  _i18n: 1
+}
+[odata] - POST /odata/v4/engineering-review/ReviewCases(6af2070c-0c25-55c9-9e3a-1406f3997144)/runImpact 
+[odata] - 404 - Error: Not Found
+    at #runImpact (file:///home/user/projects/assemblyimpact-ai/srv/engineering-review.js:22:29)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async next (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:57:19)
+    at async EngineeringReview.handle (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:55:12) {
+  code: '404',
+  status: 404,
+  _i18n: 1
+}
+[odata] - POST /odata/v4/engineering-review/ReviewCases(eaa7e6aa-57b9-54c1-8a8f-21de30129c3e)/runImpact 
+[odata] - 404 - Error: Not Found
+    at #runImpact (file:///home/user/projects/assemblyimpact-ai/srv/engineering-review.js:22:29)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async next (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:57:19)
+    at async EngineeringReview.handle (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:55:12) {
+  code: '404',
+  status: 404,
+  _i18n: 1
+}
+[odata] - POST /odata/v4/engineering-review/ReviewCases(6af2070c-0c25-55c9-9e3a-1406f3997144)/runImpact 
+[odata] - 403 - Error: Forbidden
+    at EngineeringReview.<anonymous> (file:///home/user/projects/assemblyimpact-ai/srv/engineering-review.js:10:62)
+    at EngineeringReview.<anonymous> (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-handlers.js:139:59)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:48:80
+    at Array.map (<anonymous>)
+    at EngineeringReview.handle (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:48:54)
+    at EngineeringReview.handle (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/Service.js:84:18)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5) {
+  code: '403',
+  status: 403,
+  _i18n: 1
+}
+[odata] - GET /odata/v4/engineering-review/ReviewCases 
+[odata] - 403 - Error: Forbidden
+    at EngineeringReview.<anonymous> (file:///home/user/projects/assemblyimpact-ai/srv/engineering-review.js:10:62)
+    at EngineeringReview.<anonymous> (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-handlers.js:139:59)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:48:80
+    at Array.map (<anonymous>)
+    at EngineeringReview.handle (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:48:54)
+    at EngineeringReview.handle (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/Service.js:84:18) {
+  code: '403',
+  status: 403,
+  _i18n: 1
+}
+[odata] - POST /odata/v4/engineering-review/ReviewCases(6af2070c-0c25-55c9-9e3a-1406f3997144)/runImpact 
+[odata] - 403 - Error: Forbidden
+    at EngineeringReview.<anonymous> (file:///home/user/projects/assemblyimpact-ai/srv/engineering-review.js:10:62)
+    at EngineeringReview.<anonymous> (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-handlers.js:139:59)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:48:80
+    at Array.map (<anonymous>)
+    at EngineeringReview.handle (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:48:54)
+    at EngineeringReview.handle (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/Service.js:84:18)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5) {
+  code: '403',
+  status: 403,
+  _i18n: 1
+}
+[odata] - GET /odata/v4/engineering-review/ReviewCases 
+[odata] - 403 - Error: Forbidden
+    at EngineeringReview.<anonymous> (file:///home/user/projects/assemblyimpact-ai/srv/engineering-review.js:10:62)
+    at EngineeringReview.<anonymous> (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-handlers.js:139:59)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:48:80
+    at Array.map (<anonymous>)
+    at EngineeringReview.handle (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:48:54)
+    at EngineeringReview.handle (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/Service.js:84:18) {
+  code: '403',
+  status: 403,
+  _i18n: 1
+}
+✔ runImpact authorization: roles, foreign plant, malformed memberships (26.863468ms)
+[odata] - POST /odata/v4/engineering-review/ReviewCases(6af2070c-0c25-55c9-9e3a-1406f3997144)/runImpact 
+[odata] - 422 - Error: Impact cannot be calculated: INVALID_PRODUCTION_QUANTITY
+    at #runImpact (file:///home/user/projects/assemblyimpact-ai/srv/engineering-review.js:29:20)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async next (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:57:19)
+    at async EngineeringReview.handle (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:55:12) {
+  status: 422,
+  code: 'INVALID_PRODUCTION_QUANTITY',
+  args: [ '0' ]
+}
+[odata] - POST /odata/v4/engineering-review/ReviewCases(6af2070c-0c25-55c9-9e3a-1406f3997144)/runImpact 
+[odata] - 400 - [Value not-a-date is not a valid Date] {
+  code: 'ASSERT_DATA_TYPE',
+  args: [ 'not-a-date', 'Date' ],
+  target: 'asOfDate',
+  _i18n: 1
+}
+✔ invalid and non-comparable inputs are rejected without persisting a run (12.888014ms)
+[odata] - POST /odata/v4/engineering-review/ReviewCases(6af2070c-0c25-55c9-9e3a-1406f3997144)/runImpact 
+✔ stale case version is detected by the database-level compare-and-set and rolls back (19.08394ms)
+[odata] - POST /odata/v4/engineering-review/ReviewCases(6af2070c-0c25-55c9-9e3a-1406f3997144)/runImpact 
+[odata] - POST /odata/v4/engineering-review/ReviewCases(6af2070c-0c25-55c9-9e3a-1406f3997144)/runImpact 
+[odata] - POST /odata/v4/engineering-review/ReviewCases(6af2070c-0c25-55c9-9e3a-1406f3997144)/runImpact 
+[odata] - POST /odata/v4/engineering-review/ReviewCases(6af2070c-0c25-55c9-9e3a-1406f3997144)/runImpact 
+[odata] - POST /odata/v4/engineering-review/ReviewCases(6af2070c-0c25-55c9-9e3a-1406f3997144)/runImpact 
+✔ parallel runImpact requests never lose an update or leave orphans (59.895253ms)
+✔ calculator reproduces DS-ORACLE-01 expected results (5.510896ms)
+✔ calculator reproduces DS-DEMO-01 expected results (2.088062ms)
+✔ calculator reproduces all DS-NEG-01 outcomes (41.169073ms)
+✔ canonical COOL-100 values and mockup corrections (0.733661ms)
+✔ calculator is deterministic and does not mutate its input (3.954154ms)
+✔ exact arithmetic avoids binary floating point and rounds half away from zero (0.421731ms)
+  > init from test/data/assemblyimpact-StockSnapshots.csv 
+  > init from test/data/assemblyimpact-ReviewCases.csv 
+  > init from test/data/assemblyimpact-Instructions.csv 
+  > init from test/data/assemblyimpact-InstructionReferences.csv 
+  > init from test/data/assemblyimpact-CostPrices.csv 
+  > init from test/data/assemblyimpact-BOMStates.csv 
+  > init from test/data/assemblyimpact-BOMItems.csv 
+  > init from test/data/assemblyimpact-Assemblies.csv 
+/> successfully deployed to in-memory database. 
+
+[cds] - using auth strategy { kind: 'mocked' }
+✔ committed test/data CSVs are exactly the generator output (reproducible, no drift) (696.19062ms)
+✔ seed data is referentially and semantically consistent (1.101241ms)
+[odata] - GET /odata/v4/engineering-review/ReviewCases/$count 
+[odata] - GET /odata/v4/engineering-review/BOMStates/$count 
+[odata] - GET /odata/v4/engineering-review/BOMItems/$count 
+[odata] - GET /odata/v4/engineering-review/CostPrices/$count 
+[odata] - GET /odata/v4/engineering-review/StockSnapshots/$count 
+[odata] - GET /odata/v4/engineering-review/Instructions/$count 
+[odata] - GET /odata/v4/engineering-review/InstructionReferences/$count 
+[odata] - GET /odata/v4/engineering-review/ReviewCases/$count 
+[odata] - GET /odata/v4/engineering-review/BOMStates/$count 
+[odata] - GET /odata/v4/engineering-review/BOMItems/$count 
+[odata] - GET /odata/v4/engineering-review/CostPrices/$count 
+[odata] - GET /odata/v4/engineering-review/StockSnapshots/$count 
+[odata] - GET /odata/v4/engineering-review/Instructions/$count 
+[odata] - GET /odata/v4/engineering-review/InstructionReferences/$count 
+[odata] - GET /odata/v4/engineering-review/ReviewCases { '$orderby': 'caseNumber' }
+[odata] - GET /odata/v4/engineering-review/ReviewCases 
+[odata] - GET /odata/v4/engineering-review/BOMItems {
+  '$filter': "bomState/stateKey eq 'BOM-COOL-100-B'",
+  '$orderby': 'itemNo'
+}
+[odata] - GET /odata/v4/assembly-catalog/Assemblies 
+✔ CAP loads test/data; authenticated OData returns the seeded records per plant (198.443499ms)
+[odata] - POST /odata/v4/engineering-review/ReviewCases(7263f5aa-71cf-5325-8dd7-41ca2e1a0fd5)/runImpact 
+[odata] - GET /odata/v4/engineering-review/ImpactMaterialLines {
+  '$filter': 'run_ID eq 4b180cfb-4f4a-407e-a96a-696c4b404a76',
+  '$orderby': 'material'
+}
+[odata] - GET /odata/v4/engineering-review/ImpactComparisonLines {
+  '$filter': 'run_ID eq 4b180cfb-4f4a-407e-a96a-696c4b404a76',
+  '$orderby': 'itemNo'
+}
+[odata] - GET /odata/v4/engineering-review/Findings { '$filter': 'run_ID eq 4b180cfb-4f4a-407e-a96a-696c4b404a76' }
+[odata] - POST /odata/v4/engineering-review/ReviewCases(7263f5aa-71cf-5325-8dd7-41ca2e1a0fd5)/runImpact 
+[odata] - POST /odata/v4/engineering-review/ReviewCases(de4c98ab-fdc6-50f6-ae2a-47b8018b0f7a)/runImpact 
+[odata] - GET /odata/v4/engineering-review/ReviewCases(7263f5aa-71cf-5325-8dd7-41ca2e1a0fd5) { '$expand': 'latestRun($select=ID)' }
+✔ runImpact on the persisted seed case reproduces DS-ORACLE-01 and is deterministic (120.237215ms)
+[odata] - GET /odata/v4/engineering-review/ReviewCases(7263f5aa-71cf-5325-8dd7-41ca2e1a0fd5) 
+[odata] - 404 - Error: Not Found
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/read.js:265:19 {
+  status: 404,
+  code: '404',
+  _i18n: 1
+}
+[odata] - POST /odata/v4/engineering-review/ReviewCases(7263f5aa-71cf-5325-8dd7-41ca2e1a0fd5)/runImpact 
+[odata] - 404 - Error: Not Found
+    at #runImpact (file:///home/user/projects/assemblyimpact-ai/srv/engineering-review.js:22:29)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async next (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:57:19)
+    at async EngineeringReview.handle (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:55:12) {
+  code: '404',
+  status: 404,
+  _i18n: 1
+}
+[odata] - POST /odata/v4/engineering-review/ReviewCases(de4c98ab-fdc6-50f6-ae2a-47b8018b0f7a)/runImpact 
+[odata] - 404 - Error: Not Found
+    at #runImpact (file:///home/user/projects/assemblyimpact-ai/srv/engineering-review.js:22:29)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async next (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:57:19)
+    at async EngineeringReview.handle (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:55:12) {
+  code: '404',
+  status: 404,
+  _i18n: 1
+}
+[odata] - POST /odata/v4/engineering-review/ReviewCases(7263f5aa-71cf-5325-8dd7-41ca2e1a0fd5)/runImpact 
+[odata] - 403 - Error: Forbidden
+    at reject (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/generic/auth/utils.js:10:19)
+    at EngineeringReview.enforce_auth (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/generic/auth/restrict.js:229:5)
+    at EngineeringReview.handle_authorization (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/generic/auth/index.js:79:27)
+    at EngineeringReview.handle (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/Service.js:73:47)
+    at EngineeringReview.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:32:17)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:50
+    at EngineeringReview.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at EngineeringReview.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:36)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/operation.js:127:17
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:48 {
+  internal: null,
+  code: '403',
+  status: 403,
+  _i18n: 1
+}
+[odata] - GET /odata/v4/engineering-review/ReviewCases 
+[odata] - 403 - Error: Forbidden
+    at EngineeringReview.<anonymous> (file:///home/user/projects/assemblyimpact-ai/srv/engineering-review.js:10:62)
+    at EngineeringReview.<anonymous> (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-handlers.js:139:59)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:48:80
+    at Array.map (<anonymous>)
+    at EngineeringReview.handle (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:48:54)
+    at EngineeringReview.handle (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/Service.js:84:18) {
+  code: '403',
+  status: 403,
+  _i18n: 1
+}
+[odata] - GET /odata/v4/engineering-review/ReviewCases 
+[odata] - 403 - Error: Forbidden
+    at EngineeringReview.<anonymous> (file:///home/user/projects/assemblyimpact-ai/srv/engineering-review.js:10:62)
+    at EngineeringReview.<anonymous> (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-handlers.js:139:59)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:48:80
+    at Array.map (<anonymous>)
+    at EngineeringReview.handle (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:48:54)
+    at EngineeringReview.handle (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/Service.js:84:18) {
+  code: '403',
+  status: 403,
+  _i18n: 1
+}
+[odata] - GET /odata/v4/engineering-review/ReviewCases 
+[odata] - 403 - Error: Forbidden
+    at reject (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/generic/auth/utils.js:10:19)
+    at EngineeringReview.enforce_auth (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/generic/auth/restrict.js:229:5)
+    at EngineeringReview.handle_authorization (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/generic/auth/index.js:79:27)
+    at EngineeringReview.handle (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/Service.js:73:47)
+    at EngineeringReview.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:32:17)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:50
+    at EngineeringReview.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at EngineeringReview.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:36)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/read.js:262:24
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:48 {
+  internal: null,
+  code: '403',
+  status: 403,
+  _i18n: 1
+}
+[odata] - POST /odata/v4/engineering-review/ReviewCases(7263f5aa-71cf-5325-8dd7-41ca2e1a0fd5)/runImpact 
+[odata] - 400 - [Value not-a-date is not a valid Date] {
+  code: 'ASSERT_DATA_TYPE',
+  args: [ 'not-a-date', 'Date' ],
+  target: 'asOfDate',
+  _i18n: 1
+}
+[odata] - POST /odata/v4/engineering-review/ReviewCases(00000000-0000-4000-8000-000000000000)/runImpact 
+[odata] - 404 - Error: Not Found
+    at #runImpact (file:///home/user/projects/assemblyimpact-ai/srv/engineering-review.js:22:29)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async next (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:57:19)
+    at async EngineeringReview.handle (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:55:12) {
+  code: '404',
+  status: 404,
+  _i18n: 1
+}
+[odata] - PATCH /odata/v4/engineering-review/CostPrices(a8d946c2-5460-5fe8-965f-b09483e66d36) 
+[odata] - 405 - Error: Entity "EngineeringReview.CostPrices" is read-only
+    at EngineeringReview.check_readonly (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/generic/auth/readOnly.js:10:61)
+    at EngineeringReview.handle_authorization (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/generic/auth/index.js:73:21)
+    at EngineeringReview.handle (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/Service.js:73:47)
+    at EngineeringReview.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:32:17)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:50
+    at EngineeringReview.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at EngineeringReview.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:36)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/update.js:121:24
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:48
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:65:14) {
+  code: 'ENTITY_IS_READ_ONLY',
+  args: [ 'EngineeringReview.CostPrices' ],
+  status: 405,
+  _i18n: 1
+}
+[odata] - DELETE /odata/v4/engineering-review/CostPrices(a8d946c2-5460-5fe8-965f-b09483e66d36) 
+[odata] - 405 - Error: Entity "EngineeringReview.CostPrices" is read-only
+    at EngineeringReview.check_readonly (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/generic/auth/readOnly.js:10:61)
+    at EngineeringReview.handle_authorization (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/generic/auth/index.js:73:21)
+    at EngineeringReview.handle (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/Service.js:73:47)
+    at EngineeringReview.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:32:17)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:50
+    at EngineeringReview.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at EngineeringReview.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:36)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/delete.js:55:24
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:48
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:65:14) {
+  code: 'ENTITY_IS_READ_ONLY',
+  args: [ 'EngineeringReview.CostPrices' ],
+  status: 405,
+  _i18n: 1
+}
+[odata] - GET /odata/v4/engineering-review/CostPrices { '$filter': "material eq 'FAN-B'" }
+✔ seeded records keep authentication, role, plant and input checks (77.600062ms)
+[odata] - POST /odata/v4/engineering-review/ReviewCases(9033634a-7d1d-5de1-83d9-394e2e7e5e5f)/runImpact 
+[odata] - GET /odata/v4/engineering-review/ImpactMaterialLines {
+  '$filter': 'run_ID eq 36a7b42f-488d-4809-900d-c376f9fa8350',
+  '$orderby': 'material'
+}
+[odata] - GET /odata/v4/engineering-review/ImpactComparisonLines {
+  '$filter': 'run_ID eq 36a7b42f-488d-4809-900d-c376f9fa8350',
+  '$orderby': 'itemNo'
+}
+[odata] - GET /odata/v4/engineering-review/Findings { '$filter': 'run_ID eq 36a7b42f-488d-4809-900d-c376f9fa8350' }
+✔ DS-DEMO-01 (test-only, not seeded) reproduces its expected results through persisted runImpact (108.785604ms)
+✔ production configuration never loads test/data (594.106712ms)
+ℹ tests 40
+ℹ suites 0
+ℹ pass 40
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2585.973339

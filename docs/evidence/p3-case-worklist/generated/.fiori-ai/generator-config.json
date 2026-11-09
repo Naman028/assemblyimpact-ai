@@ -1,0 +1,29 @@
+{
+    "version": "0.2",
+    "floorplan": "FE_LROP",
+    "project": {
+        "name": "assemblyimpactcaseworklist",
+        "targetFolder": "/home/user/projects/pa-sandbox/case-worklist",
+        "title": "AI generated App assemblyimpactcaseworklist",
+        "description": "AI generated App assemblyimpactcaseworklist",
+        "sapux": true
+    },
+    "service": {
+        "servicePath": "/odata/v4/assembly-impact-case-worklist-srv/",
+        "capService": {
+            "projectPath": "/home/user/projects/pa-sandbox/case-worklist",
+            "serviceName": "assemblyImpactCaseWorklistSrv",
+            "serviceCdsPath": "srv/service"
+        }
+    },
+    "entityConfig": {
+        "mainEntity": {
+            "entityName": "ReviewCases"
+        }
+    },
+    "projectTemplateType": "LIST_REPORT_OBJECT_PAGE",
+    "telemetryData": {
+        "generationSourceName": "AI Headless",
+        "generationSourceVersion": "1.34.0"
+    }
+}

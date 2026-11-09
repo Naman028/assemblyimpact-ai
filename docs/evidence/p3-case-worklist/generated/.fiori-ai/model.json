@@ -1,0 +1,682 @@
+{
+    "namespace": "assemblyImpactCaseWorklist",
+    "entities": [
+        {
+            "name": "ReviewCases",
+            "label": "Review Case",
+            "labelPlural": "Review Cases",
+            "associations": [
+                {
+                    "name": "Findings",
+                    "target": "Findings",
+                    "multiplicity": "many",
+                    "backAssociation": "reviewCases"
+                },
+                {
+                    "name": "MaterialImpacts",
+                    "target": "MaterialImpacts",
+                    "multiplicity": "many",
+                    "backAssociation": "reviewCases"
+                },
+                {
+                    "name": "DecisionHistories",
+                    "target": "DecisionHistories",
+                    "multiplicity": "many",
+                    "backAssociation": "reviewCases"
+                },
+                {
+                    "name": "Assembly",
+                    "target": "Assemblies",
+                    "multiplicity": "one"
+                }
+            ],
+            "elements": [
+                {
+                    "name": "ID",
+                    "type": "UUID",
+                    "key": true,
+                    "label": ""
+                },
+                {
+                    "name": "caseID",
+                    "type": "String(20)",
+                    "label": "Change ID",
+                    "semanticKey": true
+                },
+                {
+                    "name": "currentRevision",
+                    "type": "String(5)",
+                    "label": "Current revision"
+                },
+                {
+                    "name": "proposedRevision",
+                    "type": "String(5)",
+                    "label": "Proposed revision"
+                },
+                {
+                    "name": "numberOfInstructionFindings",
+                    "type": "Integer",
+                    "label": "Number of instruction findings"
+                },
+                {
+                    "name": "numberOfMaterialsShort",
+                    "type": "Integer",
+                    "label": "Number of materials short"
+                },
+                {
+                    "name": "estimatedCostDelta",
+                    "type": "Decimal",
+                    "label": "Estimated cost delta",
+                    "isAmount": true
+                },
+                {
+                    "name": "sourceType",
+                    "type": "String(20)",
+                    "label": "Source type",
+                    "hasFixedValuesList": true,
+                    "values": [
+                        "Synthetic Fixture",
+                        "Manual",
+                        "GenAI Proposal",
+                        "Imported"
+                    ]
+                },
+                {
+                    "name": "reviewStatus",
+                    "type": "String(20)",
+                    "label": "Review status",
+                    "hasFixedValuesList": true,
+                    "values": [
+                        "Open",
+                        "In Review",
+                        "Approved",
+                        "Rejected"
+                    ]
+                },
+                {
+                    "name": "plant",
+                    "type": "String(10)",
+                    "label": "Plant"
+                },
+                {
+                    "name": "title",
+                    "type": "String(100)",
+                    "label": "Title"
+                },
+                {
+                    "name": "reviewOwner",
+                    "type": "String(50)",
+                    "label": "Review owner"
+                },
+                {
+                    "name": "productionQuantity",
+                    "type": "Integer",
+                    "label": "Production quantity"
+                }
+            ]
+        },
+        {
+            "name": "Assemblies",
+            "label": "Assembly",
+            "labelPlural": "Assemblies",
+            "associations": [],
+            "elements": [
+                {
+                    "name": "ID",
+                    "type": "UUID",
+                    "key": true,
+                    "label": ""
+                },
+                {
+                    "name": "name",
+                    "type": "String(50)",
+                    "label": "Name",
+                    "semanticKey": true,
+                    "additionalInfo": "Name of Assembly"
+                }
+            ]
+        },
+        {
+            "name": "Findings",
+            "label": "Finding",
+            "labelPlural": "Findings",
+            "associations": [
+                {
+                    "name": "reviewCases",
+                    "target": "ReviewCases",
+                    "multiplicity": "one",
+                    "isComposition": false
+                },
+                {
+                    "name": "MaterialImpacts",
+                    "target": "MaterialImpacts",
+                    "multiplicity": "many",
+                    "isComposition": true,
+                    "backAssociation": "findings"
+                },
+                {
+                    "name": "DecisionHistories",
+                    "target": "DecisionHistories",
+                    "multiplicity": "many",
+                    "isComposition": true,
+                    "backAssociation": "findings"
+                }
+            ],
+            "elements": [
+                {
+                    "name": "ID",
+                    "type": "UUID",
+                    "key": true,
+                    "label": ""
+                },
+                {
+                    "label": "Finding Type",
+                    "name": "findingType",
+                    "type": "String(50)",
+                    "hasFixedValuesList": true,
+                    "values": [
+                        "Component Replaced",
+                        "Quantity Changed",
+                        "Component Added",
+                        "Component Removed",
+                        "Stock Gap",
+                        "Cost Change",
+                        "Outdated Instruction Reference"
+                    ]
+                },
+                {
+                    "label": "Material",
+                    "name": "material",
+                    "type": "String(50)"
+                },
+                {
+                    "label": "Description",
+                    "name": "description",
+                    "type": "String(255)"
+                },
+                {
+                    "label": "Severity",
+                    "name": "severity",
+                    "type": "String(20)",
+                    "hasFixedValuesList": true,
+                    "values": [
+                        "High",
+                        "Medium",
+                        "Low"
+                    ]
+                },
+                {
+                    "label": "Source Type",
+                    "name": "sourceType",
+                    "type": "String(50)"
+                },
+                {
+                    "label": "Source Reference",
+                    "name": "sourceReference",
+                    "type": "String(100)"
+                }
+            ]
+        },
+        {
+            "name": "MaterialImpacts",
+            "label": "Material Impact",
+            "labelPlural": "Material Impacts",
+            "associations": [
+                {
+                    "name": "reviewCases",
+                    "target": "ReviewCases",
+                    "multiplicity": "one",
+                    "isComposition": false
+                },
+                {
+                    "name": "findings",
+                    "target": "Findings",
+                    "multiplicity": "one",
+                    "isComposition": false
+                }
+            ],
+            "elements": [
+                {
+                    "name": "ID",
+                    "type": "UUID",
+                    "key": true,
+                    "label": ""
+                },
+                {
+                    "label": "Material",
+                    "name": "material",
+                    "type": "String(50)"
+                },
+                {
+                    "label": "Required Quantity",
+                    "name": "requiredQuantity",
+                    "type": "Decimal",
+                    "isQuantity": true
+                },
+                {
+                    "label": "Available Quantity",
+                    "name": "availableQuantity",
+                    "type": "Decimal",
+                    "isQuantity": true
+                },
+                {
+                    "label": "Gap Quantity",
+                    "name": "gapQuantity",
+                    "type": "Decimal",
+                    "isQuantity": true
+                },
+                {
+                    "label": "Unit of Measure",
+                    "name": "unitOfMeasure",
+                    "type": "String(20)"
+                },
+                {
+                    "label": "Unit",
+                    "name": "unit",
+                    "type": "String(20)"
+                }
+            ]
+        },
+        {
+            "name": "DecisionHistories",
+            "label": "Decision History",
+            "labelPlural": "Decision Histories",
+            "associations": [
+                {
+                    "name": "reviewCases",
+                    "target": "ReviewCases",
+                    "multiplicity": "one",
+                    "isComposition": false
+                },
+                {
+                    "name": "findings",
+                    "target": "Findings",
+                    "multiplicity": "one",
+                    "isComposition": false
+                }
+            ],
+            "elements": [
+                {
+                    "name": "ID",
+                    "type": "UUID",
+                    "key": true,
+                    "label": ""
+                },
+                {
+                    "label": "Event Time",
+                    "name": "eventTime",
+                    "type": "DateTime"
+                },
+                {
+                    "label": "From Status",
+                    "name": "fromStatus",
+                    "type": "String(20)",
+                    "hasFixedValuesList": true,
+                    "values": [
+                        "Open",
+                        "In Review",
+                        "Approved",
+                        "Rejected"
+                    ]
+                },
+                {
+                    "label": "To Status",
+                    "name": "toStatus",
+                    "type": "String(20)",
+                    "hasFixedValuesList": true,
+                    "values": [
+                        "Open",
+                        "In Review",
+                        "Approved",
+                        "Rejected"
+                    ]
+                },
+                {
+                    "label": "Actor",
+                    "name": "actor",
+                    "type": "String(50)"
+                },
+                {
+                    "label": "Comment",
+                    "name": "comment",
+                    "type": "String(255)"
+                },
+                {
+                    "label": "Decision Date",
+                    "name": "decisionDate",
+                    "type": "DateTime"
+                },
+                {
+                    "label": "Decision By",
+                    "name": "decisionBy",
+                    "type": "String(100)"
+                },
+                {
+                    "label": "Decision",
+                    "name": "decision",
+                    "type": "String(100)"
+                },
+                {
+                    "label": "Comments",
+                    "name": "comments",
+                    "type": "String(255)"
+                }
+            ]
+        }
+    ],
+    "service": {
+        "name": "assemblyImpactCaseWorklistSrv",
+        "path": "srv/service.cds"
+    },
+    "applications": [
+        {
+            "pages": [
+                {
+                    "type": "ListReport",
+                    "entityType": "ReviewCases",
+                    "listReportContent": {
+                        "loadDataOnAppLaunch": "Enabled",
+                        "filters": [
+                            "plant",
+                            "proposedRevision",
+                            "reviewStatus",
+                            "sourceType"
+                        ],
+                        "tables": [
+                            {
+                                "title": "Change Requests",
+                                "baseEntityType": "ReviewCases",
+                                "columns": [
+                                    "caseID",
+                                    "currentRevision",
+                                    "proposedRevision",
+                                    "numberOfInstructionFindings",
+                                    "numberOfMaterialsShort",
+                                    "estimatedCostDelta",
+                                    "sourceType",
+                                    "reviewStatus"
+                                ],
+                                "id": "viewId"
+                            }
+                        ],
+                        "fields": [
+                            {
+                                "name": "assembly",
+                                "type": "String(20)",
+                                "label": "Assembly"
+                            },
+                            {
+                                "name": "caseID",
+                                "type": "String(20)",
+                                "label": "Change ID",
+                                "semanticKey": true
+                            },
+                            {
+                                "name": "currentRevision",
+                                "type": "String(5)",
+                                "label": "Current revision"
+                            },
+                            {
+                                "name": "proposedRevision",
+                                "type": "String(5)",
+                                "label": "Proposed revision"
+                            },
+                            {
+                                "name": "numberOfInstructionFindings",
+                                "type": "Integer",
+                                "label": "Number of instruction findings"
+                            },
+                            {
+                                "name": "numberOfMaterialsShort",
+                                "type": "Integer",
+                                "label": "Number of materials short"
+                            },
+                            {
+                                "name": "estimatedCostDelta",
+                                "type": "Decimal",
+                                "label": "Estimated cost delta",
+                                "isAmount": true
+                            },
+                            {
+                                "name": "sourceType",
+                                "type": "String(20)",
+                                "label": "Source type",
+                                "hasFixedValuesList": true,
+                                "values": [
+                                    "Synthetic Fixture",
+                                    "Manual",
+                                    "GenAI Proposal",
+                                    "Imported"
+                                ]
+                            },
+                            {
+                                "name": "reviewStatus",
+                                "type": "String(20)",
+                                "label": "Review status",
+                                "hasFixedValuesList": true,
+                                "values": [
+                                    "Open",
+                                    "In Review",
+                                    "Approved",
+                                    "Rejected"
+                                ]
+                            },
+                            {
+                                "name": "plant",
+                                "type": "String(10)",
+                                "label": "Plant"
+                            },
+                            {
+                                "name": "title",
+                                "type": "String(100)",
+                                "label": "Title"
+                            },
+                            {
+                                "name": "reviewOwner",
+                                "type": "String(50)",
+                                "label": "Review owner"
+                            },
+                            {
+                                "name": "productionQuantity",
+                                "type": "Integer",
+                                "label": "Production quantity"
+                            }
+                        ]
+                    }
+                },
+                {
+                    "type": "ObjectPage",
+                    "entityType": "ReviewCases",
+                    "objectPageContent": {
+                        "sections": [
+                            {
+                                "title": "General Information",
+                                "id": "formSectionGeneralInformation",
+                                "fields": [
+                                    "productionQuantity",
+                                    "reviewStatus",
+                                    "reviewOwner",
+                                    "sourceType"
+                                ]
+                            },
+                            {
+                                "title": "Findings",
+                                "id": "tableSectionFindings",
+                                "isTableSection": true,
+                                "fields": [
+                                    "Findings/findingType",
+                                    "Findings/material",
+                                    "Findings/description",
+                                    "Findings/severity",
+                                    "Findings/sourceType",
+                                    "Findings/sourceReference"
+                                ]
+                            },
+                            {
+                                "title": "Material Impact",
+                                "id": "tableSectionMaterialImpacts",
+                                "isTableSection": true,
+                                "fields": [
+                                    "MaterialImpacts/material",
+                                    "MaterialImpacts/requiredQuantity",
+                                    "MaterialImpacts/availableQuantity",
+                                    "MaterialImpacts/gapQuantity",
+                                    "MaterialImpacts/unitOfMeasure"
+                                ]
+                            },
+                            {
+                                "title": "Decision History",
+                                "id": "tableSectionDecisionHistories",
+                                "isTableSection": true,
+                                "fields": [
+                                    "DecisionHistories/eventTime",
+                                    "DecisionHistories/fromStatus",
+                                    "DecisionHistories/toStatus",
+                                    "DecisionHistories/actor",
+                                    "DecisionHistories/comment"
+                                ]
+                            }
+                        ],
+                        "headerSections": [
+                            {
+                                "title": "Review Case Header",
+                                "id": "headerSectionReviewCase",
+                                "fields": [
+                                    "caseID",
+                                    "title",
+                                    "plant",
+                                    "currentRevision",
+                                    "proposedRevision"
+                                ]
+                            }
+                        ],
+                        "tabs": [
+                            {
+                                "id": "tabGeneralInformation",
+                                "title": "General Information",
+                                "subsections": [
+                                    "formSectionGeneralInformation"
+                                ]
+                            },
+                            {
+                                "id": "tabFindings",
+                                "title": "Findings",
+                                "subsections": [
+                                    "tableSectionFindings"
+                                ]
+                            },
+                            {
+                                "id": "tabMaterialImpact",
+                                "title": "Material Impact",
+                                "subsections": [
+                                    "tableSectionMaterialImpacts"
+                                ]
+                            },
+                            {
+                                "id": "tabDecisionHistory",
+                                "title": "Decision History",
+                                "subsections": [
+                                    "tableSectionDecisionHistories"
+                                ]
+                            }
+                        ],
+                        "tableSectionAssociations": [
+                            "Findings",
+                            "MaterialImpacts",
+                            "DecisionHistories"
+                        ],
+                        "chartSections": []
+                    }
+                },
+                {
+                    "type": "ObjectPage",
+                    "entityType": "Findings",
+                    "objectPageContent": {
+                        "sections": [
+                            {
+                                "title": "Finding Details",
+                                "id": "formFindingDetails",
+                                "fields": [
+                                    "description"
+                                ]
+                            },
+                            {
+                                "title": "Material Impacts",
+                                "id": "tableMaterialImpacts",
+                                "isTableSection": true,
+                                "fields": [
+                                    "MaterialImpacts/material",
+                                    "MaterialImpacts/requiredQuantity",
+                                    "MaterialImpacts/availableQuantity",
+                                    "MaterialImpacts/gapQuantity",
+                                    "MaterialImpacts/unit"
+                                ]
+                            },
+                            {
+                                "title": "Decision Histories",
+                                "id": "tableDecisionHistories",
+                                "isTableSection": true,
+                                "fields": [
+                                    "DecisionHistories/decisionDate",
+                                    "DecisionHistories/decisionBy",
+                                    "DecisionHistories/decision",
+                                    "DecisionHistories/comments"
+                                ]
+                            }
+                        ],
+                        "headerSections": [
+                            {
+                                "title": "Finding Overview",
+                                "id": "headerFindingOverview",
+                                "fields": [
+                                    "findingType",
+                                    "material",
+                                    "severity",
+                                    "sourceType",
+                                    "sourceReference"
+                                ]
+                            }
+                        ],
+                        "tabs": [
+                            {
+                                "id": "tabGeneral",
+                                "title": "General",
+                                "subsections": [
+                                    "",
+                                    "formFindingDetails"
+                                ]
+                            },
+                            {
+                                "id": "tabFindings1",
+                                "title": "Findings",
+                                "subsections": [
+                                    ""
+                                ]
+                            },
+                            {
+                                "id": "tabMaterialImpacts",
+                                "title": "Material Impacts",
+                                "subsections": [
+                                    "tableMaterialImpacts"
+                                ]
+                            },
+                            {
+                                "id": "tabDecisionHistories",
+                                "title": "Decision Histories",
+                                "subsections": [
+                                    "tableDecisionHistories"
+                                ]
+                            }
+                        ],
+                        "tableSectionAssociations": [
+                            "MaterialImpacts",
+                            "DecisionHistories"
+                        ],
+                        "chartSections": []
+                    }
+                }
+            ],
+            "name": "assemblyImpactCaseWorklist"
+        }
+    ]
+}

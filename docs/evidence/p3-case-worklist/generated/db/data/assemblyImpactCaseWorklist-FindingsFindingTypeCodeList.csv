@@ -1,0 +1,8 @@
+code;name
+ComponentReplaced;Component Replaced
+QuantityChanged;Quantity Changed
+ComponentAdded;Component Added
+ComponentRemoved;Component Removed
+StockGap;Stock Gap
+CostChange;Cost Change
+OutdatedInstructionReference;Outdated Instruction Reference

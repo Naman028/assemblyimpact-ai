@@ -1,0 +1,11 @@
+ID;material;requiredQuantity;availableQuantity;gapQuantity;unitOfMeasure;unit;reviewCases_ID;findings_ID
+5343bb30-8730-4aa1-ac5b-b41ff56a429f;FAN-B;100;80;20;Pieces;PC;3c813fdf-eefe-4515-b0f3-ff1939748a2a;f0f81a58-9e6c-49f7-aaad-5a7179519b9d
+40bb15f4-76f4-49a3-9e98-bb8aac9de067;BRKT-01;300;250;50;Pieces;PC;3c813fdf-eefe-4515-b0f3-ff1939748a2a;992b584b-46f1-4109-b78d-d7367645609b
+d1488db0-02e1-47a6-980a-f644cd7bf2cb;SEAL-45;200;200;0;Pieces;PC;75df4ce3-c8e4-4719-a8ef-fcea86727c22;b17abdb6-8e77-49f0-a2ca-ccc44e3977fb
+6700b69e-4e78-4c20-a445-5e9b55ddbff2;MTR-700;50;45;5;Pieces;PC;75df4ce3-c8e4-4719-a8ef-fcea86727c22;2c94a2ec-5e97-4e25-b4d2-7865d361e024
+d8ab57bc-f166-4a6c-8f39-b13afdfc4487;VALVE-12;30;30;0;Pieces;PC;51803fe8-4c11-41bc-b8a5-217605043707;ce151ac1-a8a9-4de8-9cd6-d015d3b1c30c
+0a08b7e5-4733-4597-ac4f-752c31b8d125;HEAT-EX;10;8;2;Units;PC;9b066baf-ca7f-471b-ab94-634e1d59d5e2;e37c99e6-3784-49bb-8795-a9acab8bfd7c
+ec724834-ea73-4c55-b8a1-6b42a6d90ed7;CTRL-FW;1;1;0;Units;PC;bb7cbf72-5d9b-45ff-b3fa-90ce7055df32;44e8a1fa-93be-44c6-bd04-5615ebd09add
+1ebf3cd0-2b9e-43e9-96a8-0da1c35ffd2b;FAN-B;120;100;20;Pieces;PC;8eb44c04-d390-4504-b30b-9b4c133a2ccd;992b584b-46f1-4109-b78d-d7367645609b
+c51a7a86-9f40-44ab-89ed-5abdced04c27;MTR-700;60;55;5;Pieces;PC;f81bfe4b-fdd4-4337-8a40-bbd202dfef05;b17abdb6-8e77-49f0-a2ca-ccc44e3977fb
+98ab5e42-3dd7-4220-95d9-e19711337f01;SENS-800;15;10;5;Pieces;PC;f6cf846b-a97e-437b-b628-38cfc6a17216;2c94a2ec-5e97-4e25-b4d2-7865d361e024

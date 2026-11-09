@@ -1,0 +1,47 @@
+I want to create an application called AssemblyImpact Case Worklist for engineering change review cases in a manufacturing company.
+
+All data in this application is synthetic demonstration data for the fictional company NovaMotion Manufacturing. It is not real company data and not real SAP S/4HANA data. Do not create real person names; use role names such as "Engineering Reviewer 1".
+
+The main page is a list of review cases. Each review case belongs to exactly one assembly. The list page should follow this layout:
+
+<userImage>
+
+Use the image only for the layout, the filter fields and the column order. The values shown in the image are illustrative.
+
+An assembly has an assembly code (for example COOL-100), a description (for example Cooling Module) and a plant (four characters, for example 1000).
+
+A review case has the following details:
+- Case ID, for example EC-000473
+- Title
+- Assembly
+- Plant
+- Current revision, for example A
+- Proposed revision, for example B
+- Production quantity, for example 100
+- Number of instruction findings
+- Number of materials short
+- Estimated cost delta in EUR
+- Source type with the values: Synthetic Fixture, Manual, GenAI Proposal, Imported
+- Review status with the values: Open, In Review, Approved, Rejected. Show Open as neutral, In Review as warning, Approved as positive and Rejected as negative.
+- Review owner
+
+The list should have filter fields for Assembly, Plant, Proposed revision, Review status and Source type.
+
+The list should show these columns: Assembly, Case ID, Current revision, Proposed revision, Number of instruction findings, Number of materials short, Estimated cost delta, Source type, Review status.
+
+Clicking a review case opens the review case details page. The details page should have these sections as tabs:
+- General Information: Case ID, Title, Assembly, Plant, Current revision, Proposed revision, Production quantity, Review status, Review owner, Source type.
+- Findings: a table of findings for the case. Each finding has a finding type with the values Component Replaced, Quantity Changed, Component Added, Component Removed, Stock Gap, Cost Change, Outdated Instruction Reference; a material; a description; a severity with the values High, Medium, Low (show High as negative, Medium as warning, Low as neutral); a source type; and a source reference such as a BOM item or work instruction identifier.
+- Material Impact: a table with material, required quantity, available quantity, gap quantity and unit of measure.
+- Decision History: a table with event time, from status, to status, actor and comment.
+
+A review case can have many findings, many material impact lines and many decision history entries.
+
+Clicking a finding opens a finding details page that shows all fields of the finding.
+
+Use this synthetic example as one of the review cases: Case ID EC-000473, title "Replace cooling fan on COOL-100", assembly COOL-100, plant 1000, current revision A, proposed revision B, production quantity 100, 1 instruction finding, 2 materials short, estimated cost delta 1200.00 EUR, source type Synthetic Fixture, review status In Review.
+
+Its material impact lines are: FAN-B required 100, available 80, gap 20, unit PC; BRKT-01 required 300, available 250, gap 50, unit PC.
+
+The application only displays review cases. Cost, stock and instruction results are calculated by the backend later and are not calculated in this application.
+

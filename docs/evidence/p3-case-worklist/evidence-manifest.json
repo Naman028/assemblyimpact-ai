@@ -1,0 +1,386 @@
+{
+ "milestone": "P3 Case Worklist",
+ "head": "377e46aa5b712487fa63777f9c0ebe38e00271bf",
+ "files": [
+  {
+   "path": "P3_Case_Worklist_Report.pdf",
+   "bytes": 1664646,
+   "sha256": "1d55909170082e68314b557766432dcb18997f31e4b33b526237778467e51694"
+  },
+  {
+   "path": "README.md",
+   "bytes": 1105,
+   "sha256": "0cc3baa54013f7d819d51ab2ddb2e92d5425ec2b6cf127e09595e55e7c436b65"
+  },
+  {
+   "path": "decisions.md",
+   "bytes": 2923,
+   "sha256": "fb4d667b7fda130f19ad4c30d4e894490524882780de47c238ef65230c3dfa73"
+  },
+  {
+   "path": "generated/.fiori-ai/ai-integrity.json",
+   "bytes": 16060,
+   "sha256": "95269ba4e1c4375904373ae8c73f3e12971110f3dbec8db3f20dd67703dc74db"
+  },
+  {
+   "path": "generated/.fiori-ai/flowImage.jpeg",
+   "bytes": 104691,
+   "sha256": "c602d07393f957a464eab268a5bbdeaaeda57af167892c06b9dbf741bcef3b1b"
+  },
+  {
+   "path": "generated/.fiori-ai/generator-config.json",
+   "bytes": 936,
+   "sha256": "a0bc70b6ac517e0a4b17516cb5ce562d626e27131865a629561540c07b9a3d9f"
+  },
+  {
+   "path": "generated/.fiori-ai/log.txt",
+   "bytes": 82093,
+   "sha256": "1e0119e4ec5283c4f424fb824342e5e92ded5d3957e2d5abdefd14a649d45840"
+  },
+  {
+   "path": "generated/.fiori-ai/model.json",
+   "bytes": 26253,
+   "sha256": "cf641e954611badbb70b399c586b6fe513ee65d635c4b8f9e4e96ca546c11024"
+  },
+  {
+   "path": "generated/.fiori-ai/user-input.txt",
+   "bytes": 3425,
+   "sha256": "fd920345a8282096ff6f0029e60464216e17a4be172fb991abeb9dcbdbef0329"
+  },
+  {
+   "path": "generated/.fiori-ai/userImage.png",
+   "bytes": 524863,
+   "sha256": "0353a805fafb99e7a92dc28a47ba3368e681ed4a523616ae2b80fe975aff37ab"
+  },
+  {
+   "path": "generated/.gitignore",
+   "bytes": 174,
+   "sha256": "aa454ce0e4d4333c71487c6da97204aa7dcafb97750faddebc87f42fd69ac81e"
+  },
+  {
+   "path": "generated/.vscode/extensions.json",
+   "bytes": 155,
+   "sha256": "d53c9dbfdca0c5c24a8f55ed38151a09aadb98107e87d991e9abd1cfeeb6ad9b"
+  },
+  {
+   "path": "generated/.vscode/launch.json",
+   "bytes": 357,
+   "sha256": "fb31743e398d1cf5e2979c169e430615425edebc553b45135714610611c2c039"
+  },
+  {
+   "path": "generated/.vscode/tasks.json",
+   "bytes": 136,
+   "sha256": "a1c03cdf126c395a6d6dcf7836aa9685091653983caebe86bf3240fd4784c315"
+  },
+  {
+   "path": "generated/app/assemblyimpactcaseworklist/.appGenInfo.json",
+   "bytes": 1095,
+   "sha256": "d91b0aa3bed1ac72401c55725e8c1063216238b33482b113d66322150f0fa39a"
+  },
+  {
+   "path": "generated/app/assemblyimpactcaseworklist/README.md",
+   "bytes": 1384,
+   "sha256": "2049c34f6cdfb281dccae79100a0b41837f22bd9503b78c0f36d9b86ad8d8130"
+  },
+  {
+   "path": "generated/app/assemblyimpactcaseworklist/annotations.cds",
+   "bytes": 23923,
+   "sha256": "b1faccafd46928eb90a97dd1e32416fd4fec1db329036475e3841fa5747aab32"
+  },
+  {
+   "path": "generated/app/assemblyimpactcaseworklist/eslint.config.mjs",
+   "bytes": 119,
+   "sha256": "8240c1b7815b52e45e588c1f972b1cac67aefcc9d26ee2b817ef4132800b9529"
+  },
+  {
+   "path": "generated/app/assemblyimpactcaseworklist/package.json",
+   "bytes": 498,
+   "sha256": "2661837f3bd1379790bdffe565bf8fa477c599a1abc8b33accf5617151b93e1e"
+  },
+  {
+   "path": "generated/app/assemblyimpactcaseworklist/ui5.yaml",
+   "bytes": 917,
+   "sha256": "3dafedcddf5d86fc637fb937af17b5e565baf267bcada88e81a22866cb1bb4d8"
+  },
+  {
+   "path": "generated/app/assemblyimpactcaseworklist/webapp/Component.js",
+   "bytes": 264,
+   "sha256": "3228354770da01b171708d39a8337624f615ca8a61e07398c6ef7b2bf9ba2052"
+  },
+  {
+   "path": "generated/app/assemblyimpactcaseworklist/webapp/i18n/i18n.properties",
+   "bytes": 255,
+   "sha256": "7270516cea5956e9eb130704e8dbbd222c82ef19cb4b2c689b0a471b9660a0b3"
+  },
+  {
+   "path": "generated/app/assemblyimpactcaseworklist/webapp/index.html",
+   "bytes": 1150,
+   "sha256": "176f5e8b562306ff783178f4738242ddd97478b13c3cb9162017fbc1b69b2340"
+  },
+  {
+   "path": "generated/app/assemblyimpactcaseworklist/webapp/manifest.json",
+   "bytes": 5129,
+   "sha256": "de67411602a104c942b39136e9c3d2bf451008b901070a996dd7634f42652207"
+  },
+  {
+   "path": "generated/app/assemblyimpactcaseworklist/webapp/test/integration/ReviewCasesListJourney.gen.js",
+   "bytes": 3596,
+   "sha256": "3977b565a821b6adb6fb64dbe2bbc20697355f58a3db0e66d30c07baa1ec2a4c"
+  },
+  {
+   "path": "generated/app/assemblyimpactcaseworklist/webapp/test/integration/ReviewCasesObjectPageJourney.gen.js",
+   "bytes": 2557,
+   "sha256": "5dd63e0b6ee557fd29db2517141cf275a25e737a0174de4330c3bbc2213e66cb"
+  },
+  {
+   "path": "generated/app/assemblyimpactcaseworklist/webapp/test/integration/pages/JourneyRunner.js",
+   "bytes": 662,
+   "sha256": "aba6780b9d96f22b279480b135c6788417dcb55461e4f2f1151f2193e1a4a29a"
+  },
+  {
+   "path": "generated/app/assemblyimpactcaseworklist/webapp/test/integration/pages/ReviewCasesList.gen.js",
+   "bytes": 2001,
+   "sha256": "62192fea5d4c83c9f462b3c47cb437b3064397d11bd09b2abf27b5ef8e9dfc20"
+  },
+  {
+   "path": "generated/app/assemblyimpactcaseworklist/webapp/test/integration/pages/ReviewCasesObjectPage.gen.js",
+   "bytes": 2312,
+   "sha256": "72d89750c11a6518e24519bf823a3d958c62840891fa3f578536364b934a0a92"
+  },
+  {
+   "path": "generated/app/services.cds",
+   "bytes": 55,
+   "sha256": "04c1ef276f75020dfaeeff0fd80a2f95c8015ead664b02da9a231dfcff06e66e"
+  },
+  {
+   "path": "generated/db/data/assemblyImpactCaseWorklist-DecisionHistoriesFromStatusCodeList.csv",
+   "bytes": 75,
+   "sha256": "731a4fe274e34e069095e6447fb60da638e8c44589a2b5ddd116f03ab1d9743f"
+  },
+  {
+   "path": "generated/db/data/assemblyImpactCaseWorklist-DecisionHistoriesToStatusCodeList.csv",
+   "bytes": 75,
+   "sha256": "731a4fe274e34e069095e6447fb60da638e8c44589a2b5ddd116f03ab1d9743f"
+  },
+  {
+   "path": "generated/db/data/assemblyImpactCaseWorklist-FindingsFindingTypeCodeList.csv",
+   "bytes": 248,
+   "sha256": "6540cb9de48dc03656c3a8622b6ba0df37127563aeb3bb9c1f9eab9d1c4e5b29"
+  },
+  {
+   "path": "generated/db/data/assemblyImpactCaseWorklist-FindingsSeverityCodeList.csv",
+   "bytes": 42,
+   "sha256": "2fa68235cefd50c494ce3b03e6c1fb88301826edf5d6f92a16464da1159abac2"
+  },
+  {
+   "path": "generated/db/data/assemblyImpactCaseWorklist-ReviewCasesReviewStatusCodeList.csv",
+   "bytes": 75,
+   "sha256": "731a4fe274e34e069095e6447fb60da638e8c44589a2b5ddd116f03ab1d9743f"
+  },
+  {
+   "path": "generated/db/data/assemblyImpactCaseWorklist-ReviewCasesSourceTypeCodeList.csv",
+   "bytes": 106,
+   "sha256": "b043baaf9b285f46d57493ec052525eac4acfba86ec89b314f287e4629b62d6c"
+  },
+  {
+   "path": "generated/db/schema.cds",
+   "bytes": 3051,
+   "sha256": "83d670797de42e10cbb4bc5e0178cbaeb40ea77b06e3fb953e08ca2152844d6a"
+  },
+  {
+   "path": "generated/eslint.config.mjs",
+   "bytes": 83,
+   "sha256": "2ae3f3c6b4c2250be895cc182473d9e9d14a0a24534a8332d4dd64d847a75451"
+  },
+  {
+   "path": "generated/package-lock.json",
+   "bytes": 303535,
+   "sha256": "12a5e98ad4317cf62943c454af64f48c4d757c9b767052e00c78acf534c4ce17"
+  },
+  {
+   "path": "generated/package.json",
+   "bytes": 504,
+   "sha256": "7fd78ac53651e4d1a67d588fe58d06ce7cec55b105bb05cc2b05dd554f49ecb1"
+  },
+  {
+   "path": "generated/readme.md",
+   "bytes": 718,
+   "sha256": "238881a2a16c8f9859e1901c1b660f8090c6f3b664f506ddf7528352790e18bd"
+  },
+  {
+   "path": "generated/srv/service.cds",
+   "bytes": 353,
+   "sha256": "6950e1aba15bc044ac4dc36007e32db98976cf882966d1aa09068b17e13f485c"
+  },
+  {
+   "path": "generated/test/data/assemblyImpactCaseWorklist-Assemblies.csv",
+   "bytes": 465,
+   "sha256": "f44d14dc5183f86c7395ca3c3e1f2f9ae38fe53f1ee90600389d632091593954"
+  },
+  {
+   "path": "generated/test/data/assemblyImpactCaseWorklist-DecisionHistories.csv",
+   "bytes": 2768,
+   "sha256": "fffb8e64c5e7460a3031642f17ee91b666e3ebbe76de24a68283b3dd6b1b757b"
+  },
+  {
+   "path": "generated/test/data/assemblyImpactCaseWorklist-Findings.csv",
+   "bytes": 1219,
+   "sha256": "65fa5414ee9896046e3a043015398c9d1089e674fe575fc20c85c6e319d77e39"
+  },
+  {
+   "path": "generated/test/data/assemblyImpactCaseWorklist-MaterialImpacts.csv",
+   "bytes": 1477,
+   "sha256": "5ab0fc43b70da909f8f83316eef8ea50b5aac3a5be10ea781d121fd6a90c3e38"
+  },
+  {
+   "path": "generated/test/data/assemblyImpactCaseWorklist-ReviewCases.csv",
+   "bytes": 2047,
+   "sha256": "9a73dcf91b235edd4d343a1403e37cc2c3a151e71e27227f84573b8182d668e6"
+  },
+  {
+   "path": "implementation-report.md",
+   "bytes": 22305,
+   "sha256": "55ff4c9a90afbba5abc44c8842ec8c7a0880b5c0c189ecabfee07c68ff25213a"
+  },
+  {
+   "path": "logs/generated-origin.log",
+   "bytes": 271,
+   "sha256": "4bcb69137ebbbec72ce889be23583bcffb68f4efa0f9aa0504e2124f915ee2fa"
+  },
+  {
+   "path": "logs/lint.log",
+   "bytes": 94,
+   "sha256": "1575700e891886bf1e8f07e9e6d432a9cfed5e2bcaf6abacb018be311acb39d9"
+  },
+  {
+   "path": "logs/npm-test.log",
+   "bytes": 192569,
+   "sha256": "16e8fa5e9d898af04addf0b9529d6000a1ec07bd73550f9f6fd0323e2c030d25"
+  },
+  {
+   "path": "report-source/build_report.py",
+   "bytes": 29012,
+   "sha256": "35d5843c6c6dd402d052bd9a0c06064984abd7e416aacb441345a1b0cd75c84b"
+  },
+  {
+   "path": "report-source/github.json",
+   "bytes": 238,
+   "sha256": "5e7fd5c113db69ae2bfa91d85c4def31c6bf34c111b1be1f34f7ed24357a3a11"
+  },
+  {
+   "path": "report-source/make_manifest.py",
+   "bytes": 761,
+   "sha256": "201cbc02530b224db691d2780f9f478db05f85f04e797d8021fde9ecaa22fec7"
+  },
+  {
+   "path": "report-source/times.txt",
+   "bytes": 540,
+   "sha256": "9e97e2619405742417bb47f0b9613e0082f0ce55b91690eab37c65f86d4cb627"
+  },
+  {
+   "path": "screenshots/P3-01_bas-synced-main-regression.jpg",
+   "bytes": 55548,
+   "sha256": "c164cf555a7a44f24fc90e0a4c9c5884a2bb5d28db129ab4be4141d024969d9f"
+  },
+  {
+   "path": "screenshots/P3-02_pa-input-requirements-loaded.jpg",
+   "bytes": 65946,
+   "sha256": "eb762e28071947c4b6f41314c951fdbbb8acb604db3834cd0ffa467405ca5357"
+  },
+  {
+   "path": "screenshots/P3-03_pa-generation-step1.jpg",
+   "bytes": 44598,
+   "sha256": "a419db4e584d288f37358e0c4e34b2a8665473d3e6017908d96da3c73423ad4a"
+  },
+  {
+   "path": "screenshots/P3-04_pa-generation-complete.jpg",
+   "bytes": 74922,
+   "sha256": "765742603311cfceb07aef8ce3310a78442bdb4dc5b11c3b9b74ca83f084150b"
+  },
+  {
+   "path": "screenshots/P3-05_pa-page-map.jpg",
+   "bytes": 110483,
+   "sha256": "f40b009d556e9fd3f6cab163483ac08ebc910fff619ea445146f13131f4002b6"
+  },
+  {
+   "path": "screenshots/P3-06_pa-generated-files.jpg",
+   "bytes": 130336,
+   "sha256": "af9b66a143dab755f236f7a27f2d4bf6a28c344c38aac971fd22f217c64f46dd"
+  },
+  {
+   "path": "screenshots/P3-07_pa-baseline-and-draft-service.jpg",
+   "bytes": 98525,
+   "sha256": "021252bc97ca329356c5d29e0e1eaa87337c3d39d5a5adf5bb615c1028de887c"
+  },
+  {
+   "path": "screenshots/P3-08_generated-ui-list-report.jpg",
+   "bytes": 60728,
+   "sha256": "0d4091c6904e5b812d19ae88cdc4fae32c8282213723c66cafaf805ce9148683"
+  },
+  {
+   "path": "screenshots/P3-09_generated-ui-object-page.jpg",
+   "bytes": 59360,
+   "sha256": "7fb294cf9b5038fdce11355876757c2a25174b36c5cf77e4d8bc1c3caab178da"
+  },
+  {
+   "path": "screenshots/P3-10_integrated-worklist-cviewer.jpg",
+   "bytes": 34302,
+   "sha256": "c15bbd6685e7e1fb2ae864a1d17439fa0a906f7e5b10d07dba03950055f66fd1"
+  },
+  {
+   "path": "screenshots/P3-11_runimpact-forbidden-viewer.jpg",
+   "bytes": 38497,
+   "sha256": "2d6e13b7d50e4807eae1f0ba9ab6ff63d7749327dca7f42033603359a9340420"
+  },
+  {
+   "path": "screenshots/P3-12_runimpact-analyst-worklist-values.jpg",
+   "bytes": 37065,
+   "sha256": "cf4bdeefcd2807eb168cb2d56cb6d42b069e482e9f6d584518d203f19f197ad4"
+  },
+  {
+   "path": "screenshots/P3-13_case-object-page.jpg",
+   "bytes": 58494,
+   "sha256": "b775f9cca0469b3e1826994001dab26da4817a0b990e0a65369033c72bb1d5fa"
+  },
+  {
+   "path": "screenshots/P3-14_impact-run-findings.jpg",
+   "bytes": 93368,
+   "sha256": "88012287fdd0a5b607d133bcdb8d812d556c339ca912b44777d861fa01384148"
+  },
+  {
+   "path": "screenshots/P3-15_impact-run-materials-bom.jpg",
+   "bytes": 65784,
+   "sha256": "8ad4dff1b9c6184554569432f9e3b83294bf7bb37914716ae6795caebcd1f19a"
+  },
+  {
+   "path": "screenshots/P3-16_plant2000-user-isolation.jpg",
+   "bytes": 34295,
+   "sha256": "b767fbd2cee97df12dbc760e426f965deb5b5cb6182629d0f4d78dabf51c2ee9"
+  },
+  {
+   "path": "screenshots/P3-17_cross-plant-deeplink-not-found.jpg",
+   "bytes": 21158,
+   "sha256": "0abfe1d864a38ea4e2f4a50024178480608b6eedd128f3ec2dcb0b2bab082759"
+  },
+  {
+   "path": "screenshots/P3-18_before-fix-unsorted.jpg",
+   "bytes": 65945,
+   "sha256": "70b0e016b53d2663a9a7a1e86a43f0f15d661ac4ab47c39c1c2b3d48fd0c9a96"
+  },
+  {
+   "path": "screenshots/P3-19_run-material-bom-sorted.jpg",
+   "bytes": 66848,
+   "sha256": "55d82f82f3ca0e387c3e649aa7d29294fe331cf54525704b8470d5d0b2870061"
+  },
+  {
+   "path": "screenshots/P3-20_run-findings-sorted.jpg",
+   "bytes": 102751,
+   "sha256": "48c0d6cd0e75c1cfc540f8a28e248c48c9508e24a85460bb78d92e06c14cd5bd"
+  },
+  {
+   "path": "test-results/verification-summary.md",
+   "bytes": 751,
+   "sha256": "b9ac8075ffbb20f3e2c2a4de97c8d63ae65d3fefe39c13d3f79551fa45bb1e7c"
+  }
+ ]
+}
