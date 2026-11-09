@@ -4357,6 +4357,47 @@
         }
       }
     },
+    "/ReviewCases({ID})/EngineeringReview.explainImpact": {
+      "get": {
+        "summary": "Invokes function explainImpact",
+        "tags": [
+          "Review Cases"
+        ],
+        "parameters": [
+          {
+            "description": "key: ID",
+            "in": "path",
+            "name": "ID",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "01234567-89ab-cdef-0123-456789abcdef"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/EngineeringReview.ImpactExplanation"
+                    }
+                  ],
+                  "nullable": true
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        }
+      }
+    },
     "/ReviewCases({ID})/EngineeringReview.reject": {
       "post": {
         "summary": "Invokes action reject",
@@ -5821,6 +5862,12 @@
         "title": "CaseSummary",
         "type": "object",
         "properties": {
+          "ID": {
+            "type": "string",
+            "format": "uuid",
+            "example": "01234567-89ab-cdef-0123-456789abcdef",
+            "nullable": true
+          },
           "caseNumber": {
             "type": "string",
             "maxLength": 20,
@@ -5864,6 +5911,12 @@
           "sourceType": {
             "type": "string",
             "maxLength": 20,
+            "nullable": true
+          },
+          "latestRun_ID": {
+            "type": "string",
+            "format": "uuid",
+            "example": "01234567-89ab-cdef-0123-456789abcdef",
             "nullable": true
           },
           "latestRunStatus": {
@@ -6246,6 +6299,68 @@
           "change": {
             "type": "string",
             "maxLength": 20
+          }
+        }
+      },
+      "EngineeringReview.ImpactExplanation": {
+        "title": "ImpactExplanation",
+        "type": "object",
+        "properties": {
+          "runID": {
+            "type": "string",
+            "format": "uuid",
+            "example": "01234567-89ab-cdef-0123-456789abcdef",
+            "nullable": true
+          },
+          "caseNumber": {
+            "type": "string",
+            "maxLength": 20,
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "maxLength": 12,
+            "nullable": true
+          },
+          "text": {
+            "type": "string",
+            "nullable": true
+          },
+          "issues": {
+            "type": "string",
+            "maxLength": 1000,
+            "nullable": true
+          },
+          "citations": {
+            "type": "string",
+            "maxLength": 500,
+            "nullable": true
+          },
+          "generatedBy": {
+            "type": "string",
+            "maxLength": 30,
+            "nullable": true
+          },
+          "model": {
+            "type": "string",
+            "maxLength": 100,
+            "nullable": true
+          },
+          "promptSha256": {
+            "type": "string",
+            "maxLength": 64,
+            "nullable": true
+          },
+          "factCount": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "generatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2017-04-13T15:51:04.0000000Z",
+            "nullable": true
           }
         }
       },

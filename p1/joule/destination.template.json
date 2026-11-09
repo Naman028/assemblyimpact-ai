@@ -8,6 +8,8 @@
   "tokenServiceURL": "https://<subaccount>.authentication.<region>.hana.ondemand.com/oauth/token",
   "clientId": "<from the dedicated xsuaa service key; never commit>",
   "clientSecret": "<from the dedicated xsuaa service key; never commit>",
+  "scope": "<xsappname>.ChangeViewer <xsappname>.ImpactRunner",
+  "_scopeNote": "Required (review finding): narrows the exchanged user token to read + impact run. A user who also holds Analyst or Approver collections still gets only these two scopes through Joule; a JouleReader-only user gets ChangeViewer only. Replace <xsappname> with the deployed value (assemblyimpact-ai-<org>-<space>). Remove this note key before import.",
   "sap.applicationdevelopment.actions.enabled": "true",
   "sap.processautomation.enabled": "true",
   "HTML5.DynamicDestination": "false",

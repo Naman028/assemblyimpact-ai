@@ -19,7 +19,7 @@ const ops = [
   pick('/ReviewCases({ID})/decisions', 'get', 'GetDecisionHistory', 'Get the review decision history of a case',
     'Read-only. Submit, approve and reject events with actor, comment, the evaluated impact run and the evidence status at decision time. Joule never approves or rejects. Cross-plant IDs return 404.'),
   pick('/ReviewCases({ID})/EngineeringReview.runImpact', 'post', 'RunEngineeringImpact', 'Run the engineering impact calculation',
-    'Invokes the existing bound OData V4 action runImpact for one review case. Allowed for role ChangeAnalyst within the user\'s plants only (403 otherwise, 404 for other plants). Returns the new immutable impact run. Body: {"asOfDate": "YYYY-MM-DD"}.'),
+    'Invokes the existing bound OData V4 action runImpact for one review case. Allowed for roles ChangeAnalyst and ImpactRunner (Joule) within the user\'s plants only (403 otherwise, 404 for other plants). Returns the new immutable impact run. Body: {"asOfDate": "YYYY-MM-DD"}.'),
 ];
 const paths = {};
 for (const [p, m, op] of ops) (paths[p] ??= {})[m] = op;

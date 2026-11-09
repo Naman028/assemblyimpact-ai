@@ -51,7 +51,10 @@ export default class EngineeringReview extends cds.ApplicationService {
 
   // P1: read-only case lookup with named parameters (Joule contract, ported from PR #11). Plant-filtered, max 50 rows.
   async #lookupCases(req) {
-    const { caseNumber, status, assemblyCode } = req.data;
+    // The OpenAPI spec (and so SAP Build) sends OData string literals as quoted query values (?caseNumber='EC-000485');
+    // CAP passes the quotes through for query-form function parameters. Accept both the quoted and the plain form.
+    const unquote = v => (typeof v === 'string' && /^'.*'$/s.test(v) ? v.slice(1, -1).replace(/''/g, "'") : v);
+    const [caseNumber, status, assemblyCode] = ['caseNumber', 'status', 'assemblyCode'].map(k => unquote(req.data[k]) || undefined);
     if (caseNumber && !/^EC-\d{6}$/.test(caseNumber)) return req.reject(400, 'caseNumber must look like EC-000123.');
     if (status && !['OPEN', 'IN_REVIEW', 'APPROVED', 'REJECTED'].includes(status)) return req.reject(400, 'status must be OPEN, IN_REVIEW, APPROVED or REJECTED.');
     if (assemblyCode && !/^[A-Z][A-Z0-9-]{1,39}$/.test(assemblyCode)) return req.reject(400, 'assemblyCode has an invalid format.');
@@ -62,10 +65,10 @@ export default class EngineeringReview extends cds.ApplicationService {
     if (status) where.status = status;
     if (assemblyCode) where.assemblyCode = assemblyCode;
     const rows = await SELECT.from(this.entities.ReviewCases).columns(c => {
-      c.caseNumber, c.title, c.assemblyCode, c.plant, c.fromRevision, c.toRevision, c.status, c.statusText, c.sourceType,
-      c.latestRun(r => { r.status, r.asOfDate, r.costDeltaTotal, r.currency, r.materialsShort, r.instructionFindings; });
+      c.ID, c.caseNumber, c.title, c.assemblyCode, c.plant, c.fromRevision, c.toRevision, c.status, c.statusText, c.sourceType,
+      c.latestRun(r => { r.ID, r.status, r.asOfDate, r.costDeltaTotal, r.currency, r.materialsShort, r.instructionFindings; });
     }).where(where).orderBy('caseNumber').limit(50);
-    return rows.map(({ latestRun: r, ...c }) => ({ ...c, latestRunStatus: r?.status ?? null, latestRunAsOf: r?.asOfDate ?? null,
+    return rows.map(({ latestRun: r, ...c }) => ({ ...c, latestRun_ID: r?.ID ?? null, latestRunStatus: r?.status ?? null, latestRunAsOf: r?.asOfDate ?? null,
       costDeltaTotal: r?.costDeltaTotal ?? null, currency: r?.currency ?? null, materialsShort: r?.materialsShort ?? null, instructionFindings: r?.instructionFindings ?? null }));
   }
 

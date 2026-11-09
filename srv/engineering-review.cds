@@ -111,6 +111,7 @@ service EngineeringReview {
         generatedAt  : Timestamp;
     }
     type CaseSummary {
+        ID                  : UUID;
         caseNumber          : String(20);
         title               : String(160);
         assemblyCode        : String(40);
@@ -120,6 +121,7 @@ service EngineeringReview {
         status              : String(12);
         statusText          : String(20);
         sourceType          : String(20);
+        latestRun_ID        : UUID;
         latestRunStatus     : String(24);
         latestRunAsOf       : Date;
         costDeltaTotal      : Decimal(17, 2);

@@ -583,7 +583,7 @@
           }
         },
         "operationId": "RunEngineeringImpact",
-        "description": "Invokes the existing bound OData V4 action runImpact for one review case. Allowed for role ChangeAnalyst within the user's plants only (403 otherwise, 404 for other plants). Returns the new immutable impact run. Body: {\"asOfDate\": \"YYYY-MM-DD\"}."
+        "description": "Invokes the existing bound OData V4 action runImpact for one review case. Allowed for roles ChangeAnalyst and ImpactRunner (Joule) within the user's plants only (403 otherwise, 404 for other plants). Returns the new immutable impact run. Body: {\"asOfDate\": \"YYYY-MM-DD\"}."
       }
     }
   },
@@ -1614,6 +1614,12 @@
         "title": "CaseSummary",
         "type": "object",
         "properties": {
+          "ID": {
+            "type": "string",
+            "format": "uuid",
+            "example": "01234567-89ab-cdef-0123-456789abcdef",
+            "nullable": true
+          },
           "caseNumber": {
             "type": "string",
             "maxLength": 20,
@@ -1657,6 +1663,12 @@
           "sourceType": {
             "type": "string",
             "maxLength": 20,
+            "nullable": true
+          },
+          "latestRun_ID": {
+            "type": "string",
+            "format": "uuid",
+            "example": "01234567-89ab-cdef-0123-456789abcdef",
             "nullable": true
           },
           "latestRunStatus": {

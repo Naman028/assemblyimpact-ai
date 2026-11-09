@@ -2,10 +2,12 @@ sap.ui.define([
   "sap/ui/core/mvc/Controller", "sap/ui/model/json/JSONModel", "sap/ui/model/Filter", "sap/ui/model/FilterOperator",
   "sap/m/MessageBox", "sap/m/MessageToast", "sap/m/Dialog", "sap/m/Button", "sap/m/TextArea", "sap/m/CheckBox", "sap/m/Label",
   "sap/m/MessageStrip", "sap/m/DatePicker", "sap/m/VBox", "sap/m/Text", "sap/f/library",
-  "assemblyimpact/investigationstudio/lib/format", "assemblyimpact/investigationstudio/lib/schematic"
+  "assemblyimpact/investigationstudio/lib/format", "assemblyimpact/investigationstudio/lib/schematic",
+  "sap/ui/core/InvisibleMessage", "sap/ui/core/library"
 ], function (Controller, JSONModel, Filter, FilterOperator, MessageBox, MessageToast, Dialog, Button, TextArea, CheckBox, Label,
-  MessageStrip, DatePicker, VBox, Text, fLibrary, format, schematic) {
+  MessageStrip, DatePicker, VBox, Text, fLibrary, format, schematic, InvisibleMessage, coreLibrary) {
   "use strict";
+  var InvisibleMessageMode = coreLibrary.InvisibleMessageMode;
 
   // Curated, hand-authored component diagrams (design/p4-visual-investigation). Other assemblies
   // get the generated schematic. Both are labelled synthetic and are not CAD.
@@ -279,16 +281,30 @@ sap.ui.define([
       }).finally(function () { operation.destroy(); });
     },
 
-    /** P2: GenAI explanation of the latest run (bound function explainImpact; validated on the server). */
+    /** P2: GenAI explanation of the latest run (bound function explainImpact; validated on the server).
+     *  A slow answer is discarded if the user has moved to another case, and triggers a reload if the
+     *  server explained a newer run than the one on screen (review findings). */
     onExplain: function () {
       var ws = this.getView().getModel("ws"), that = this;
+      var caseId = this._caseId, runId = ws.getProperty("/run/ID");
       var operation = this.getView().getModel().bindContext("EngineeringReview.explainImpact(...)", this._binding.getBoundContext());
       ws.setProperty("/busy", true);
       return operation.execute().then(function () {
-        ws.setProperty("/explanation", operation.getBoundContext().getObject());
+        if (caseId !== that._caseId) { return; }
+        var result = operation.getBoundContext().getObject();
+        if (result.runID !== runId) {
+          MessageToast.show("A newer impact run exists. The workspace was reloaded; request the explanation again.");
+          return that._load(true);
+        }
+        ws.setProperty("/explanation", result);
+        InvisibleMessage.getInstance().announce(result.status === "GROUNDED"
+          ? "AI explanation generated." : "AI explanation withheld because it did not match the run evidence.", InvisibleMessageMode.Polite);
       }).catch(function (error) {
-        MessageBox.error(error.message || "The explanation is not available.", { title: "AI explanation" });
-      }).finally(function () { ws.setProperty("/busy", false); operation.destroy(); that.byId("btnExplain").focus(); });
+        if (caseId === that._caseId) { MessageBox.error(error.message || "The explanation is not available.", { title: "AI explanation" }); }
+      }).finally(function () {
+        operation.destroy();
+        if (caseId === that._caseId) { ws.setProperty("/busy", false); that.byId("btnExplain").focus(); }
+      });
     },
 
     /** Refreshes only the case list so status and figures match the server (the workspace reloads itself). */

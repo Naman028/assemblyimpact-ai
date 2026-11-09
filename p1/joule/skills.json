@@ -71,12 +71,12 @@
       ],
       "steps": [
         {
-          "action": "FindEngineeringCases",
-          "query": "$filter=caseNumber eq '<caseNumber>'&$select=ID,caseNumber,title,status,sourceType,sourceTypeText,latestRun_ID"
+          "action": "LookupEngineeringCases",
+          "query": "caseNumber='<caseNumber>' as a named parameter (the server validates the EC-000123 format and returns 400 otherwise); never build an OData $filter from user input"
         },
         {
-          "condition": "value is empty",
-          "respond": "Say that the case is not visible in the user's plants; stop."
+          "condition": "value length is not exactly 1",
+          "respond": "Say that no case (or not exactly one case) with this number is visible in the user's plants; stop without calling any further action."
         },
         {
           "condition": "latestRun_ID is null",
@@ -92,7 +92,8 @@
       "errorHandling": {
         "401": "Ask the user to sign in again.",
         "403": "Explain the missing authorization.",
-        "404": "Say that the case or run is not visible in the user's plants."
+        "404": "Say that the case or run is not visible in the user's plants.",
+        "400": "Repeat the accepted case number format EC-000123."
       },
       "requiredRoleCollection": "AssemblyImpact_JouleReader"
     },
@@ -114,12 +115,12 @@
       ],
       "steps": [
         {
-          "action": "FindEngineeringCases",
-          "query": "$filter=caseNumber eq '<caseNumber>'&$select=ID,status,sourceType"
+          "action": "LookupEngineeringCases",
+          "query": "caseNumber='<caseNumber>' as a named parameter (the server validates the EC-000123 format and returns 400 otherwise); never build an OData $filter from user input"
         },
         {
-          "condition": "value is empty",
-          "respond": "Say that the case is not visible in the user's plants; stop without calling any action."
+          "condition": "value length is not exactly 1",
+          "respond": "Say that no case (or not exactly one case) with this number is visible in the user's plants; stop without calling any further action."
         },
         {
           "confirm": "Run the impact calculation for <caseNumber> as of <asOfDate or today>? A new immutable run will replace the latest evidence."
@@ -156,12 +157,12 @@
       ],
       "steps": [
         {
-          "action": "FindEngineeringCases",
-          "query": "$filter=caseNumber eq '<caseNumber>'&$select=ID,caseNumber,status,sourceType"
+          "action": "LookupEngineeringCases",
+          "query": "caseNumber='<caseNumber>' as a named parameter (the server validates the EC-000123 format and returns 400 otherwise); never build an OData $filter from user input"
         },
         {
-          "condition": "value is empty",
-          "respond": "Say that the case is not visible in the user's plants; stop."
+          "condition": "value length is not exactly 1",
+          "respond": "Say that no case (or not exactly one case) with this number is visible in the user's plants; stop without calling any further action."
         },
         {
           "action": "GetDecisionHistory",
@@ -177,7 +178,8 @@
       "errorHandling": {
         "401": "Ask the user to sign in again.",
         "403": "Explain that the user's role does not allow reading engineering cases.",
-        "404": "The case is not in the user's plants."
+        "404": "The case is not in the user's plants.",
+        "400": "Repeat the accepted case number format EC-000123."
       }
     }
   ],

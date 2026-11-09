@@ -1,4 +1,4 @@
-// P1: the SAP Build Actions spec (three operations) against the running CAP service. Every operation is
+// P1: the SAP Build Actions spec (five operations) against the running CAP service. Every operation is
 // executed exactly as SAP Build would call it (relative path under the destination), and each response is
 // checked against the spec's response schema: declared properties, types, enums, nullability.
 // This replaces a live Actions "Test" run, which is blocked by the missing BTP destination (p1/build-actions/README.md).
@@ -108,9 +108,14 @@ test('Joule skill design maps every skill to an existing operation and keeps dec
     assert.equal(s.requiredRoleCollection, writes ? 'AssemblyImpact_JouleImpactRunner' : 'AssemblyImpact_JouleReader', `${s.name} role`);
     if (writes) assert(s.steps.some(st => st.confirm), `${s.name} asks for confirmation`);
   }
-  for (const s of skills.skills) assert.match(JSON.stringify(s.steps), /value is empty/, `${s.name} handles an empty result`);
+  for (const s of skills.skills) assert.match(JSON.stringify(s.steps), /value is empty|not exactly 1/, `${s.name} handles an empty result`);
+  // Review finding: no skill builds an OData $filter from user input; single-case skills stop unless exactly one case matches.
+  for (const s of skills.skills) {
+    assert.equal(s.steps[0].action, 'LookupEngineeringCases', `${s.name} starts with the named lookup`);
+    assert.doesNotMatch(JSON.stringify(s.steps), /\$filter=/, `${s.name} builds no $filter`);
+    if (s.name !== 'find_engineering_cases') assert.equal(s.steps[1].condition, 'value length is not exactly 1', s.name);
+  }
   assert.equal(skills.skills.find(s => s.name === 'find_engineering_cases').steps[0].action, 'LookupEngineeringCases', 'named parameters, no $filter string');
-  assert.match(JSON.stringify(skills.skills.find(s => s.name === 'explain_case_impact').steps[0]), /sourceType/);
 });
 
 test('Joule identity (ChangeViewer + ImpactRunner): reads and runs impact in its plant; everything else is refused by the server', async () => {
@@ -136,10 +141,19 @@ test('LookupEngineeringCases: named filters, caller plants only, validated input
   const one = await call('GET', `${path}(caseNumber='EC-000485')`, { user: 'joulereader' });
   assert.equal(one.status, 200, JSON.stringify(one.data));
   assert.deepEqual(one.data.value.map(c => c.caseNumber), ['EC-000485']);
+  assert.equal(one.data.value[0].ID, CASE, 'returns the key the single-case skills need');
   assert.equal((await call('GET', `${path}(caseNumber='EC-200473')`, { user: 'cviewer' })).data.value.length, 0, 'foreign plant is invisible');
   assert.equal((await call('GET', `${path}(caseNumber='EC-200473')`, { user: 'analyst2' })).data.value.length, 1, 'visible in its own plant');
   assert.equal((await call('GET', `${path}(caseNumber='x'' or 1=1')`, { user: 'cviewer' })).status, 400, 'malformed input refused');
   assert.equal((await call('GET', `${path}(status='DONE')`, { user: 'cviewer' })).status, 400);
+  // The form the published spec describes (quoted query values, as SAP Build sends them) and the plain query form.
+  const param = spec.paths[path].get.parameters.find(p => p.name === 'caseNumber');
+  assert.equal(param.in, 'query');
+  for (const q of [`?caseNumber='EC-000485'`, '?caseNumber=EC-000485', `?status='OPEN'&assemblyCode='HYD-700'`]) {
+    const r = await call('GET', path + q, { user: 'cviewer' });
+    assert.equal(r.status, 200, `${q}: ${JSON.stringify(r.data)}`);
+    assert.deepEqual(r.data.value.map(c => c.caseNumber), ['EC-000485'], q);
+  }
 });
 
 test('GetDecisionHistory conforms to the spec and is plant-restricted', async () => {
@@ -153,4 +167,13 @@ test('Joule reader identity (ChangeViewer only) cannot run impact or decide', as
   assert.equal((await call('POST', `/ReviewCases(${CASE})/EngineeringReview.runImpact`, { user: 'joulereader', body: {} })).status, 403);
   for (const action of ['submitForReview', 'approve', 'reject'])
     assert.equal((await call('POST', `/ReviewCases(${CASE})/EngineeringReview.${action}`, { user: 'joulereader', body: { comment: 'x' } })).status, 403, action);
+});
+
+test('Joule destination narrows the exchanged token to ChangeViewer + ImpactRunner', () => {
+  const dest = JSON.parse(readFileSync(join(ROOT, 'p1', 'joule', 'destination.template.json'), 'utf8'));
+  const xs = JSON.parse(readFileSync(join(ROOT, 'xs-security.json'), 'utf8'));
+  assert.equal(dest.Authentication, 'OAuth2JWTBearer', 'principal propagation');
+  const scopes = dest.scope.split(' ');
+  assert.deepEqual(scopes.map(s => s.replace('<xsappname>.', '')).sort(), ['ChangeViewer', 'ImpactRunner']);
+  for (const s of scopes) assert(xs.scopes.some(x => x.name === s.replace('<xsappname>', '$XSAPPNAME')), `${s} exists in xs-security.json`);
 });
