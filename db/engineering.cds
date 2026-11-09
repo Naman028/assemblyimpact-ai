@@ -107,6 +107,27 @@ entity ReviewCases : cuid, managed {
     decisions          : Association to many DecisionEvents on decisions.reviewCase = $self;
     // M05: provenance of imported cases (null for seeded fixtures).
     sourceImport       : Association to DataImports;
+    // Faculty demo: supporting images (evidence only; never an input of the calculation).
+    attachments        : Association to many CaseAttachments on attachments.reviewCase = $self;
+}
+
+// Supporting engineering images for a case (PNG/JPEG). Metadata is created first, the binary is
+// uploaded once with PUT .../content and validated server-side (size, signature, type). Immutable
+// once uploaded; kept for decided cases as part of the decision evidence.
+entity CaseAttachments : cuid {
+    reviewCase  : Association to ReviewCases not null;
+    fileName    : String(120) not null;
+    description : String(300);
+    @Core.IsMediaType
+    mediaType   : String(20) not null;
+    @Core.MediaType: mediaType
+    @Core.ContentDisposition.Filename: fileName
+    @Core.ContentDisposition.Type: 'inline'
+    content     : LargeBinary;
+    size        : Integer;
+    sha256      : String(64);
+    uploadedBy  : String(255) not null;
+    uploadedAt  : Timestamp not null;
 }
 
 // M05: one row per committed import (demo file or mapped ERP extract). Insert-only.

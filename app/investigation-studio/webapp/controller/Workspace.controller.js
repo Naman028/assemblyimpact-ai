@@ -3,9 +3,9 @@ sap.ui.define([
   "sap/m/MessageBox", "sap/m/MessageToast", "sap/m/Dialog", "sap/m/Button", "sap/m/TextArea", "sap/m/CheckBox", "sap/m/Label",
   "sap/m/MessageStrip", "sap/m/DatePicker", "sap/m/VBox", "sap/m/Text", "sap/f/library",
   "assemblyimpact/investigationstudio/lib/format", "assemblyimpact/investigationstudio/lib/schematic",
-  "sap/ui/core/InvisibleMessage", "sap/ui/core/library"
+  "sap/ui/core/InvisibleMessage", "sap/ui/core/library", "sap/m/Select", "sap/m/Input", "sap/ui/core/Item"
 ], function (Controller, JSONModel, Filter, FilterOperator, MessageBox, MessageToast, Dialog, Button, TextArea, CheckBox, Label,
-  MessageStrip, DatePicker, VBox, Text, fLibrary, format, schematic, InvisibleMessage, coreLibrary) {
+  MessageStrip, DatePicker, VBox, Text, fLibrary, format, schematic, InvisibleMessage, coreLibrary, Select, Input, Item) {
   "use strict";
   var InvisibleMessageMode = coreLibrary.InvisibleMessageMode;
 
@@ -15,7 +15,9 @@ sap.ui.define([
   var CASE_EXPAND = "latestRun($expand=comparisonLines,materialLines,findings)," +
     "decisions($orderby=at desc;$expand=basedOnRun($select=ID,asOfDate,status))," +
     "runs($select=ID,computedAt,asOfDate,status,costDeltaTotal,currency,computedBy;$orderby=computedAt desc)," +
-    "sourceImport,fromState($expand=items),toState($expand=items)";
+    "sourceImport,fromState($expand=items),toState($expand=items)," +
+    "attachments($select=ID,fileName,description,mediaType,size,uploadedBy,uploadedAt;$orderby=uploadedAt desc)";
+  var MAX_IMAGE_BYTES = 2 * 1024 * 1024;
 
   function empty() {
     return { busy: false, tab: "assembly", view: "B", selected: null, detail: null, case: {}, run: null, lines: [], allMaterials: [],
@@ -305,6 +307,105 @@ sap.ui.define([
         operation.destroy();
         if (caseId === that._caseId) { ws.setProperty("/busy", false); that.byId("btnExplain").focus(); }
       });
+    },
+
+    // ------------------------------------------------------------ supporting images (faculty demo)
+    attachmentUrl: function (id) { return id ? this.getView().getModel().getServiceUrl() + "CaseAttachments(" + id + ")/content" : ""; },
+
+    _csrf: function () {
+      var url = this.getView().getModel().getServiceUrl();
+      return fetch(url, { method: "HEAD", headers: { "X-CSRF-Token": "Fetch" }, credentials: "same-origin" })
+        .then(function (r) { return r.headers.get("X-CSRF-Token") || ""; });
+    },
+
+    _failure: function (response, fallback) {
+      return response.json().then(function (body) { return (body && body.error && body.error.message) || fallback; }, function () { return fallback; })
+        .then(function (message) { throw new Error(message); });
+    },
+
+    onAttachFileChange: function (event) {
+      this._attachFile = event.getParameter("files") && event.getParameter("files")[0] || null;
+    },
+
+    /** Two steps, as CAP media entities expect: create the metadata, then PUT the binary (validated by the server). */
+    onAttachUpload: function () {
+      var file = this._attachFile, that = this, ws = this.getView().getModel("ws"), base = this.getView().getModel().getServiceUrl();
+      var description = this.byId("attachDescription").getValue();
+      if (!file) { MessageBox.warning("Choose a PNG or JPEG image first."); return; }
+      if (!/^image\/(png|jpeg)$/.test(file.type)) { MessageBox.error("Only PNG and JPEG images are accepted."); return; }
+      if (file.size > MAX_IMAGE_BYTES) { MessageBox.error("The image exceeds 2 MB."); return; }
+      var token, createdId;
+      ws.setProperty("/busy", true);
+      this._csrf().then(function (t) {
+        token = t;
+        return fetch(base + "CaseAttachments", { method: "POST", credentials: "same-origin",
+          headers: { "Content-Type": "application/json", "X-CSRF-Token": token },
+          body: JSON.stringify({ reviewCase_ID: that._caseId, fileName: file.name, mediaType: file.type, description: description || null }) });
+      }).then(function (r) {
+        return r.ok ? r.json() : that._failure(r, "The attachment could not be created.");
+      }).then(function (created) {
+        createdId = created.ID;
+        return fetch(base + "CaseAttachments(" + createdId + ")/content", { method: "PUT", credentials: "same-origin",
+          headers: { "Content-Type": file.type, "X-CSRF-Token": token }, body: file });
+      }).then(function (r) {
+        if (r.ok) { return null; }
+        // Do not leave metadata without an image behind.
+        return that._failure(r, "The image was refused.").catch(function (error) {
+          return fetch(base + "CaseAttachments(" + createdId + ")", { method: "DELETE", credentials: "same-origin", headers: { "X-CSRF-Token": token } })
+            .then(function () { throw error; });
+        });
+      }).then(function () {
+        MessageToast.show("Image attached as supporting evidence.");
+        that.byId("attachFile").clear(); that.byId("attachDescription").setValue(""); that._attachFile = null;
+        return that._load(true);
+      }).catch(function (error) {
+        ws.setProperty("/busy", false);
+        MessageBox.error(error.message, { title: "Attachment not saved" });
+      });
+    },
+
+    onAttachDelete: function (event) {
+      var item = event.getSource().getBindingContext("ws").getObject(), that = this, base = this.getView().getModel().getServiceUrl();
+      MessageBox.confirm("Remove the image " + item.fileName + "?", { onClose: function (action) {
+        if (action !== MessageBox.Action.OK) { return; }
+        that._csrf().then(function (token) {
+          return fetch(base + "CaseAttachments(" + item.ID + ")", { method: "DELETE", credentials: "same-origin", headers: { "X-CSRF-Token": token } });
+        }).then(function (r) { return r.ok ? that._load(true) : that._failure(r, "The image could not be removed."); })
+          .catch(function (error) { MessageBox.error(error.message); });
+      } });
+    },
+
+    // ------------------------------------------------------------ synthetic input edit (faculty demo, Scenario C)
+    onEditInput: function () {
+      var ws = this.getView().getModel("ws"), lines = ws.getProperty("/lines") || [];
+      var proposed = lines.filter(function (l) { return l.toMaterial; });
+      var materials = [];
+      lines.forEach(function (l) { [l.fromMaterial, l.toMaterial].forEach(function (m) { if (m && materials.indexOf(m) < 0) { materials.push(m); } }); });
+      var kind = new Select({ width: "100%", items: [
+        new Item({ key: "PROPOSED_QUANTITY", text: "Proposed quantity of a revision B item" }),
+        new Item({ key: "PRICE", text: "Unit price of a material" }),
+        new Item({ key: "STOCK", text: "Available stock of a material (new snapshot)" })] });
+      var target = new Select({ width: "100%" }), value = new Input({ type: "Number", width: "100%" });
+      var fill = function () {
+        target.destroyItems();
+        if (kind.getSelectedKey() === "PROPOSED_QUANTITY") {
+          proposed.forEach(function (l) { target.addItem(new Item({ key: l.itemNo, text: l.itemNo + " " + l.toMaterial + " (now " + l.toQuantity + " " + (l.unit || "") + ")" })); });
+        } else {
+          materials.forEach(function (m) { target.addItem(new Item({ key: m, text: m })); });
+        }
+      };
+      kind.attachChange(fill); fill();
+      this._dialog("Edit synthetic input", [
+        new MessageStrip({ type: "Information", showIcon: true, text: "Demonstration data only (never SAP S/4HANA). Earlier impact runs stay unchanged; the case needs a new calculation before it can be submitted or approved. The change is recorded in the data provenance." }),
+        new Label({ text: "What to change", labelFor: kind }).addStyleClass("sapUiSmallMarginTop"), kind,
+        new Label({ text: "Item or material", labelFor: target }).addStyleClass("sapUiSmallMarginTop"), target,
+        new Label({ text: "New value", labelFor: value, required: true }).addStyleClass("sapUiSmallMarginTop"), value
+      ], "Save", "Emphasized", function () {
+        if (!value.getValue() || !target.getSelectedKey()) { MessageBox.warning("Choose the item or material and enter a value."); return false; }
+        var k = kind.getSelectedKey();
+        this._execute("reviseDemoInput", { kind: k, itemNo: k === "PROPOSED_QUANTITY" ? target.getSelectedKey() : undefined,
+          material: k === "PROPOSED_QUANTITY" ? undefined : target.getSelectedKey(), value: value.getValue() }, "Input changed. Run the impact calculation again.");
+      }.bind(this));
     },
 
     /** Refreshes only the case list so status and figures match the server (the workspace reloads itself). */

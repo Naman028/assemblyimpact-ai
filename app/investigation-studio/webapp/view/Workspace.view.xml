@@ -1,5 +1,5 @@
 <mvc:View controllerName="assemblyimpact.investigationstudio.controller.Workspace"
-	xmlns:mvc="sap.ui.core.mvc" xmlns="sap.m" xmlns:f="sap.f" xmlns:core="sap.ui.core" xmlns:l="sap.ui.layout" xmlns:card="sap.f.cards">
+	xmlns:mvc="sap.ui.core.mvc" xmlns="sap.m" xmlns:f="sap.f" xmlns:core="sap.ui.core" xmlns:l="sap.ui.layout" xmlns:card="sap.f.cards" xmlns:u="sap.ui.unified">
 	<f:DynamicPage id="wsPage" busy="{ws>/busy}" busyIndicatorDelay="0" headerExpanded="true" showFooter="false" class="aiWorkspace">
 		<f:title>
 			<f:DynamicPageTitle>
@@ -17,6 +17,9 @@
 				</f:snappedContent>
 				<f:actions>
 					<Button id="btnRun" text="Run Impact" icon="sap-icon://simulate" type="Emphasized" press=".onRunImpact" visible="{= !!${ws>/case/canRunImpact} }"/>
+					<Button id="btnEditInput" text="Edit Input" icon="sap-icon://edit" press=".onEditInput"
+						visible="{= ${ws>/case/status} === 'OPEN' &amp;&amp; (${ws>/case/sourceType} === 'DEMO_IMPORT' || ${ws>/case/sourceType} === 'SYNTHETIC_FIXTURE') }"
+						tooltip="Change one synthetic input (demonstration data only)"/>
 					<Button id="btnSubmit" text="Submit for Review" icon="sap-icon://paper-plane" press=".onSubmit" visible="{= !!${ws>/case/canSubmit} }"/>
 					<Button id="btnApprove" text="Approve" icon="sap-icon://accept" type="Accept" press=".onApprove" visible="{= !!${ws>/case/canDecide} }"/>
 					<Button id="btnReject" text="Reject" icon="sap-icon://decline" type="Reject" press=".onReject" visible="{= !!${ws>/case/canDecide} }"/>
@@ -284,6 +287,40 @@
 						</Table>
 					</IconTabFilter>
 					<IconTabFilter key="evidence" text="Evidence" icon="sap-icon://shield">
+						<f:Card>
+							<f:header><card:Header title="Supporting images" subtitle="Engineering photos or drawings as evidence only; they are not inputs of the calculation" iconSrc="sap-icon://attachment-photo"/></f:header>
+							<f:content>
+								<VBox class="sapUiSmallMargin" width="100%">
+									<List items="{ws>/case/attachments}" noDataText="No images attached." showSeparators="Inner">
+										<CustomListItem>
+											<HBox alignItems="Center" class="sapUiTinyMargin">
+												<Image src="{ path: 'ws>ID', formatter: '.attachmentUrl' }" alt="{= ${ws>description} || ${ws>fileName} }" width="7rem" height="5rem" densityAware="false"
+													mode="Image" class="sapUiSmallMarginEnd aiAttachmentThumb"/>
+												<VBox>
+													<Link text="{ws>fileName}" href="{ path: 'ws>ID', formatter: '.attachmentUrl' }" target="_blank"/>
+													<Text text="{ws>description}" wrapping="true"/>
+													<Text text="{ws>mediaType}, {= Math.round(${ws>size} / 1024) } KB, by {ws>uploadedBy}, { path: 'ws>uploadedAt', formatter: '.fmt.dateTime' }" class="sapUiTinyMarginTop"/>
+												</VBox>
+												<Button icon="sap-icon://delete" type="Transparent" press=".onAttachDelete" tooltip="Remove image" class="sapUiSmallMarginBegin"
+													visible="{= ${ws>/case/status} !== 'APPROVED' &amp;&amp; ${ws>/case/status} !== 'REJECTED' }"/>
+											</HBox>
+										</CustomListItem>
+									</List>
+									<HBox alignItems="End" wrap="Wrap" class="sapUiSmallMarginTop" visible="{= ${ws>/case/status} !== 'APPROVED' &amp;&amp; ${ws>/case/status} !== 'REJECTED' }">
+										<VBox class="sapUiSmallMarginEnd">
+											<Label text="Image (PNG or JPEG, max. 2 MB)" labelFor="attachFile"/>
+											<u:FileUploader id="attachFile" fileType="png,jpg,jpeg" mimeType="image/png,image/jpeg" maximumFileSize="2" sendXHR="false"
+												change=".onAttachFileChange" placeholder="Choose an image"/>
+										</VBox>
+										<VBox class="sapUiSmallMarginEnd">
+											<Label text="Description" labelFor="attachDescription"/>
+											<Input id="attachDescription" maxLength="300" width="18rem" placeholder="e.g. Seal drawing rev. B"/>
+										</VBox>
+										<Button text="Attach" icon="sap-icon://upload" press=".onAttachUpload"/>
+									</HBox>
+								</VBox>
+							</f:content>
+						</f:Card>
 						<f:Card class="sapUiSmallMarginTop">
 							<f:header><card:Header title="Evaluated impact run" subtitle="Immutable snapshot written by the CAP action runImpact" iconSrc="sap-icon://measure"/></f:header>
 							<f:content>

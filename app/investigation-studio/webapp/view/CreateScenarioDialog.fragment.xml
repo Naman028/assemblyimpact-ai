@@ -1,0 +1,71 @@
+<core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core" xmlns:f="sap.ui.layout.form">
+	<!-- Faculty demo: structured scenario entry. "Validate" builds the same bundle a JSON import would contain and opens the
+	     existing import preview (server validation, preview, explicit confirmation, all-or-nothing commit). -->
+	<Dialog id="createDialog" title="Create Engineering Scenario (synthetic demonstration data)" contentWidth="1080px" resizable="true" draggable="true"
+		class="sapUiContentPadding">
+		<content>
+			<VBox>
+				<MessageStrip type="Information" showIcon="true" class="sapUiSmallMarginBottom"
+					text="Fictional data for demonstration only; it is never written to SAP S/4HANA. A component row with a current quantity belongs to revision A, with a proposed quantity to revision B. Use the same item number with a different material to model a replacement."/>
+				<f:SimpleForm editable="true" layout="ColumnLayout" columnsM="2" columnsL="3" columnsXL="3" labelSpanL="4" title="Engineering change">
+					<f:content>
+						<Label text="Assembly" required="true"/><Input value="{form>/assemblyCode}" maxLength="40" placeholder="e.g. PUMP-950"/>
+						<Label text="Assembly description" required="true"/><Input value="{form>/description}" maxLength="160"/>
+						<Label text="Plant" required="true"/><Input value="{form>/plant}" maxLength="4" width="6rem"/>
+						<Label text="Case number" required="true"/><Input value="{form>/caseNumber}" maxLength="20" placeholder="EC-000123"/>
+						<Label text="Change title" required="true"/><Input value="{form>/title}" maxLength="160"/>
+						<Label text="Review owner"/><Input value="{form>/owner}" maxLength="80"/>
+						<Label text="Production quantity" required="true"/><StepInput value="{form>/productionQuantity}" min="1" max="1000000" width="10rem"/>
+						<Label text="Revision A valid from" required="true"/><DatePicker value="{form>/currentValidFrom}" valueFormat="yyyy-MM-dd" displayFormat="yyyy-MM-dd"/>
+						<Label text="Revision B effective" required="true"/><DatePicker value="{form>/effectiveDate}" valueFormat="yyyy-MM-dd" displayFormat="yyyy-MM-dd"/>
+						<Label text="Work instruction"/><CheckBox selected="{form>/includeInstruction}" text="Create one assembly instruction referencing revision A"/>
+					</f:content>
+				</f:SimpleForm>
+				<Table id="createComponents" items="{form>/components}" headerText="Components, prices and stock" class="sapUiSmallMarginTop" fixedLayout="false">
+					<headerToolbar>
+						<OverflowToolbar>
+							<Title text="Components, prices and stock" level="H3"/>
+							<ToolbarSpacer/>
+							<Button text="Add component" icon="sap-icon://add" press=".onCreateAddRow"/>
+							<Button text="Load example" icon="sap-icon://reset" press=".onCreateExample" tooltip="Replace the form with the PUMP-950 example"/>
+						</OverflowToolbar>
+					</headerToolbar>
+					<columns>
+						<Column width="5rem"><Text text="Item"/></Column>
+						<Column width="9rem"><Text text="Material"/></Column>
+						<Column minScreenWidth="Desktop" demandPopin="true"><Text text="Description"/></Column>
+						<Column width="4.5rem"><Text text="Unit"/></Column>
+						<Column width="6rem" hAlign="End"><Text text="Qty A (current)"/></Column>
+						<Column width="6rem" hAlign="End"><Text text="Qty B (proposed)"/></Column>
+						<Column width="7rem" hAlign="End"><Text text="Unit price"/></Column>
+						<Column width="4.5rem"><Text text="Curr."/></Column>
+						<Column width="6rem" hAlign="End"><Text text="Stock"/></Column>
+						<Column width="3rem"/>
+					</columns>
+					<items>
+						<ColumnListItem>
+							<cells>
+								<Input value="{form>itemNo}" maxLength="4"/>
+								<Input value="{form>material}" maxLength="40" placeholder="Material"/>
+								<Input value="{form>description}" maxLength="80"/>
+								<Input value="{form>unit}" maxLength="3"/>
+								<Input value="{form>currentQty}" type="Number" textAlign="End" placeholder="—"/>
+								<Input value="{form>proposedQty}" type="Number" textAlign="End" placeholder="—"/>
+								<Input value="{form>price}" type="Number" textAlign="End"/>
+								<Input value="{form>currency}" maxLength="3"/>
+								<Input value="{form>stock}" type="Number" textAlign="End"/>
+								<Button icon="sap-icon://delete" type="Transparent" press=".onCreateRemoveRow" tooltip="Remove component"/>
+							</cells>
+						</ColumnListItem>
+					</items>
+				</Table>
+			</VBox>
+		</content>
+		<beginButton>
+			<Button text="Validate and Preview" type="Emphasized" press=".onCreateValidate"/>
+		</beginButton>
+		<endButton>
+			<Button text="Cancel" press=".onCreateCancel"/>
+		</endButton>
+	</Dialog>
+</core:FragmentDefinition>

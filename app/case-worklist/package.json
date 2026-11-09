@@ -1,0 +1,7 @@
+{
+  "name": "case-worklist",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Engineering Change Case Worklist (SAP Fiori elements, OData V4)",
+  "sapux": true
+}
