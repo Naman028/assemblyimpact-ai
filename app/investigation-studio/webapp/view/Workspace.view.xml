@@ -172,7 +172,7 @@
 						<Toolbar style="Clear">
 							<Title text="Proposed revision requirements for {ws>/case/productionQuantity} assemblies" level="H3"/>
 							<ToolbarSpacer/>
-							<Switch id="shortOnly" state="false" change=".onShortOnly" customTextOn="Short" customTextOff="All" tooltip="Show shortages only"/>
+							<ToggleButton id="shortOnly" text="Shortages only" icon="sap-icon://filter" pressed="false" press=".onShortOnly"/>
 						</Toolbar>
 						<Table id="materialTable" items="{ws>/materials}" noDataText="Run the impact calculation to check stock." fixedLayout="false">
 							<columns>

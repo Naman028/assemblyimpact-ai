@@ -40,10 +40,31 @@ export function normaliseComment(transition, raw) {
 
 /** The user who put the case into review: latest SUBMIT event, otherwise the case creator. */
 async function submitterOf(reviewCase) {
+  return (await submittersOf([reviewCase]))[0];
+}
+
+/**
+ * Batch form of the submitter rule for cases [{ ID, createdBy }]: latest event into IN_REVIEW, else the
+ * case creator. Shared by the decision check and the UI availability flags so both always agree.
+ */
+export async function submittersOf(cases) {
+  if (!cases.length) return [];
   const { DecisionEvents } = cds.entities('assemblyimpact');
-  const last = await SELECT.one.from(DecisionEvents).columns('actor')
-    .where({ reviewCase_ID: reviewCase.ID, toStatus: 'IN_REVIEW' }).orderBy('at desc');
-  return last?.actor ?? reviewCase.createdBy ?? null;
+  const events = await SELECT.from(DecisionEvents).columns('reviewCase_ID', 'actor', 'at')
+    .where({ reviewCase_ID: { in: cases.map(c => c.ID) }, toStatus: 'IN_REVIEW' }).orderBy('at');
+  const latest = new Map();
+  for (const e of events) latest.set(e.reviewCase_ID, e.actor); // ascending: the latest wins
+  return cases.map(c => latest.get(c.ID) ?? c.createdBy ?? null);
+}
+
+/** M05: which review actions the user may start on a case (advisory for UIs; every action re-checks). */
+export function availabilityFor({ status, submittedBy }, user, impactAllowedStatuses) {
+  const analyst = user.is('ChangeAnalyst');
+  return {
+    canRunImpact: (analyst || user.is('ImpactRunner')) && impactAllowedStatuses.includes(status),
+    canSubmit: analyst && status === 'OPEN',
+    canDecide: user.is('ChangeApprover') && status === 'IN_REVIEW' && submittedBy !== user.id,
+  };
 }
 
 /**

@@ -137,3 +137,32 @@ test('availability flags follow role, status and separation of duties; readable 
   const runs = await request(`/ReviewCases(${COPY.AVAIL})/runs?$select=status,statusText`, { user: 'cviewer' });
   assert.equal(runs.data.value[0].statusText, 'Complete');
 });
+
+test('availability flags: only selected flags are returned, they cannot be filtered or sorted, action results carry them', async () => {
+  const one = await request(`/ReviewCases(${COPY.AVAIL})?$select=caseNumber,canSubmit`, { user: 'analyst' });
+  assert.equal(one.status, 200);
+  assert('canSubmit' in one.data);
+  assert(!('canDecide' in one.data) && !('submittedBy' in one.data), JSON.stringify(one.data));
+  const plain = await request(`/ReviewCases(${COPY.AVAIL})?$select=caseNumber`, { user: 'analyst' });
+  assert(!('canSubmit' in plain.data));
+  const meta = await request('/$metadata', { user: 'analyst' });
+  assert.match(meta.data, /NonFilterableProperties[\s\S]*canSubmit/);
+  assert.match(meta.data, /NonSortableProperties[\s\S]*submittedBy/);
+  // A decision's response is read through the service: the flags reflect the new state.
+  const fresh = stableId('m05-a:open:RESP');
+  const { ReviewCases } = cds.entities('assemblyimpact');
+  await INSERT.into(ReviewCases).entries({ ...SEEDED, ID: fresh, caseNumber: 'EC-T5A-RESP', status: 'OPEN', version: cds.utils.uuid() });
+  const submitted = await act(fresh, 'submitForReview', 'analyst');
+  assert.equal(submitted.status, 200);
+  assert.deepEqual([submitted.data.status, submitted.data.canSubmit, submitted.data.submittedBy], ['IN_REVIEW', false, 'analyst']);
+});
+
+test('submitter rule is shared: a case in review without a submit event falls back to its creator for UI and server', async () => {
+  const id = stableId('m05-a:open:NOEVENT');
+  const { ReviewCases } = cds.entities('assemblyimpact');
+  await INSERT.into(ReviewCases).entries({ ...SEEDED, ID: id, caseNumber: 'EC-T5A-NOEV', status: 'IN_REVIEW', createdBy: 'approver', version: cds.utils.uuid() });
+  const r = await request(`/ReviewCases(${id})?$select=canDecide,submittedBy`, { user: 'approver' });
+  assert.deepEqual([r.data.canDecide, r.data.submittedBy], [false, 'approver']);
+  const refused = await act(id, 'reject', 'approver', { comment: 'x' });
+  assert.equal(refused.status, 403);
+});

@@ -359,6 +359,18 @@
                   "1000"
                 ]
               }
+            },
+            "joule": {
+              "password": "test",
+              "roles": [
+                "ChangeViewer",
+                "ImpactRunner"
+              ],
+              "attr": {
+                "plants": [
+                  "1000"
+                ]
+              }
             }
           }
         },
