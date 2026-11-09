@@ -29,7 +29,19 @@ const request = async (path, { user = 'analyst', method = 'GET', body } = {}) =>
   try { data = JSON.parse(text); } catch { /* non-JSON body */ }
   return { status: response.status, data, headers: response.headers };
 };
-const act = (id, action, user, body = {}) => request(`/ReviewCases(${id})/EngineeringReview.${action}`, { method: 'POST', user, body });
+const NO_RUN = stableId('m04-2a1:no-such-run');
+const latestRunOf = async id => (await SELECT.one.from(cds.entities('assemblyimpact').ReviewCases, id).columns('latestRun_ID'))?.latestRun_ID;
+// Slice 2a.1: approve names the evaluated run. Unless a test passes basedOnRun explicitly, the helper
+// uses the case's current latest run (or a placeholder when none exists) so older tests keep their focus.
+const act = async (id, action, user, body = {}) => {
+  if (action === 'approve' && !('basedOnRun' in body)) body = { ...body, basedOnRun: (await latestRunOf(id)) ?? NO_RUN };
+  return request(`/ReviewCases(${id})/EngineeringReview.${action}`, { method: 'POST', user, body });
+};
+const runFor = async (id, user = 'analyst') => {
+  const r = await request(`/ReviewCases(${id})/EngineeringReview.runImpact`, { method: 'POST', user, body: { asOfDate: '2026-11-08' } });
+  assert.equal(r.status, 200, JSON.stringify(r.data));
+  return r.data.ID;
+};
 const statusOf = async id => (await SELECT.one.from(cds.entities('assemblyimpact').ReviewCases, id).columns('status')).status;
 const eventsOf = id => SELECT.from(cds.entities('assemblyimpact').DecisionEvents).where({ reviewCase_ID: id }).orderBy('at', 'action');
 const errorCode = r => r.data?.error?.code;
@@ -67,6 +79,7 @@ test('happy path: analyst submits, a different approver approves; status and his
   assert.equal(submitted.status, 200, JSON.stringify(submitted.data));
   assert.equal(submitted.data.status, 'IN_REVIEW');
   assert.match(submitted.headers.get('sap-messages') ?? '', /status changed from OPEN to IN_REVIEW/);
+  const runA = await runFor(OPEN.A);
   const approved = await act(OPEN.A, 'approve', 'approver', { comment: 'Cost delta and instruction finding accepted.' });
   assert.equal(approved.status, 200, JSON.stringify(approved.data));
   assert.equal(approved.data.status, 'APPROVED');
@@ -79,6 +92,7 @@ test('happy path: analyst submits, a different approver approves; status and his
     ['APPROVE', 'IN_REVIEW', 'APPROVED', 'approver', 'Cost delta and instruction finding accepted.'],
   ]);
   assert(history.every(e => !Number.isNaN(Date.parse(e.at))));
+  assert.deepEqual(history.map(e => e.basedOnRun_ID), [null, runA], 'the approval records the evaluated run');
 });
 
 test('seeded demonstration cases start OPEN without history; submission creates a genuine SUBMIT event', async () => {
@@ -155,6 +169,7 @@ test('authorization: roles, plants, malformed memberships; foreign cases look mi
 
 test('plant isolation of the decision history: collection, key, $count and $expand', async () => {
   assert.equal((await act(SEEDED_2000, 'submitForReview', 'analyst2')).status, 200);
+  await runFor(SEEDED_2000, 'analyst2');
   assert.equal((await act(SEEDED_2000, 'approve', 'approver2', { comment: 'plant 2000 decision' })).status, 200);
   const own = await request('/DecisionEvents?$count=true', { user: 'cviewer' });
   const foreign = await request('/DecisionEvents?$count=true', { user: 'cviewer2' });
@@ -179,7 +194,9 @@ test('no self-decision: the submitter cannot approve or reject, even with both r
   assert.equal(errorCode(selfApprove), 'SELF_DECISION_NOT_ALLOWED');
   assert.equal(errorCode(await act(OPEN.E, 'reject', 'dual', { comment: 'own case' })), 'SELF_DECISION_NOT_ALLOWED');
   assert.equal(await statusOf(OPEN.E), 'IN_REVIEW');
+  await runFor(OPEN.E);
   assert.equal((await act(OPEN.E, 'approve', 'approver')).status, 200, 'an independent approver may decide');
+  await runFor(OPEN.D);
   // A dual-role user may decide a case someone else submitted.
   assert.equal((await act(OPEN.D, 'approve', 'dual')).status, 200);
 });
@@ -196,6 +213,7 @@ test('concurrent decisions: exactly one wins, the other gets 409, one event is w
   const { ReviewCases } = cds.entities('assemblyimpact');
   const id = stableId('m04-2a:race');
   await INSERT.into(ReviewCases).entries({ ...SEEDED_1000, ID: id, caseNumber: 'EC-T2A-RACE', status: 'IN_REVIEW', version: cds.utils.uuid() });
+  await runFor(id);
   const results = await Promise.all([act(id, 'approve', 'approver', { comment: 'first' }), act(id, 'reject', 'dual', { comment: 'second' })]);
   const statuses = results.map(r => r.status).sort();
   assert.deepEqual(statuses, [200, 409], JSON.stringify(results.map(r => r.data)));
@@ -207,6 +225,7 @@ test('stale read: the database-level compare-and-set refuses the write and rolls
   const { ReviewCases } = cds.entities('assemblyimpact');
   const id = stableId('m04-2a:stale');
   await INSERT.into(ReviewCases).entries({ ...SEEDED_1000, ID: id, caseNumber: 'EC-T2A-STALE', status: 'IN_REVIEW', version: cds.utils.uuid() });
+  await runFor(id);
   const stale = await SELECT.one.from(ReviewCases).columns('ID', 'status', 'version').where({ ID: id });
   assert.equal((await act(id, 'approve', 'approver', { comment: 'committed first' })).status, 200);
   await assert.rejects(
@@ -226,7 +245,7 @@ test('stale read after an impact run: same status, new version — the write is 
   assert.equal(await statusOf(id), 'IN_REVIEW', 'status unchanged, only the version moved');
   await assert.rejects(
     cds.tx(() => applyTransition(stale, TRANSITIONS.approve, { userID: 'approver', comment: null, now: new Date().toISOString() })),
-    e => e instanceof DecisionError && e.code === 'CONCURRENT_UPDATE');
+    e => e instanceof DecisionError && e.code === 'STALE_EVIDENCE');
   assert.equal(await statusOf(id), 'IN_REVIEW');
   assert.equal((await eventsOf(id)).length, 0);
 });
@@ -288,6 +307,7 @@ test('runImpact on APPROVED or REJECTED returns 409 and changes nothing', async 
 test('a decision committed during a calculation: the run is refused and rolled back (CaseDecidedError)', async () => {
   const id = await newCase('race-run', 'OPEN');
   assert.equal((await act(id, 'submitForReview', 'analyst')).status, 200);
+  await runFor(id); // evidence the approver evaluates
   // The calculation reads its inputs before the approval commits ...
   const loaded = await cds.tx(() => loadImpactInput(id, ['1000'], AS_OF));
   const { calculateImpact, RULESET } = await import('../srv/lib/impact-calculator.js');
@@ -308,27 +328,26 @@ test('a calculation committed during a decision: the stale decision is refused (
   assert.equal((await act(id, 'runImpact', 'analyst', { asOfDate: AS_OF })).status, 200, 'new evidence arrives');
   const before = await snapshot(id);
   await assert.rejects(cds.tx(() => applyTransition(stale, TRANSITIONS.approve, { userID: 'approver', comment: null, now: new Date().toISOString() })),
-    e => e instanceof DecisionError && e.code === 'CONCURRENT_UPDATE');
+    e => e instanceof DecisionError && e.code === 'STALE_EVIDENCE');
   assert.deepEqual(await snapshot(id), before, 'an approval based on older evidence is not recorded');
 });
 
-test('parallel runImpact and approve: outcomes are consistent with the persisted rows', async () => {
+test('parallel runImpact and approve on the evaluated run: exactly one wins and the rows match', async () => {
   const id = await newCase('parallel', 'OPEN');
   assert.equal((await act(id, 'submitForReview', 'analyst')).status, 200);
-  const [run, decision] = await Promise.all([act(id, 'runImpact', 'analyst', { asOfDate: AS_OF }), act(id, 'approve', 'approver', { comment: 'parallel' })]);
-  assert([200, 409].includes(run.status) && [200, 409].includes(decision.status), JSON.stringify([run.data, decision.data]));
+  const evaluated = await runFor(id);
+  const [run, decision] = await Promise.all([act(id, 'runImpact', 'analyst', { asOfDate: AS_OF }),
+    act(id, 'approve', 'approver', { comment: 'parallel', basedOnRun: evaluated })]);
+  assert.deepEqual([run.status, decision.status].sort(), [200, 409], JSON.stringify([run.data, decision.data]));
   const after = await snapshot(id);
-  assert.equal(after.runs, run.status === 200 ? 1 : 0, 'one persisted run per successful calculation');
-  assert.equal(after.events, decision.status === 200 ? 2 : 1, 'one APPROVE event per successful decision');
-  assert.equal(after.status, decision.status === 200 ? 'APPROVED' : 'IN_REVIEW');
-  if (decision.status === 200 && run.status === 200) {
-    const { ImpactRuns, DecisionEvents } = cds.entities('assemblyimpact');
-    const r = await SELECT.one.from(ImpactRuns).columns('computedAt').where({ reviewCase_ID: id });
-    const e = await SELECT.one.from(DecisionEvents).columns('at').where({ reviewCase_ID: id, action: 'APPROVE' });
-    assert(Date.parse(r.computedAt) <= Date.parse(e.at), 'the run that survived committed before the approval');
+  if (decision.status === 200) {
+    assert.equal(errorCode(run), 'CASE_ALREADY_DECIDED');
+    assert.deepEqual([after.status, after.runs, after.latestRun_ID], ['APPROVED', 1, evaluated], 'approved on exactly the evaluated run');
+  } else {
+    assert.equal(errorCode(decision), 'STALE_EVIDENCE');
+    assert.deepEqual([after.status, after.runs], ['IN_REVIEW', 2], 'the newer run stands; the stale approval is not recorded');
   }
-  // Afterwards the decided case is frozen.
-  if (after.status === 'APPROVED') assert.equal((await act(id, 'runImpact', 'analyst', { asOfDate: AS_OF })).status, 409);
+  assert.equal(after.events, decision.status === 200 ? 2 : 1);
 });
 
 test('guard layers: the state check runs before any calculation, and the database guard checks status itself', async () => {
@@ -350,4 +369,70 @@ test('guard layers: the state check runs before any calculation, and the databas
     { fingerprint: fingerprint(RULESET, loaded.input), user: 'analyst', now: new Date().toISOString() })),
   e => e instanceof CaseDecidedError && e.caseStatus === 'REJECTED');
   assert.deepEqual(await snapshot(id), before);
+});
+
+// ---- Slice 2a.1: evidence freshness (basedOnRun) ----
+test('approve requires an evaluated impact run: missing reference 400, no run at all 409 NO_EVIDENCE', async () => {
+  const id = await newCase('ev-none', 'OPEN');
+  assert.equal((await act(id, 'submitForReview', 'analyst')).status, 200);
+  const missing = await request(`/ReviewCases(${id})/EngineeringReview.approve`, { method: 'POST', user: 'approver', body: { comment: 'x' } });
+  assert.equal(missing.status, 400);
+  assert(['ASSERT_MANDATORY', 'EVIDENCE_REFERENCE_REQUIRED'].includes(errorCode(missing)), errorCode(missing));
+  const noRun = await act(id, 'approve', 'approver', { basedOnRun: NO_RUN });
+  assert.equal(noRun.status, 409);
+  assert.equal(errorCode(noRun), 'NO_EVIDENCE');
+  assert.deepEqual([await statusOf(id), (await eventsOf(id)).length], ['IN_REVIEW', 1]);
+});
+
+test('approve refuses runs of other cases, other plants or unknown runs with the same 400', async () => {
+  const id = await newCase('ev-foreign', 'OPEN');
+  assert.equal((await act(id, 'submitForReview', 'analyst')).status, 200);
+  await runFor(id);
+  const other = await newCase('ev-other', 'OPEN');
+  const otherRun = await runFor(other);
+  // Plant-2000 run created earlier (that case is approved now, so its evidence is frozen).
+  const foreignRun = (await SELECT.one.from(cds.entities('assemblyimpact').ImpactRuns).columns('ID').where({ reviewCase_ID: SEEDED_2000 })).ID;
+  const before = await snapshot(id);
+  for (const basedOnRun of [otherRun, foreignRun, stableId('m04-2a1:random')]) {
+    const r = await act(id, 'approve', 'approver', { basedOnRun });
+    assert.equal(r.status, 400, basedOnRun);
+    assert.equal(errorCode(r), 'UNKNOWN_EVIDENCE_RUN');
+  }
+  assert.deepEqual(await snapshot(id), before);
+});
+
+test('stale evidence: approving an older run returns 409 STALE_EVIDENCE; the latest run is approved and recorded', async () => {
+  const id = await newCase('ev-stale', 'OPEN');
+  assert.equal((await act(id, 'submitForReview', 'analyst')).status, 200);
+  const runA = await runFor(id); // the reviewer opens the case and evaluates run A
+  const runB = await runFor(id); // another engineer recalculates
+  const before = await snapshot(id);
+  const stale = await act(id, 'approve', 'approver', { comment: 'looked at A', basedOnRun: runA });
+  assert.equal(stale.status, 409);
+  assert.equal(errorCode(stale), 'STALE_EVIDENCE');
+  assert.deepEqual(await snapshot(id), before, 'nothing written for the stale approval');
+  const ok = await act(id, 'approve', 'approver', { comment: 'looked at B', basedOnRun: runB });
+  assert.equal(ok.status, 200, JSON.stringify(ok.data));
+  const event = (await request(`/ReviewCases(${id})/decisions?$filter=action eq 'APPROVE'&$expand=basedOnRun($select=ID,costDeltaTotal)`, { user: 'cviewer' })).data.value[0];
+  assert.equal(event.basedOnRun_ID, runB);
+  assert.equal(event.basedOnRun.ID, runB);
+  assert.equal(Number(event.basedOnRun.costDeltaTotal), 1200, 'the evaluated figures stay reachable from the decision');
+});
+
+test('reject: run reference optional; when given it must be the latest run and is recorded', async () => {
+  const noEvidence = await newCase('rej-none', 'OPEN');
+  assert.equal((await act(noEvidence, 'submitForReview', 'analyst')).status, 200);
+  const r1 = await act(noEvidence, 'reject', 'approver', { comment: 'no impact calculation possible yet' });
+  assert.equal(r1.status, 200, 'rejection does not require an impact run');
+  assert.equal((await eventsOf(noEvidence)).at(-1).basedOnRun_ID, null);
+
+  const id = await newCase('rej-stale', 'OPEN');
+  assert.equal((await act(id, 'submitForReview', 'analyst')).status, 200);
+  const runA = await runFor(id);
+  const runB = await runFor(id);
+  const stale = await act(id, 'reject', 'approver', { comment: 'x', basedOnRun: runA });
+  assert.equal(errorCode(stale), 'STALE_EVIDENCE');
+  assert.equal(await statusOf(id), 'IN_REVIEW');
+  assert.equal((await act(id, 'reject', 'approver', { comment: 'B shows a shortage', basedOnRun: runB })).status, 200);
+  assert.equal((await eventsOf(id)).at(-1).basedOnRun_ID, runB);
 });

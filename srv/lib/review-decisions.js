@@ -5,11 +5,15 @@ import cds from '@sap/cds';
 
 export const COMMENT_MAX = 1000;
 
-/** Allowed transitions per bound action. `independent`: the decider must not be the submitter. */
+/**
+ * Allowed transitions per bound action. `independent`: the decider must not be the submitter.
+ * `evidence` (Slice 2a.1): 'required' = the request must name the case's latest impact run;
+ * 'optional' = a named run is validated and recorded, but may be omitted; 'none' = not applicable.
+ */
 export const TRANSITIONS = Object.freeze({
-  submitForReview: Object.freeze({ event: 'SUBMIT', from: Object.freeze(['OPEN']), to: 'IN_REVIEW', verb: 'submit', independent: false, commentRequired: false }),
-  approve: Object.freeze({ event: 'APPROVE', from: Object.freeze(['IN_REVIEW']), to: 'APPROVED', verb: 'approve', independent: true, commentRequired: false }),
-  reject: Object.freeze({ event: 'REJECT', from: Object.freeze(['IN_REVIEW']), to: 'REJECTED', verb: 'reject', independent: true, commentRequired: true }),
+  submitForReview: Object.freeze({ event: 'SUBMIT', from: Object.freeze(['OPEN']), to: 'IN_REVIEW', verb: 'submit', independent: false, commentRequired: false, evidence: 'none' }),
+  approve: Object.freeze({ event: 'APPROVE', from: Object.freeze(['IN_REVIEW']), to: 'APPROVED', verb: 'approve', independent: true, commentRequired: false, evidence: 'required' }),
+  reject: Object.freeze({ event: 'REJECT', from: Object.freeze(['IN_REVIEW']), to: 'REJECTED', verb: 'reject', independent: true, commentRequired: true, evidence: 'optional' }),
 });
 
 export class DecisionError extends Error {
@@ -37,10 +41,10 @@ async function submitterOf(reviewCase) {
  * Applies one transition. Returns null when the case is missing or outside the user's plants
  * (callers answer 404 for both). Throws DecisionError for rule violations.
  */
-export async function decide({ caseID, transition, userID, plants, rawComment, now = new Date().toISOString() }) {
+export async function decide({ caseID, transition, userID, plants, rawComment, basedOnRun: rawRun, now = new Date().toISOString() }) {
   const comment = normaliseComment(transition, rawComment);
   const { ReviewCases } = cds.entities('assemblyimpact');
-  const reviewCase = await SELECT.one.from(ReviewCases).columns('ID', 'status', 'plant', 'version', 'createdBy')
+  const reviewCase = await SELECT.one.from(ReviewCases).columns('ID', 'status', 'plant', 'version', 'createdBy', 'latestRun_ID')
     .where({ ID: caseID, plant: { in: plants } });
   if (!reviewCase) return null;
 
@@ -51,21 +55,49 @@ export async function decide({ caseID, transition, userID, plants, rawComment, n
     throw new DecisionError(403, 'SELF_DECISION_NOT_ALLOWED', 'A review case must be decided by someone other than its submitter.');
   }
 
-  return applyTransition(reviewCase, transition, { userID, comment, now });
+  const basedOnRun = await checkEvidence(reviewCase, transition, rawRun);
+  return applyTransition(reviewCase, transition, { userID, comment, now, basedOnRun });
 }
 
 /**
- * Writes the status change and its DecisionEvents row for a case read earlier.
- * Compare-and-set on status and version: if a concurrent decision or impact run committed
- * after `reviewCase` was read, nothing is written and DecisionError 409 is thrown.
+ * Slice 2a.1: the run named by the reviewer must belong to this case and be its latest run.
+ * Unknown runs and runs of other cases (including other plants) get the same answer.
  */
-export async function applyTransition(reviewCase, transition, { userID, comment, now }) {
+async function checkEvidence(reviewCase, transition, rawRun) {
+  if (transition.evidence === 'none') return null;
+  const basedOnRun = rawRun || null;
+  if (transition.evidence === 'required') {
+    if (!reviewCase.latestRun_ID) throw new DecisionError(409, 'NO_EVIDENCE', `Cannot ${transition.verb} a review case without an impact run; run the impact calculation first.`);
+    if (!basedOnRun) throw new DecisionError(400, 'EVIDENCE_REFERENCE_REQUIRED', `Name the impact run you evaluated (basedOnRun) to ${transition.verb} the case.`);
+  }
+  if (!basedOnRun) return null;
+  const { ImpactRuns } = cds.entities('assemblyimpact');
+  const run = await SELECT.one.from(ImpactRuns).columns('ID').where({ ID: basedOnRun, reviewCase_ID: reviewCase.ID });
+  if (!run) throw new DecisionError(400, 'UNKNOWN_EVIDENCE_RUN', 'The referenced impact run does not belong to this review case.');
+  if (basedOnRun !== reviewCase.latestRun_ID) throw staleEvidence();
+  return basedOnRun;
+}
+
+const staleEvidence = () => new DecisionError(409, 'STALE_EVIDENCE', 'The impact evidence changed since you reviewed it; reload the case and review the latest impact run.');
+
+/**
+ * Writes the status change and its DecisionEvents row for a case read earlier.
+ * Compare-and-set on status and version (and, when evidence is named, on latestRun): if a
+ * concurrent decision or impact run committed after `reviewCase` was read, nothing is written
+ * and DecisionError 409 is thrown (STALE_EVIDENCE when the latest run moved).
+ */
+export async function applyTransition(reviewCase, transition, { userID, comment, now, basedOnRun = null }) {
   const { ReviewCases, DecisionEvents } = cds.entities('assemblyimpact');
-  const affected = await UPDATE(ReviewCases).set({ status: transition.to, version: cds.utils.uuid() })
-    .where({ ID: reviewCase.ID, status: reviewCase.status, version: reviewCase.version ?? null });
-  if (affected !== 1) throw new DecisionError(409, 'CONCURRENT_UPDATE', 'The review case changed in the meantime; reload and retry.');
+  const guard = { ID: reviewCase.ID, status: reviewCase.status, version: reviewCase.version ?? null };
+  if (transition.evidence === 'required' || basedOnRun) guard.latestRun_ID = basedOnRun;
+  const affected = await UPDATE(ReviewCases).set({ status: transition.to, version: cds.utils.uuid() }).where(guard);
+  if (affected !== 1) {
+    const current = await SELECT.one.from(ReviewCases).columns('latestRun_ID').where({ ID: reviewCase.ID });
+    if ('latestRun_ID' in guard && current && current.latestRun_ID !== basedOnRun) throw staleEvidence();
+    throw new DecisionError(409, 'CONCURRENT_UPDATE', 'The review case changed in the meantime; reload and retry.');
+  }
 
   await INSERT.into(DecisionEvents).entries({ reviewCase_ID: reviewCase.ID, action: transition.event,
-    fromStatus: reviewCase.status, toStatus: transition.to, actor: userID, comment, at: now });
+    fromStatus: reviewCase.status, toStatus: transition.to, actor: userID, comment, at: now, basedOnRun_ID: basedOnRun });
   return { fromStatus: reviewCase.status, toStatus: transition.to };
 }

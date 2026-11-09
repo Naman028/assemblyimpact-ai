@@ -181,6 +181,8 @@ entity DecisionEvents : cuid {
     actor      : String(255) not null;
     comment    : String(1000);
     at         : Timestamp not null;
+    // M04 Slice 2a.1: the impact run the decision was based on (required for APPROVE).
+    basedOnRun : Association to ImpactRuns;
 }
 
 annotate BOMItems with @assert.unique.itemPerState: [bomState, itemNo];

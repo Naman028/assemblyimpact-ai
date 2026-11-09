@@ -20,7 +20,7 @@ export default class EngineeringReview extends cds.ApplicationService {
     const caseID = typeof key === 'object' ? key.ID : key;
     let result;
     try {
-      result = await decide({ caseID, transition, userID: req.user.id, plants: userPlants(req.user), rawComment: req.data.comment });
+      result = await decide({ caseID, transition, userID: req.user.id, plants: userPlants(req.user), rawComment: req.data.comment, basedOnRun: req.data.basedOnRun });
     } catch (error) {
       if (error instanceof DecisionError) return req.reject({ status: error.status, code: error.code, message: error.message });
       throw error;

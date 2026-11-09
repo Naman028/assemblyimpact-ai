@@ -34,8 +34,9 @@ service EngineeringReview {
     } actions {
         action runImpact(asOfDate : Date) returns ImpactRuns;
         action submitForReview(comment : String(1000)) returns ReviewCases;
-        action approve(comment : String(1000)) returns ReviewCases;
-        action reject(comment : String(1000) @mandatory) returns ReviewCases;
+        // basedOnRun: the impact run the reviewer evaluated; must be the case's latest run (else 409 STALE_EVIDENCE).
+        action approve(comment : String(1000), basedOnRun : UUID @mandatory) returns ReviewCases;
+        action reject(comment : String(1000) @mandatory, basedOnRun : UUID) returns ReviewCases;
     };
 
     // Decision history: read-only to every client, written only by the three review actions.
