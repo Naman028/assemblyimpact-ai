@@ -1,0 +1,6 @@
+<mvc:View controllerName="assemblyimpact.investigationstudio.controller.App" displayBlock="true"
+	xmlns:mvc="sap.ui.core.mvc" xmlns="sap.m" xmlns:f="sap.f">
+	<App id="rootApp">
+		<f:FlexibleColumnLayout id="fcl" layout="{ui>/layout}" backgroundDesign="Solid"/>
+	</App>
+</mvc:View>

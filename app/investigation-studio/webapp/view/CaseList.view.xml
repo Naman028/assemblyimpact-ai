@@ -1,0 +1,59 @@
+<mvc:View controllerName="assemblyimpact.investigationstudio.controller.CaseList"
+	xmlns:mvc="sap.ui.core.mvc" xmlns="sap.m" xmlns:f="sap.f" xmlns:core="sap.ui.core">
+	<f:DynamicPage id="casePage" toggleHeaderOnTitleClick="false" class="aiCasePage">
+		<f:title>
+			<f:DynamicPageTitle>
+				<f:heading><Title text="Engineering Change Cases" level="H1" wrapping="true"/></f:heading>
+				<f:actions>
+					<Button id="importButton" text="Import Scenario" icon="sap-icon://upload" type="Transparent" press=".onOpenImport"
+						tooltip="Validate and import synthetic demonstration data (development only)"/>
+					<Button text="Worklist" icon="sap-icon://list" type="Transparent" press=".onOpenWorklist"
+						tooltip="Open the Fiori elements Case Worklist"/>
+				</f:actions>
+			</f:DynamicPageTitle>
+		</f:title>
+		<f:header>
+			<f:DynamicPageHeader pinnable="false">
+				<VBox>
+					<MessageStrip text="Synthetic demo data — fictional NovaMotion Manufacturing. Not SAP S/4HANA records." type="Information" showIcon="true" class="sapUiTinyMarginBottom"/>
+					<SearchField id="caseSearch" placeholder="Search case, title or assembly" liveChange=".onSearch" width="100%"/>
+					<SegmentedButton id="statusFilter" selectedKey="ALL" selectionChange=".onStatusFilter" class="sapUiTinyMarginTop" width="100%">
+						<items>
+							<SegmentedButtonItem key="ALL" text="All"/>
+							<SegmentedButtonItem key="OPEN" text="Open"/>
+							<SegmentedButtonItem key="IN_REVIEW" text="In Review"/>
+							<SegmentedButtonItem key="DECIDED" text="Decided"/>
+						</items>
+					</SegmentedButton>
+				</VBox>
+			</f:DynamicPageHeader>
+		</f:header>
+		<f:content>
+			<List id="caseList" mode="SingleSelectMaster" selectionChange=".onSelect" growing="true" growingThreshold="30"
+				noDataText="No review cases for your plants." busyIndicatorDelay="0"
+				items="{ path: '/ReviewCases', parameters: { $select: 'ID,caseNumber,title,assemblyCode,assemblyDescription,plant,fromRevision,toRevision,status,sourceType,sourceTypeText', $expand: 'latestRun($select=ID,status,costDeltaTotal,materialsShort,instructionFindings,currency)' }, sorter: { path: 'caseNumber' } }">
+				<items>
+					<CustomListItem type="Navigation" class="aiCaseItem">
+						<HBox justifyContent="SpaceBetween" alignItems="Start" class="sapUiSmallMarginBeginEnd sapUiSmallMarginTopBottom">
+							<VBox class="aiCaseMain">
+								<HBox alignItems="Center">
+									<core:Icon src="{ path: 'sourceType', formatter: '.fmt.sourceIcon' }" tooltip="{sourceTypeText}" class="sapUiTinyMarginEnd"/>
+									<Title text="{caseNumber}" level="H3"/>
+								</HBox>
+								<Text text="{title}" wrapping="true" class="aiCaseTitle"/>
+								<Label text="{assemblyCode} · {assemblyDescription} · {= ${fromRevision} + ' → ' + ${toRevision}} · Plant {plant}" wrapping="true"/>
+							</VBox>
+							<VBox alignItems="End" class="aiCaseSide">
+								<ObjectStatus text="{ path: 'status', formatter: '.fmt.caseStatus' }" state="{ path: 'status', formatter: '.fmt.caseState' }" inverted="true"/>
+								<ObjectNumber visible="{= !!${path: 'latestRun/ID', targetType: 'any'} }" number="{ parts: [{ path: 'latestRun/costDeltaTotal', targetType: 'any' }, 'latestRun/currency'], formatter: '.fmt.money' }"
+									state="{ path: 'latestRun/costDeltaTotal', targetType: 'any', formatter: '.fmt.deltaState' }" class="sapUiTinyMarginTop"/>
+								<Label visible="{= !!${path: 'latestRun/ID', targetType: 'any'} }" text="{latestRun/materialsShort} short · {latestRun/instructionFindings} WI findings"/>
+								<Label visible="{= !${path: 'latestRun/ID', targetType: 'any'} }" text="Impact not calculated"/>
+							</VBox>
+						</HBox>
+					</CustomListItem>
+				</items>
+			</List>
+		</f:content>
+	</f:DynamicPage>
+</mvc:View>

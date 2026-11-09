@@ -35,6 +35,8 @@ service EngineeringReview {
         assembly.description as assemblyDescription : String(160),
         createdAt, modifiedAt,
         latestRun, runs, decisions, sourceImport,
+        // M05: BOM states of the case for the Investigation Studio (plant-restricted entity below).
+        fromState, toState,
         // M05: per-user action availability for the UI (role + plant + status + separation of duties).
         // Filled in srv/engineering-review.js after READ. Advisory only: every action re-checks on the server.
         virtual canRunImpact : Boolean,
@@ -113,7 +115,7 @@ service EngineeringReview {
 
     @readonly
     @restrict: [{ grant: 'READ', to: ['ChangeViewer', 'ChangeAnalyst', 'ChangeApprover'], where: 'plant = $user.plants' }]
-    entity Instructions as projection on db.Instructions excluding { assembly };
+    entity Instructions as projection on db.Instructions { *, assembly.assemblyCode as assemblyCode } excluding { assembly };
 
     @readonly
     @restrict: [{ grant: 'READ', to: ['ChangeViewer', 'ChangeAnalyst', 'ChangeApprover'], where: 'instruction.plant = $user.plants' }]
