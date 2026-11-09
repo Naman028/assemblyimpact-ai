@@ -1,7 +1,8 @@
 import cds from '@sap/cds';
 import { calculateImpact, ImpactRejection, RULESET } from './lib/impact-calculator.js';
-import { loadImpactInput, fingerprint, persistImpactRun, ConcurrentRunError } from './lib/impact-persistence.js';
+import { loadImpactInput, fingerprint, persistImpactRun, ConcurrentRunError, CaseDecidedError, IMPACT_ALLOWED_STATUSES } from './lib/impact-persistence.js';
 import { userPlants } from './lib/plants.js';
+import { decide, DecisionError, TRANSITIONS } from './lib/review-decisions.js';
 
 // Calculations are deterministic server-side (lib/impact-calculator.js); no LLM is involved.
 export default class EngineeringReview extends cds.ApplicationService {
@@ -9,7 +10,25 @@ export default class EngineeringReview extends cds.ApplicationService {
     // Malformed or missing plant memberships never grant access (same rule as M03).
     this.before('*', req => { if (!userPlants(req.user)) req.reject(403); });
     this.on('runImpact', 'ReviewCases', req => this.#runImpact(req));
+    for (const action of Object.keys(TRANSITIONS)) this.on(action, 'ReviewCases', req => this.#decide(req, TRANSITIONS[action]));
     return super.init();
+  }
+
+  // M04 Slice 2a: submitForReview / approve / reject (rules in lib/review-decisions.js).
+  async #decide(req, transition) {
+    const key = req.params.at(-1);
+    const caseID = typeof key === 'object' ? key.ID : key;
+    let result;
+    try {
+      result = await decide({ caseID, transition, userID: req.user.id, plants: userPlants(req.user), rawComment: req.data.comment, basedOnRun: req.data.basedOnRun });
+    } catch (error) {
+      if (error instanceof DecisionError) return req.reject({ status: error.status, code: error.code, message: error.message });
+      throw error;
+    }
+    // Missing and foreign-plant cases are indistinguishable to the caller.
+    if (!result) return req.reject(404);
+    req.info({ message: `Review case status changed from ${result.fromStatus} to ${result.toStatus}.` });
+    return SELECT.one.from(this.entities.ReviewCases, caseID);
   }
 
   async #runImpact(req) {
@@ -20,6 +39,8 @@ export default class EngineeringReview extends cds.ApplicationService {
     const loaded = await loadImpactInput(caseID, userPlants(req.user), asOfDate);
     // Missing and foreign-plant cases are indistinguishable to the caller.
     if (!loaded) return req.reject(404);
+    // M04 Slice 2a (Decision B): decided cases keep the evidence they were decided on.
+    if (!IMPACT_ALLOWED_STATUSES.includes(loaded.reviewCase.status)) return req.reject(caseDecided(loaded.reviewCase.status));
 
     let result;
     try {
@@ -42,6 +63,7 @@ export default class EngineeringReview extends cds.ApplicationService {
         `${run.instructionFindings} outdated instruction reference(s).` });
       return run;
     } catch (error) {
+      if (error instanceof CaseDecidedError) return req.reject(caseDecided(error.caseStatus));
       if (error instanceof ConcurrentRunError) {
         return req.reject({ status: 409, code: 'CONCURRENT_IMPACT_RUN', message: 'Another impact run completed first; reload and retry.' });
       }
@@ -49,3 +71,6 @@ export default class EngineeringReview extends cds.ApplicationService {
     }
   }
 }
+
+const caseDecided = status => ({ status: 409, code: 'CASE_ALREADY_DECIDED',
+  message: `Impact cannot be recalculated for a review case in status ${status}; the evidence of the decision is preserved.` });

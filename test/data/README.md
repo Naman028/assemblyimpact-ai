@@ -11,3 +11,6 @@ prices, stock levels or engineering changes.
 - Loaded by CAP in the development profile only. The test profile excludes this
   folder by configuration and the production profile never includes it.
 - PUMP-200 (DS-DEMO-01) is intentionally absent (test-only, Decision A).
+- Review cases start in status `OPEN` (M04 Slice 2a). Submission, approval and rejection
+  happen only through the service actions, so the decision history contains real actions
+  only; no decision events are seeded.

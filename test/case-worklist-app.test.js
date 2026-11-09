@@ -111,7 +111,7 @@ test('List Report request returns only the user\'s plant; runImpact fills the co
   const before = await request(`${SVC}${LIST}`);
   assert.equal(before.status, 200, JSON.stringify(before.data));
   assert.equal(before.data['@odata.count'], 1);
-  assert.deepEqual(before.data.value.map(c => [c.caseNumber, c.assemblyCode, c.status, c.latestRun]), [['EC-000473', 'COOL-100', 'IN_REVIEW', null]]);
+  assert.deepEqual(before.data.value.map(c => [c.caseNumber, c.assemblyCode, c.status, c.latestRun]), [['EC-000473', 'COOL-100', 'OPEN', null]]);
   const other = await request(`${SVC}${LIST}`, { user: 'analyst2' });
   assert.deepEqual(other.data.value.map(c => c.caseNumber), ['EC-200473']);
   // The action button is shown to everyone; the server decides.
