@@ -11,7 +11,7 @@
   },
   "scripts": {
     "start": "cds-serve",
-    "test": "node --test test/assembly-service.test.js test/impact-calculator.test.js test/engineering-review.test.js test/seed-data.test.js test/case-worklist-app.test.js",
+    "test": "node --test test/assembly-service.test.js test/impact-calculator.test.js test/engineering-review.test.js test/seed-data.test.js test/case-worklist-app.test.js test/m05-run-impact-ui.test.js",
     "lint": "eslint srv test --max-warnings=0"
   },
   "private": true,

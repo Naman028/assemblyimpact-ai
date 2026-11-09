@@ -20,6 +20,11 @@ service EngineeringReview {
         fromState.revision as fromRevision,
         toState.revision as toRevision,
         productionQuantity, status, owner, sourceType, evidenceRef,
+        // M05: display labels for code values (read-only, computed on read; codes stay the contract).
+        case status when 'OPEN' then 'Open' when 'IN_REVIEW' then 'In Review'
+            when 'APPROVED' then 'Approved' when 'REJECTED' then 'Rejected' else status end as statusText : String(20),
+        case sourceType when 'SYNTHETIC_FIXTURE' then 'Synthetic Fixture' when 'MANUAL' then 'Manual'
+            when 'GENAI_PROPOSAL' then 'GenAI Proposal' when 'S4_IMPORT' then 'Imported' else sourceType end as sourceTypeText : String(30),
         createdAt, modifiedAt,
         latestRun, runs
     } actions {
