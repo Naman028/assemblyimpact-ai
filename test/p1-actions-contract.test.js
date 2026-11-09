@@ -98,5 +98,21 @@ test('Joule skill design maps every skill to an existing operation and keeps dec
   }
   assert.equal(skills.skills.find(s => s.name === 'run_engineering_impact').confirmationRequired, true);
   assert(!JSON.stringify(skills.skills.map(s => s.steps)).match(/approve|reject|submitForReview/i), 'no review decision is delegated to Joule');
-  assert.deepEqual(skills.technicalIdentity.roles, ['ChangeViewer', 'ChangeAnalyst']);
+  assert.deepEqual(skills.technicalIdentity.roles, ['ChangeViewer', 'ImpactRunner']);
+  for (const s of skills.skills) assert.match(JSON.stringify(s.steps), /value is empty/, `${s.name} handles an empty result`);
+  for (const name of ['find_engineering_cases', 'explain_case_impact']) assert.match(JSON.stringify(skills.skills.find(s => s.name === name).steps[0]), /sourceType/);
+});
+
+test('Joule identity (ChangeViewer + ImpactRunner): reads and runs impact in its plant; everything else is refused by the server', async () => {
+  const run = await call('POST', `/ReviewCases(${CASE})/EngineeringReview.runImpact`, { user: 'joule', body: { asOfDate: '2026-11-08' } });
+  assert.equal(run.status, 200, JSON.stringify(run.data));
+  assert.equal(run.data.computedBy, 'joule', 'attributed to the calling identity');
+  assert.equal((await call('GET', `/ReviewCases(${CASE})?$select=canRunImpact,canSubmit,canDecide`, { user: 'joule' })).data.canSubmit, false);
+  for (const action of ['submitForReview', 'approve', 'reject']) {
+    const r = await call('POST', `/ReviewCases(${CASE})/EngineeringReview.${action}`, { user: 'joule', body: { comment: 'x', basedOnRun: run.data.ID } });
+    assert.equal(r.status, 403, action);
+  }
+  assert.equal((await call('POST', '/importScenario', { user: 'joule', body: { format: 'json', content: '{}', dryRun: true } })).status, 403);
+  const other = seed.ReviewCases.find(c => c.caseNumber === 'EC-200473').ID;
+  assert.equal((await call('POST', `/ReviewCases(${other})/EngineeringReview.runImpact`, { user: 'joule', body: {} })).status, 404, 'foreign plant');
 });

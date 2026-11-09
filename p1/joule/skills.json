@@ -9,7 +9,7 @@
       "Quote figures exactly as returned (cost delta with currency and percent, materials short, instruction findings, run status and as-of date).",
       "If a run status is INCOMPLETE, say which inputs are missing (flags) and that the result cannot be approved.",
       "If a run status is COMPLETE_WITH_WARNINGS, mention the warning (e.g. stale stock snapshot).",
-      "State that all data is synthetic demonstration data of the fictional NovaMotion Manufacturing unless the case source type says otherwise.",
+      "Tell the user where the data comes from, using each case's sourceType (SYNTHETIC_FIXTURE / DEMO_IMPORT = fictional NovaMotion demo data, SANDBOX_IMPORT = SAP API sandbox data, S4_IMPORT = SAP S/4HANA extract).",
       "Never approve, reject or submit cases; tell the user to use the Investigation Studio or the worklist for review decisions."
     ]
   },
@@ -18,46 +18,142 @@
       "name": "find_engineering_cases",
       "description": "Find engineering change review cases by status, assembly or case number.",
       "inputs": [
-        { "name": "status", "type": "string", "enum": ["OPEN", "IN_REVIEW", "APPROVED", "REJECTED"], "required": false },
-        { "name": "assemblyCode", "type": "string", "required": false },
-        { "name": "caseNumber", "type": "string", "required": false }
+        {
+          "name": "status",
+          "type": "string",
+          "enum": [
+            "OPEN",
+            "IN_REVIEW",
+            "APPROVED",
+            "REJECTED"
+          ],
+          "required": false
+        },
+        {
+          "name": "assemblyCode",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "caseNumber",
+          "type": "string",
+          "required": false
+        }
       ],
       "steps": [
-        { "action": "FindEngineeringCases", "query": "$filter built from the given inputs (eq, combined with and); $expand=latestRun; $orderby=caseNumber; $top=20" }
+        {
+          "action": "FindEngineeringCases",
+          "query": "$filter built from the given inputs (eq, combined with and); $select=ID,caseNumber,title,assemblyCode,status,sourceType,sourceTypeText; $expand=latestRun; $orderby=caseNumber; $top=20"
+        },
+        {
+          "condition": "value is empty",
+          "respond": "Say that no case matches in the user's plants (OData returns an empty list, not 404)."
+        }
       ],
-      "output": "List: caseNumber, title, assemblyCode, status, latestRun.costDeltaTotal (EUR), latestRun.materialsShort, latestRun.instructionFindings; 'not calculated' when latestRun is null.",
-      "errorHandling": { "401": "Ask the user to sign in again.", "403": "Explain that the user's role does not allow reading engineering cases.", "404": "Say that no case matches in the user's plants." }
+      "output": "List: caseNumber, title, assemblyCode, status, sourceTypeText, latestRun.costDeltaTotal (EUR), latestRun.materialsShort, latestRun.instructionFindings; 'not calculated' when latestRun is null.",
+      "errorHandling": {
+        "401": "Ask the user to sign in again.",
+        "403": "Explain that the user's role does not allow reading engineering cases.",
+        "404": "Say that no case matches in the user's plants."
+      }
     },
     {
       "name": "explain_case_impact",
       "description": "Explain the latest impact of one case: cost, shortages, BOM changes, outdated work instructions, with evidence.",
-      "inputs": [ { "name": "caseNumber", "type": "string", "required": true } ],
+      "inputs": [
+        {
+          "name": "caseNumber",
+          "type": "string",
+          "required": true
+        }
+      ],
       "steps": [
-        { "action": "FindEngineeringCases", "query": "$filter=caseNumber eq '<caseNumber>'&$select=ID,caseNumber,title,status,latestRun_ID" },
-        { "condition": "latestRun_ID is null", "respond": "No impact run exists yet; offer run_engineering_impact." },
-        { "action": "GetEngineeringImpact", "path": "ID = latestRun_ID", "query": "$expand=findings,materialLines,comparisonLines" }
+        {
+          "action": "FindEngineeringCases",
+          "query": "$filter=caseNumber eq '<caseNumber>'&$select=ID,caseNumber,title,status,sourceType,sourceTypeText,latestRun_ID"
+        },
+        {
+          "condition": "value is empty",
+          "respond": "Say that the case is not visible in the user's plants; stop."
+        },
+        {
+          "condition": "latestRun_ID is null",
+          "respond": "No impact run exists yet; offer run_engineering_impact."
+        },
+        {
+          "action": "GetEngineeringImpact",
+          "path": "ID = latestRun_ID",
+          "query": "$expand=findings,materialLines,comparisonLines"
+        }
       ],
       "output": "Summary of status/flags, cost delta, shortages (material, required, available, gap), BOM changes (item, from -> to, change), HIGH findings with evidence references, computedAt and asOfDate.",
-      "errorHandling": { "401": "Ask the user to sign in again.", "403": "Explain the missing authorization.", "404": "Say that the case or run is not visible in the user's plants." }
+      "errorHandling": {
+        "401": "Ask the user to sign in again.",
+        "403": "Explain the missing authorization.",
+        "404": "Say that the case or run is not visible in the user's plants."
+      }
     },
     {
       "name": "run_engineering_impact",
       "description": "Run the deterministic impact calculation for one case after explicit user confirmation.",
       "confirmationRequired": true,
-      "inputs": [ { "name": "caseNumber", "type": "string", "required": true }, { "name": "asOfDate", "type": "date", "required": false } ],
+      "inputs": [
+        {
+          "name": "caseNumber",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "asOfDate",
+          "type": "date",
+          "required": false
+        }
+      ],
       "steps": [
-        { "action": "FindEngineeringCases", "query": "$filter=caseNumber eq '<caseNumber>'&$select=ID,status" },
-        { "confirm": "Run the impact calculation for <caseNumber> as of <asOfDate or today>? A new immutable run will replace the latest evidence." },
-        { "action": "RunEngineeringImpact", "path": "ID", "body": { "asOfDate": "<asOfDate>" } }
+        {
+          "action": "FindEngineeringCases",
+          "query": "$filter=caseNumber eq '<caseNumber>'&$select=ID,status,sourceType"
+        },
+        {
+          "condition": "value is empty",
+          "respond": "Say that the case is not visible in the user's plants; stop without calling any action."
+        },
+        {
+          "confirm": "Run the impact calculation for <caseNumber> as of <asOfDate or today>? A new immutable run will replace the latest evidence."
+        },
+        {
+          "action": "RunEngineeringImpact",
+          "path": "ID",
+          "body": {
+            "asOfDate": "<asOfDate, omit the property when the user gave no date>"
+          }
+        }
       ],
       "output": "The new run's status, cost delta, materials short and instruction findings, quoted from the response.",
-      "errorHandling": { "400": "Repeat the expected date format YYYY-MM-DD.", "401": "Ask the user to sign in again.", "403": "Only engineering analysts may run calculations.", "404": "The case is not in the user's plants.", "409": "The case is already decided or another run finished first; reload and explain.", "422": "Explain the input problem code returned by the service." }
+      "errorHandling": {
+        "400": "Repeat the expected date format YYYY-MM-DD.",
+        "401": "Ask the user to sign in again.",
+        "403": "Only engineering analysts may run calculations.",
+        "404": "The case is not in the user's plants.",
+        "409": "The case is already decided or another run finished first; reload and explain.",
+        "422": "Explain the input problem code returned by the service."
+      }
     }
   ],
   "technicalIdentity": {
-    "preferred": "Principal propagation (user token) through the destination, so roles and the plants attribute of the signed-in user apply unchanged.",
-    "fallback": "Dedicated XSUAA client with only the role templates below and a fixed plants attribute; never the application-owning credentials.",
-    "roles": ["ChangeViewer", "ChangeAnalyst"],
-    "excludedRoles": ["ChangeApprover", "DemoDataImporter", "ErpExtractor", "AssemblyMaintainer"]
+    "mode": "Principal propagation only: the destination uses OAuth2JWTBearer, so every call runs as the signed-in user with that user's roles and plants attribute, and runs are attributed to that person (computedBy).",
+    "noClientCredentials": "A client-credentials technical client is not supported: it carries no plants attribute (every call would be refused) and would hide who ran a calculation.",
+    "roles": [
+      "ChangeViewer",
+      "ImpactRunner"
+    ],
+    "roleCollection": "AssemblyImpact_JouleAssistant (assigned to the human users who may use the assistant)",
+    "excludedRoles": [
+      "ChangeAnalyst",
+      "ChangeApprover",
+      "DemoDataImporter",
+      "ErpExtractor",
+      "AssemblyMaintainer"
+    ]
   }
 }

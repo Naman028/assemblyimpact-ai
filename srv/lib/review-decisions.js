@@ -61,7 +61,7 @@ export async function submittersOf(cases) {
 export function availabilityFor({ status, submittedBy }, user, impactAllowedStatuses) {
   const analyst = user.is('ChangeAnalyst');
   return {
-    canRunImpact: analyst && impactAllowedStatuses.includes(status),
+    canRunImpact: (analyst || user.is('ImpactRunner')) && impactAllowedStatuses.includes(status),
     canSubmit: analyst && status === 'OPEN',
     canDecide: user.is('ChangeApprover') && status === 'IN_REVIEW' && submittedBy !== user.id,
   };

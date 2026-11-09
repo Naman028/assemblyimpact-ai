@@ -21,5 +21,8 @@ documented 403/404 behaviour. The contract drift it found (new source types miss
    (`destination.template.json`). Deployment is prepared on branch `feat/btp-deployment-prep` and needs separate approval.
 3. Releasing the Actions project and deploying the Joule project to the shared tenant: not done (requires authorization).
 
-Identity: principal propagation preferred; fallback is a dedicated XSUAA client with only ChangeViewer + ChangeAnalyst
-and a fixed `plants` attribute. Review decisions (submit/approve/reject) are deliberately not available to Joule.
+Identity (review finding C1, decided): **principal propagation only** (`OAuth2JWTBearer` destination). Users of the
+assistant get the role collection with **ChangeViewer + ImpactRunner**: read and run the deterministic calculation in
+their own plants, nothing else. Submit, approve, reject, import and ERP extraction are refused by the server (403),
+not only by the skill text (`test/p1-actions-contract.test.js`). Runs are attributed to the signed-in person. A
+client-credentials technical user is not supported (no `plants` attribute, no personal attribution).
