@@ -16,6 +16,7 @@ destination was provisioned, and nothing was deployed. Each of these needs the o
 | Demo import disabled in production | `[production].features.demo_import = false` | test |
 | Joule/Actions destination | `p1/joule/destination.template.json` (branch `feat/p1-joule-skill-contract`) | placeholders only |
 | S/4HANA destinations | `docs/p2/S4HANA_Adapter.md` (branch `feat/p2-s4-adapter`) | blocked: no authorized system |
+| GenAI explanation destination | `ASSEMBLYIMPACT_GENAI_HUB` → SAP AI Core (`docs/p2/S4HANA_Adapter.md`, section GenAI) | blocked: needs an AI Core instance, a foundation-model deployment and `cds.requires.genai` values |
 
 UI5: both apps keep loading SAPUI5 1.149.0 from the SAP CDN (`index.html`); no bundling step is required.
 
