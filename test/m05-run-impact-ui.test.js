@@ -50,10 +50,15 @@ test('UI annotations: side effects on runImpact, readable labels, currency for u
 });
 
 test('readable labels are served next to the unchanged codes', async () => {
-  const r = await request(`${SVC}/ReviewCases(${CASE})?$select=status,statusText,sourceType,sourceTypeText`);
-  assert.equal(r.status, 200, JSON.stringify(r.data));
-  assert.deepEqual([r.data.status, r.data.statusText, r.data.sourceType, r.data.sourceTypeText],
-    ['IN_REVIEW', 'In Review', 'SYNTHETIC_FIXTURE', 'Synthetic Fixture']);
+  const labels = async () => {
+    const r = await request(`${SVC}/ReviewCases(${CASE})?$select=status,statusText,sourceType,sourceTypeText`);
+    assert.equal(r.status, 200, JSON.stringify(r.data));
+    return [r.data.status, r.data.statusText, r.data.sourceType, r.data.sourceTypeText];
+  };
+  // Seeded cases start OPEN (M04 Slice 2a); the analyst submits through the real action.
+  assert.deepEqual(await labels(), ['OPEN', 'Open', 'SYNTHETIC_FIXTURE', 'Synthetic Fixture']);
+  assert.equal((await request(`${SVC}/ReviewCases(${CASE})/EngineeringReview.submitForReview`, { method: 'POST', body: {} })).status, 200);
+  assert.deepEqual(await labels(), ['IN_REVIEW', 'In Review', 'SYNTHETIC_FIXTURE', 'Synthetic Fixture']);
   const filtered = await request(`${SVC}/ReviewCases?$filter=status eq 'IN_REVIEW'&$select=caseNumber`);
   assert.deepEqual(filtered.data.value.map(c => c.caseNumber), ['EC-000473'], 'filtering still uses codes');
 });

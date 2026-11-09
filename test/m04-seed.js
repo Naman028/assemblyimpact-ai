@@ -7,6 +7,14 @@ import { loadDataset, stableId } from './m04-fixtures.js';
 export const SEED_ID = 'SEED-M04-01';
 
 /**
+ * M04 Slice 2a (Decision A): seeded demonstration cases start OPEN, so every review runs through
+ * EngineeringReview.submitForReview and leaves a genuine SUBMIT event with a real actor. No
+ * historical decision events are seeded. The oracle fixture keeps its own status (IN_REVIEW);
+ * the impact calculation does not read the case status.
+ */
+export const SEED_INITIAL_CASE_STATUS = 'OPEN';
+
+/**
  * Seeded scenarios. Decision D-1b-1: only COOL-100 (DS-ORACLE-01) is application seed
  * data; PUMP-200 (DS-DEMO-01) stays test-only (Decision A). The plant-2000 mirror exists
  * so that plant isolation can be demonstrated on seeded records.
@@ -102,7 +110,7 @@ export function buildRows({ dataset, caseNumber, mirrorToPlant, mirrorCaseNumber
   rows.ReviewCases.push({ ID: id(`case:${number}`), caseNumber: number,
     title: mirrorToPlant ? `${source.title} (plant ${mirrorToPlant} isolation mirror)` : source.title,
     assembly_ID: assemblyId(source.assemblyCode, plant), plant, fromState_ID: stateId(source.fromBomStateId),
-    toState_ID: stateId(source.toBomStateId), productionQuantity: source.productionQuantity, status: source.status,
+    toState_ID: stateId(source.toBomStateId), productionQuantity: source.productionQuantity, status: SEED_INITIAL_CASE_STATUS,
     owner: source.owner, sourceType: source.sourceType, evidenceRef: ref(source.evidenceRef), version: id(`case-version:${number}`) });
   return rows;
 }

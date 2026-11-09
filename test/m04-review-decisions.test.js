@@ -81,6 +81,23 @@ test('happy path: analyst submits, a different approver approves; status and his
   assert(history.every(e => !Number.isNaN(Date.parse(e.at))));
 });
 
+test('seeded demonstration cases start OPEN without history; submission creates a genuine SUBMIT event', async () => {
+  for (const [id, user] of [[SEEDED_1000.ID, 'cviewer'], [SEEDED_2000, 'cviewer2']]) {
+    const c = await request(`/ReviewCases(${id})?$expand=decisions`, { user });
+    assert.equal(c.status, 200);
+    assert.equal(c.data.status, 'OPEN');
+    assert.deepEqual(c.data.decisions, [], 'no seeded or fabricated decision events');
+  }
+  assert.equal(SEEDED_1000.status, 'OPEN', 'seed builder output matches the committed CSV status');
+  // An approver cannot short-cut the review of a seeded case.
+  assert.equal(errorCode(await act(SEEDED_1000.ID, 'approve', 'approver')), 'INVALID_STATUS_TRANSITION');
+  assert.equal((await act(SEEDED_1000.ID, 'submitForReview', 'analyst', { comment: 'seeded demo case submitted' })).status, 200);
+  const events = (await request(`/ReviewCases(${SEEDED_1000.ID})/decisions`, { user: 'cviewer' })).data.value;
+  assert.deepEqual(events.map(e => [e.action, e.fromStatus, e.toStatus, e.actor]), [['SUBMIT', 'OPEN', 'IN_REVIEW', 'analyst']]);
+  // The submitter is now recorded, so the no-self-decision rule has a real actor to compare against.
+  assert.equal(errorCode(await act(SEEDED_1000.ID, 'submitForReview', 'analyst')), 'INVALID_STATUS_TRANSITION', 'no double submission');
+});
+
 test('reject requires a non-blank comment; a refused attempt changes nothing', async () => {
   assert.equal((await act(OPEN.B, 'submitForReview', 'analyst')).status, 200);
   for (const body of [{}, { comment: '' }, { comment: '   ' }, { comment: null }]) {
@@ -137,6 +154,7 @@ test('authorization: roles, plants, malformed memberships; foreign cases look mi
 });
 
 test('plant isolation of the decision history: collection, key, $count and $expand', async () => {
+  assert.equal((await act(SEEDED_2000, 'submitForReview', 'analyst2')).status, 200);
   assert.equal((await act(SEEDED_2000, 'approve', 'approver2', { comment: 'plant 2000 decision' })).status, 200);
   const own = await request('/DecisionEvents?$count=true', { user: 'cviewer' });
   const foreign = await request('/DecisionEvents?$count=true', { user: 'cviewer2' });
@@ -144,7 +162,7 @@ test('plant isolation of the decision history: collection, key, $count and $expa
   assert(own.data.value.length > 0);
   assert.equal(own.data['@odata.count'], own.data.value.length);
   const ownIds = new Set(own.data.value.map(e => e.ID));
-  assert.equal(foreign.data.value.length, 1, 'plant-2000 viewer sees only the plant-2000 event');
+  assert.equal(foreign.data.value.length, 2, 'plant-2000 viewer sees only the plant-2000 SUBMIT and APPROVE events');
   assert(foreign.data.value.every(e => !ownIds.has(e.ID)));
   assert.equal((await request(`/DecisionEvents(${own.data.value[0].ID})`, { user: 'cviewer2' })).status, 404);
   const expanded = await request('/ReviewCases?$expand=decisions', { user: 'cviewer2' });
