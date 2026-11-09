@@ -1,0 +1,663 @@
+{
+  "datasetId": "DS-DEMO-01",
+  "datasetVersion": "1.0.1",
+  "ruleset": "1.1.0",
+  "referenceDate": "2026-11-08",
+  "synthetic": true,
+  "cases": [
+    {
+      "caseNumber": "EC-000471",
+      "status": "COMPLETE",
+      "flags": [],
+      "from": {
+        "bomStateId": "BOM-PUMP-200-A",
+        "revision": "A"
+      },
+      "to": {
+        "bomStateId": "BOM-PUMP-200-B",
+        "revision": "B"
+      },
+      "comparison": [
+        {
+          "itemNo": "0010",
+          "fromMaterial": "MOT-24V",
+          "fromQuantity": "1",
+          "toMaterial": "MOT-24V",
+          "toQuantity": "1",
+          "unit": "PC",
+          "change": "UNCHANGED"
+        },
+        {
+          "itemNo": "0020",
+          "fromMaterial": "IMP-70",
+          "fromQuantity": "1",
+          "toMaterial": "IMP-72",
+          "toQuantity": "1",
+          "unit": "PC",
+          "change": "REPLACED"
+        },
+        {
+          "itemNo": "0030",
+          "fromMaterial": "HSG-P200",
+          "fromQuantity": "1",
+          "toMaterial": "HSG-P200",
+          "toQuantity": "1",
+          "unit": "PC",
+          "change": "UNCHANGED"
+        },
+        {
+          "itemNo": "0040",
+          "fromMaterial": "SHAFT-08",
+          "fromQuantity": "1",
+          "toMaterial": "SHAFT-08",
+          "toQuantity": "1",
+          "unit": "PC",
+          "change": "UNCHANGED"
+        },
+        {
+          "itemNo": "0050",
+          "fromMaterial": "BRG-608",
+          "fromQuantity": "2",
+          "toMaterial": "BRG-608",
+          "toQuantity": "2",
+          "unit": "PC",
+          "change": "UNCHANGED"
+        },
+        {
+          "itemNo": "0060",
+          "fromMaterial": "ORING-30",
+          "fromQuantity": "3",
+          "toMaterial": "ORING-30",
+          "toQuantity": "4",
+          "unit": "PC",
+          "change": "QUANTITY_CHANGED"
+        },
+        {
+          "itemNo": "0070",
+          "fromMaterial": "SCR-M4X12",
+          "fromQuantity": "8",
+          "toMaterial": "SCR-M4X12",
+          "toQuantity": "10",
+          "unit": "PC",
+          "change": "QUANTITY_CHANGED"
+        },
+        {
+          "itemNo": "0080",
+          "fromMaterial": "GSKT-P200",
+          "fromQuantity": "1",
+          "toMaterial": null,
+          "toQuantity": null,
+          "unit": "PC",
+          "change": "REMOVED"
+        },
+        {
+          "itemNo": "0090",
+          "fromMaterial": "PCB-CTRL1",
+          "fromQuantity": "1",
+          "toMaterial": "PCB-CTRL2",
+          "toQuantity": "1",
+          "unit": "PC",
+          "change": "REPLACED"
+        },
+        {
+          "itemNo": "0100",
+          "fromMaterial": "CBL-200",
+          "fromQuantity": "1",
+          "toMaterial": "CBL-200",
+          "toQuantity": "1",
+          "unit": "PC",
+          "change": "UNCHANGED"
+        },
+        {
+          "itemNo": "0110",
+          "fromMaterial": "LBL-200",
+          "fromQuantity": "1",
+          "toMaterial": "LBL-200",
+          "toQuantity": "1",
+          "unit": "PC",
+          "change": "UNCHANGED"
+        },
+        {
+          "itemNo": "0120",
+          "fromMaterial": null,
+          "fromQuantity": null,
+          "toMaterial": "SENS-T02",
+          "toQuantity": "1",
+          "unit": "PC",
+          "change": "ADDED"
+        },
+        {
+          "itemNo": "0130",
+          "fromMaterial": null,
+          "fromQuantity": null,
+          "toMaterial": "CLIP-05",
+          "toQuantity": "2",
+          "unit": "PC",
+          "change": "ADDED"
+        }
+      ],
+      "cost": {
+        "currency": "EUR",
+        "productionQuantity": 250,
+        "fromPerAssembly": "115.23",
+        "toPerAssembly": "126.84",
+        "fromLines": [
+          {
+            "itemNo": "0010",
+            "material": "MOT-24V",
+            "unitPrice": "48",
+            "lineCost": "48",
+            "priceEvidenceRef": "DS-DEMO-01/cost_prices/MOT-24V"
+          },
+          {
+            "itemNo": "0020",
+            "material": "IMP-70",
+            "unitPrice": "9.5",
+            "lineCost": "9.5",
+            "priceEvidenceRef": "DS-DEMO-01/cost_prices/IMP-70"
+          },
+          {
+            "itemNo": "0030",
+            "material": "HSG-P200",
+            "unitPrice": "22",
+            "lineCost": "22",
+            "priceEvidenceRef": "DS-DEMO-01/cost_prices/HSG-P200"
+          },
+          {
+            "itemNo": "0040",
+            "material": "SHAFT-08",
+            "unitPrice": "6.4",
+            "lineCost": "6.4",
+            "priceEvidenceRef": "DS-DEMO-01/cost_prices/SHAFT-08"
+          },
+          {
+            "itemNo": "0050",
+            "material": "BRG-608",
+            "unitPrice": "1.85",
+            "lineCost": "3.7",
+            "priceEvidenceRef": "DS-DEMO-01/cost_prices/BRG-608"
+          },
+          {
+            "itemNo": "0060",
+            "material": "ORING-30",
+            "unitPrice": "0.35",
+            "lineCost": "1.05",
+            "priceEvidenceRef": "DS-DEMO-01/cost_prices/ORING-30"
+          },
+          {
+            "itemNo": "0070",
+            "material": "SCR-M4X12",
+            "unitPrice": "0.06",
+            "lineCost": "0.48",
+            "priceEvidenceRef": "DS-DEMO-01/cost_prices/SCR-M4X12"
+          },
+          {
+            "itemNo": "0080",
+            "material": "GSKT-P200",
+            "unitPrice": "1.2",
+            "lineCost": "1.2",
+            "priceEvidenceRef": "DS-DEMO-01/cost_prices/GSKT-P200"
+          },
+          {
+            "itemNo": "0090",
+            "material": "PCB-CTRL1",
+            "unitPrice": "18",
+            "lineCost": "18",
+            "priceEvidenceRef": "DS-DEMO-01/cost_prices/PCB-CTRL1"
+          },
+          {
+            "itemNo": "0100",
+            "material": "CBL-200",
+            "unitPrice": "4.75",
+            "lineCost": "4.75",
+            "priceEvidenceRef": "DS-DEMO-01/cost_prices/CBL-200"
+          },
+          {
+            "itemNo": "0110",
+            "material": "LBL-200",
+            "unitPrice": "0.15",
+            "lineCost": "0.15",
+            "priceEvidenceRef": "DS-DEMO-01/cost_prices/LBL-200"
+          }
+        ],
+        "toLines": [
+          {
+            "itemNo": "0010",
+            "material": "MOT-24V",
+            "unitPrice": "48",
+            "lineCost": "48",
+            "priceEvidenceRef": "DS-DEMO-01/cost_prices/MOT-24V"
+          },
+          {
+            "itemNo": "0020",
+            "material": "IMP-72",
+            "unitPrice": "10.2",
+            "lineCost": "10.2",
+            "priceEvidenceRef": "DS-DEMO-01/cost_prices/IMP-72"
+          },
+          {
+            "itemNo": "0030",
+            "material": "HSG-P200",
+            "unitPrice": "22",
+            "lineCost": "22",
+            "priceEvidenceRef": "DS-DEMO-01/cost_prices/HSG-P200"
+          },
+          {
+            "itemNo": "0040",
+            "material": "SHAFT-08",
+            "unitPrice": "6.4",
+            "lineCost": "6.4",
+            "priceEvidenceRef": "DS-DEMO-01/cost_prices/SHAFT-08"
+          },
+          {
+            "itemNo": "0050",
+            "material": "BRG-608",
+            "unitPrice": "1.85",
+            "lineCost": "3.7",
+            "priceEvidenceRef": "DS-DEMO-01/cost_prices/BRG-608"
+          },
+          {
+            "itemNo": "0060",
+            "material": "ORING-30",
+            "unitPrice": "0.35",
+            "lineCost": "1.4",
+            "priceEvidenceRef": "DS-DEMO-01/cost_prices/ORING-30"
+          },
+          {
+            "itemNo": "0070",
+            "material": "SCR-M4X12",
+            "unitPrice": "0.06",
+            "lineCost": "0.6",
+            "priceEvidenceRef": "DS-DEMO-01/cost_prices/SCR-M4X12"
+          },
+          {
+            "itemNo": "0090",
+            "material": "PCB-CTRL2",
+            "unitPrice": "21.5",
+            "lineCost": "21.5",
+            "priceEvidenceRef": "DS-DEMO-01/cost_prices/PCB-CTRL2"
+          },
+          {
+            "itemNo": "0100",
+            "material": "CBL-200",
+            "unitPrice": "4.75",
+            "lineCost": "4.75",
+            "priceEvidenceRef": "DS-DEMO-01/cost_prices/CBL-200"
+          },
+          {
+            "itemNo": "0110",
+            "material": "LBL-200",
+            "unitPrice": "0.15",
+            "lineCost": "0.15",
+            "priceEvidenceRef": "DS-DEMO-01/cost_prices/LBL-200"
+          },
+          {
+            "itemNo": "0120",
+            "material": "SENS-T02",
+            "unitPrice": "7.9",
+            "lineCost": "7.9",
+            "priceEvidenceRef": "DS-DEMO-01/cost_prices/SENS-T02"
+          },
+          {
+            "itemNo": "0130",
+            "material": "CLIP-05",
+            "unitPrice": "0.12",
+            "lineCost": "0.24",
+            "priceEvidenceRef": "DS-DEMO-01/cost_prices/CLIP-05"
+          }
+        ],
+        "issues": [],
+        "status": "COMPLETE",
+        "deltaPerAssembly": "11.61",
+        "fromTotal": "28807.50",
+        "toTotal": "31710.00",
+        "deltaTotal": "2902.50",
+        "deltaPercent": "10.08"
+      },
+      "stock": [
+        {
+          "material": "BRG-608",
+          "unit": "PC",
+          "required": "500",
+          "available": "520",
+          "gap": "0",
+          "status": "SUFFICIENT",
+          "stale": false,
+          "snapshotAt": "2026-11-08T08:00:00Z",
+          "evidenceRef": "DS-DEMO-01/stock_snapshots/BRG-608/1000"
+        },
+        {
+          "material": "CBL-200",
+          "unit": "PC",
+          "required": "250",
+          "available": "240",
+          "gap": "10",
+          "status": "SHORT",
+          "stale": false,
+          "snapshotAt": "2026-11-08T08:00:00Z",
+          "evidenceRef": "DS-DEMO-01/stock_snapshots/CBL-200/1000"
+        },
+        {
+          "material": "CLIP-05",
+          "unit": "PC",
+          "required": "500",
+          "available": "600",
+          "gap": "0",
+          "status": "SUFFICIENT",
+          "stale": false,
+          "snapshotAt": "2026-11-08T08:00:00Z",
+          "evidenceRef": "DS-DEMO-01/stock_snapshots/CLIP-05/1000"
+        },
+        {
+          "material": "HSG-P200",
+          "unit": "PC",
+          "required": "250",
+          "available": "260",
+          "gap": "0",
+          "status": "SUFFICIENT",
+          "stale": false,
+          "snapshotAt": "2026-11-08T08:00:00Z",
+          "evidenceRef": "DS-DEMO-01/stock_snapshots/HSG-P200/1000"
+        },
+        {
+          "material": "IMP-72",
+          "unit": "PC",
+          "required": "250",
+          "available": "180",
+          "gap": "70",
+          "status": "SHORT",
+          "stale": false,
+          "snapshotAt": "2026-11-08T08:00:00Z",
+          "evidenceRef": "DS-DEMO-01/stock_snapshots/IMP-72/1000"
+        },
+        {
+          "material": "LBL-200",
+          "unit": "PC",
+          "required": "250",
+          "available": "1000",
+          "gap": "0",
+          "status": "SUFFICIENT",
+          "stale": false,
+          "snapshotAt": "2026-11-08T08:00:00Z",
+          "evidenceRef": "DS-DEMO-01/stock_snapshots/LBL-200/1000"
+        },
+        {
+          "material": "MOT-24V",
+          "unit": "PC",
+          "required": "250",
+          "available": "300",
+          "gap": "0",
+          "status": "SUFFICIENT",
+          "stale": false,
+          "snapshotAt": "2026-11-08T08:00:00Z",
+          "evidenceRef": "DS-DEMO-01/stock_snapshots/MOT-24V/1000"
+        },
+        {
+          "material": "ORING-30",
+          "unit": "PC",
+          "required": "1000",
+          "available": "900",
+          "gap": "100",
+          "status": "SHORT",
+          "stale": false,
+          "snapshotAt": "2026-11-08T08:00:00Z",
+          "evidenceRef": "DS-DEMO-01/stock_snapshots/ORING-30/1000"
+        },
+        {
+          "material": "PCB-CTRL2",
+          "unit": "PC",
+          "required": "250",
+          "available": "250",
+          "gap": "0",
+          "status": "SUFFICIENT",
+          "stale": false,
+          "snapshotAt": "2026-11-08T08:00:00Z",
+          "evidenceRef": "DS-DEMO-01/stock_snapshots/PCB-CTRL2/1000"
+        },
+        {
+          "material": "SCR-M4X12",
+          "unit": "PC",
+          "required": "2500",
+          "available": "5000",
+          "gap": "0",
+          "status": "SUFFICIENT",
+          "stale": false,
+          "snapshotAt": "2026-11-08T08:00:00Z",
+          "evidenceRef": "DS-DEMO-01/stock_snapshots/SCR-M4X12/1000"
+        },
+        {
+          "material": "SENS-T02",
+          "unit": "PC",
+          "required": "250",
+          "available": "0",
+          "gap": "250",
+          "status": "SHORT",
+          "stale": false,
+          "snapshotAt": "2026-11-08T08:00:00Z",
+          "evidenceRef": "DS-DEMO-01/stock_snapshots/SENS-T02/1000"
+        },
+        {
+          "material": "SHAFT-08",
+          "unit": "PC",
+          "required": "250",
+          "available": "400",
+          "gap": "0",
+          "status": "SUFFICIENT",
+          "stale": false,
+          "snapshotAt": "2026-11-08T08:00:00Z",
+          "evidenceRef": "DS-DEMO-01/stock_snapshots/SHAFT-08/1000"
+        }
+      ],
+      "instructions": [
+        {
+          "instructionId": "WI-PUMP-200-ASM",
+          "version": 5,
+          "status": "NEEDS_UPDATE",
+          "outdatedSteps": [
+            "0020",
+            "0030"
+          ]
+        },
+        {
+          "instructionId": "WI-PUMP-200-TST",
+          "version": 3,
+          "status": "CONSISTENT",
+          "outdatedSteps": []
+        }
+      ],
+      "findings": [
+        {
+          "type": "COMPONENT_REPLACED",
+          "severity": "MEDIUM",
+          "material": "IMP-72",
+          "fromMaterial": "IMP-70",
+          "toMaterial": "IMP-72",
+          "fromQuantity": "1",
+          "toQuantity": "1",
+          "evidenceRefs": [
+            "DS-DEMO-01/bom_items/BOM-PUMP-200-A/0020",
+            "DS-DEMO-01/bom_items/BOM-PUMP-200-B/0020"
+          ]
+        },
+        {
+          "type": "QUANTITY_CHANGED",
+          "severity": "LOW",
+          "material": "ORING-30",
+          "fromMaterial": "ORING-30",
+          "toMaterial": "ORING-30",
+          "fromQuantity": "3",
+          "toQuantity": "4",
+          "evidenceRefs": [
+            "DS-DEMO-01/bom_items/BOM-PUMP-200-A/0060",
+            "DS-DEMO-01/bom_items/BOM-PUMP-200-B/0060"
+          ]
+        },
+        {
+          "type": "QUANTITY_CHANGED",
+          "severity": "LOW",
+          "material": "SCR-M4X12",
+          "fromMaterial": "SCR-M4X12",
+          "toMaterial": "SCR-M4X12",
+          "fromQuantity": "8",
+          "toQuantity": "10",
+          "evidenceRefs": [
+            "DS-DEMO-01/bom_items/BOM-PUMP-200-A/0070",
+            "DS-DEMO-01/bom_items/BOM-PUMP-200-B/0070"
+          ]
+        },
+        {
+          "type": "COMPONENT_REMOVED",
+          "severity": "MEDIUM",
+          "material": "GSKT-P200",
+          "fromMaterial": "GSKT-P200",
+          "toMaterial": null,
+          "fromQuantity": "1",
+          "toQuantity": null,
+          "evidenceRefs": [
+            "DS-DEMO-01/bom_items/BOM-PUMP-200-A/0080"
+          ]
+        },
+        {
+          "type": "COMPONENT_REPLACED",
+          "severity": "MEDIUM",
+          "material": "PCB-CTRL2",
+          "fromMaterial": "PCB-CTRL1",
+          "toMaterial": "PCB-CTRL2",
+          "fromQuantity": "1",
+          "toQuantity": "1",
+          "evidenceRefs": [
+            "DS-DEMO-01/bom_items/BOM-PUMP-200-A/0090",
+            "DS-DEMO-01/bom_items/BOM-PUMP-200-B/0090"
+          ]
+        },
+        {
+          "type": "COMPONENT_ADDED",
+          "severity": "LOW",
+          "material": "SENS-T02",
+          "fromMaterial": null,
+          "toMaterial": "SENS-T02",
+          "fromQuantity": null,
+          "toQuantity": "1",
+          "evidenceRefs": [
+            "DS-DEMO-01/bom_items/BOM-PUMP-200-B/0120"
+          ]
+        },
+        {
+          "type": "COMPONENT_ADDED",
+          "severity": "LOW",
+          "material": "CLIP-05",
+          "fromMaterial": null,
+          "toMaterial": "CLIP-05",
+          "fromQuantity": null,
+          "toQuantity": "2",
+          "evidenceRefs": [
+            "DS-DEMO-01/bom_items/BOM-PUMP-200-B/0130"
+          ]
+        },
+        {
+          "type": "COST_CHANGE",
+          "severity": "MEDIUM",
+          "material": null,
+          "deltaTotal": "2902.50",
+          "deltaPercent": "10.08",
+          "evidenceRefs": [
+            "DS-DEMO-01/cost_prices/BRG-608",
+            "DS-DEMO-01/cost_prices/CBL-200",
+            "DS-DEMO-01/cost_prices/CLIP-05",
+            "DS-DEMO-01/cost_prices/GSKT-P200",
+            "DS-DEMO-01/cost_prices/HSG-P200",
+            "DS-DEMO-01/cost_prices/IMP-70",
+            "DS-DEMO-01/cost_prices/IMP-72",
+            "DS-DEMO-01/cost_prices/LBL-200",
+            "DS-DEMO-01/cost_prices/MOT-24V",
+            "DS-DEMO-01/cost_prices/ORING-30",
+            "DS-DEMO-01/cost_prices/PCB-CTRL1",
+            "DS-DEMO-01/cost_prices/PCB-CTRL2",
+            "DS-DEMO-01/cost_prices/SCR-M4X12",
+            "DS-DEMO-01/cost_prices/SENS-T02",
+            "DS-DEMO-01/cost_prices/SHAFT-08"
+          ]
+        },
+        {
+          "type": "STOCK_GAP",
+          "severity": "HIGH",
+          "material": "CBL-200",
+          "required": "250",
+          "available": "240",
+          "gap": "10",
+          "evidenceRefs": [
+            "DS-DEMO-01/stock_snapshots/CBL-200/1000"
+          ]
+        },
+        {
+          "type": "STOCK_GAP",
+          "severity": "HIGH",
+          "material": "IMP-72",
+          "required": "250",
+          "available": "180",
+          "gap": "70",
+          "evidenceRefs": [
+            "DS-DEMO-01/stock_snapshots/IMP-72/1000"
+          ]
+        },
+        {
+          "type": "STOCK_GAP",
+          "severity": "HIGH",
+          "material": "ORING-30",
+          "required": "1000",
+          "available": "900",
+          "gap": "100",
+          "evidenceRefs": [
+            "DS-DEMO-01/stock_snapshots/ORING-30/1000"
+          ]
+        },
+        {
+          "type": "STOCK_GAP",
+          "severity": "HIGH",
+          "material": "SENS-T02",
+          "required": "250",
+          "available": "0",
+          "gap": "250",
+          "evidenceRefs": [
+            "DS-DEMO-01/stock_snapshots/SENS-T02/1000"
+          ]
+        },
+        {
+          "type": "OUTDATED_INSTRUCTION_REFERENCE",
+          "severity": "HIGH",
+          "material": "IMP-70",
+          "instructionId": "WI-PUMP-200-ASM",
+          "instructionVersion": 5,
+          "step": "0020",
+          "evidenceRefs": [
+            "DS-DEMO-01/instructions/WI-PUMP-200-ASM/v5"
+          ]
+        },
+        {
+          "type": "OUTDATED_INSTRUCTION_REFERENCE",
+          "severity": "HIGH",
+          "material": "GSKT-P200",
+          "instructionId": "WI-PUMP-200-ASM",
+          "instructionVersion": 5,
+          "step": "0030",
+          "evidenceRefs": [
+            "DS-DEMO-01/instructions/WI-PUMP-200-ASM/v5"
+          ]
+        }
+      ],
+      "summary": {
+        "instructionFindings": 2,
+        "instructionsToUpdate": 1,
+        "materialsShort": 4,
+        "materialsUnknown": 0,
+        "costDeltaTotal": "2902.50",
+        "costDeltaPercent": "10.08",
+        "findingsBySeverity": {
+          "HIGH": 6,
+          "MEDIUM": 4,
+          "LOW": 4
+        }
+      }
+    }
+  ]
+}

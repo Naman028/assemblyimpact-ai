@@ -1,0 +1,2 @@
+caseNumber,title,assemblyCode,plant,fromBomStateId,toBomStateId,productionQuantity,status,sourceType,owner,evidenceRef
+EC-000473,Replace cooling fan on COOL-100,COOL-100,1000,BOM-COOL-100-A,BOM-COOL-100-B,100,IN_REVIEW,SYNTHETIC_FIXTURE,Engineering Reviewer 1,DS-ORACLE-01/review_cases/EC-000473

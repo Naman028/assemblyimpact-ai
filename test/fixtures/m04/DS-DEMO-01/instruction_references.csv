@@ -1,0 +1,7 @@
+instructionId,version,step,material,quantity,unit,text
+WI-PUMP-200-ASM,5,0010,MOT-24V,1,PC,Mount motor MOT-24V
+WI-PUMP-200-ASM,5,0020,IMP-70,1,PC,Press impeller IMP-70 onto shaft
+WI-PUMP-200-ASM,5,0030,GSKT-P200,1,PC,Place gasket GSKT-P200
+WI-PUMP-200-ASM,5,0040,PCB-CTRL2,1,PC,Install control board PCB-CTRL2
+WI-PUMP-200-TST,3,0010,ORING-30,4,PC,Check four O-rings ORING-30
+WI-PUMP-200-TST,3,0020,SENS-T02,1,PC,Verify sensor SENS-T02 reading

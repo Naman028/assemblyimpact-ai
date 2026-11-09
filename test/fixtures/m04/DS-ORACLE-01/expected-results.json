@@ -1,0 +1,288 @@
+{
+  "datasetId": "DS-ORACLE-01",
+  "datasetVersion": "1.0.0",
+  "ruleset": "1.1.0",
+  "referenceDate": "2026-11-08",
+  "synthetic": true,
+  "cases": [
+    {
+      "caseNumber": "EC-000473",
+      "status": "COMPLETE",
+      "flags": [],
+      "from": {
+        "bomStateId": "BOM-COOL-100-A",
+        "revision": "A"
+      },
+      "to": {
+        "bomStateId": "BOM-COOL-100-B",
+        "revision": "B"
+      },
+      "comparison": [
+        {
+          "itemNo": "0010",
+          "fromMaterial": "FAN-A",
+          "fromQuantity": "1",
+          "toMaterial": "FAN-B",
+          "toQuantity": "1",
+          "unit": "PC",
+          "change": "REPLACED"
+        },
+        {
+          "itemNo": "0020",
+          "fromMaterial": "BRKT-01",
+          "fromQuantity": "2",
+          "toMaterial": "BRKT-01",
+          "toQuantity": "3",
+          "unit": "PC",
+          "change": "QUANTITY_CHANGED"
+        },
+        {
+          "itemNo": "0030",
+          "fromMaterial": "SENS-01",
+          "fromQuantity": "1",
+          "toMaterial": "SENS-01",
+          "toQuantity": "1",
+          "unit": "PC",
+          "change": "UNCHANGED"
+        },
+        {
+          "itemNo": "0040",
+          "fromMaterial": null,
+          "fromQuantity": null,
+          "toMaterial": "SEAL-01",
+          "toQuantity": "1",
+          "unit": "PC",
+          "change": "ADDED"
+        }
+      ],
+      "cost": {
+        "currency": "EUR",
+        "productionQuantity": 100,
+        "fromPerAssembly": "56.00",
+        "toPerAssembly": "68.00",
+        "fromLines": [
+          {
+            "itemNo": "0010",
+            "material": "FAN-A",
+            "unitPrice": "35",
+            "lineCost": "35",
+            "priceEvidenceRef": "DS-ORACLE-01/cost_prices/FAN-A"
+          },
+          {
+            "itemNo": "0020",
+            "material": "BRKT-01",
+            "unitPrice": "3",
+            "lineCost": "6",
+            "priceEvidenceRef": "DS-ORACLE-01/cost_prices/BRKT-01"
+          },
+          {
+            "itemNo": "0030",
+            "material": "SENS-01",
+            "unitPrice": "15",
+            "lineCost": "15",
+            "priceEvidenceRef": "DS-ORACLE-01/cost_prices/SENS-01"
+          }
+        ],
+        "toLines": [
+          {
+            "itemNo": "0010",
+            "material": "FAN-B",
+            "unitPrice": "42",
+            "lineCost": "42",
+            "priceEvidenceRef": "DS-ORACLE-01/cost_prices/FAN-B"
+          },
+          {
+            "itemNo": "0020",
+            "material": "BRKT-01",
+            "unitPrice": "3",
+            "lineCost": "9",
+            "priceEvidenceRef": "DS-ORACLE-01/cost_prices/BRKT-01"
+          },
+          {
+            "itemNo": "0030",
+            "material": "SENS-01",
+            "unitPrice": "15",
+            "lineCost": "15",
+            "priceEvidenceRef": "DS-ORACLE-01/cost_prices/SENS-01"
+          },
+          {
+            "itemNo": "0040",
+            "material": "SEAL-01",
+            "unitPrice": "2",
+            "lineCost": "2",
+            "priceEvidenceRef": "DS-ORACLE-01/cost_prices/SEAL-01"
+          }
+        ],
+        "issues": [],
+        "status": "COMPLETE",
+        "deltaPerAssembly": "12.00",
+        "fromTotal": "5600.00",
+        "toTotal": "6800.00",
+        "deltaTotal": "1200.00",
+        "deltaPercent": "21.43"
+      },
+      "stock": [
+        {
+          "material": "BRKT-01",
+          "unit": "PC",
+          "required": "300",
+          "available": "250",
+          "gap": "50",
+          "status": "SHORT",
+          "stale": false,
+          "snapshotAt": "2026-11-08T08:00:00Z",
+          "evidenceRef": "DS-ORACLE-01/stock_snapshots/BRKT-01"
+        },
+        {
+          "material": "FAN-B",
+          "unit": "PC",
+          "required": "100",
+          "available": "80",
+          "gap": "20",
+          "status": "SHORT",
+          "stale": false,
+          "snapshotAt": "2026-11-08T08:00:00Z",
+          "evidenceRef": "DS-ORACLE-01/stock_snapshots/FAN-B"
+        },
+        {
+          "material": "SEAL-01",
+          "unit": "PC",
+          "required": "100",
+          "available": "150",
+          "gap": "0",
+          "status": "SUFFICIENT",
+          "stale": false,
+          "snapshotAt": "2026-11-08T08:00:00Z",
+          "evidenceRef": "DS-ORACLE-01/stock_snapshots/SEAL-01"
+        },
+        {
+          "material": "SENS-01",
+          "unit": "PC",
+          "required": "100",
+          "available": "120",
+          "gap": "0",
+          "status": "SUFFICIENT",
+          "stale": false,
+          "snapshotAt": "2026-11-08T08:00:00Z",
+          "evidenceRef": "DS-ORACLE-01/stock_snapshots/SENS-01"
+        }
+      ],
+      "instructions": [
+        {
+          "instructionId": "WI-COOL-100-ASM",
+          "version": 3,
+          "status": "CONSISTENT",
+          "outdatedSteps": []
+        },
+        {
+          "instructionId": "WI-COOL-100-TST",
+          "version": 2,
+          "status": "NEEDS_UPDATE",
+          "outdatedSteps": [
+            "0030"
+          ]
+        }
+      ],
+      "findings": [
+        {
+          "type": "COMPONENT_REPLACED",
+          "severity": "MEDIUM",
+          "material": "FAN-B",
+          "fromMaterial": "FAN-A",
+          "toMaterial": "FAN-B",
+          "fromQuantity": "1",
+          "toQuantity": "1",
+          "evidenceRefs": [
+            "DS-ORACLE-01/bom_items/BOM-COOL-100-A/0010",
+            "DS-ORACLE-01/bom_items/BOM-COOL-100-B/0010"
+          ]
+        },
+        {
+          "type": "QUANTITY_CHANGED",
+          "severity": "LOW",
+          "material": "BRKT-01",
+          "fromMaterial": "BRKT-01",
+          "toMaterial": "BRKT-01",
+          "fromQuantity": "2",
+          "toQuantity": "3",
+          "evidenceRefs": [
+            "DS-ORACLE-01/bom_items/BOM-COOL-100-A/0020",
+            "DS-ORACLE-01/bom_items/BOM-COOL-100-B/0020"
+          ]
+        },
+        {
+          "type": "COMPONENT_ADDED",
+          "severity": "LOW",
+          "material": "SEAL-01",
+          "fromMaterial": null,
+          "toMaterial": "SEAL-01",
+          "fromQuantity": null,
+          "toQuantity": "1",
+          "evidenceRefs": [
+            "DS-ORACLE-01/bom_items/BOM-COOL-100-B/0040"
+          ]
+        },
+        {
+          "type": "COST_CHANGE",
+          "severity": "MEDIUM",
+          "material": null,
+          "deltaTotal": "1200.00",
+          "deltaPercent": "21.43",
+          "evidenceRefs": [
+            "DS-ORACLE-01/cost_prices/BRKT-01",
+            "DS-ORACLE-01/cost_prices/FAN-A",
+            "DS-ORACLE-01/cost_prices/FAN-B",
+            "DS-ORACLE-01/cost_prices/SEAL-01",
+            "DS-ORACLE-01/cost_prices/SENS-01"
+          ]
+        },
+        {
+          "type": "STOCK_GAP",
+          "severity": "HIGH",
+          "material": "BRKT-01",
+          "required": "300",
+          "available": "250",
+          "gap": "50",
+          "evidenceRefs": [
+            "DS-ORACLE-01/stock_snapshots/BRKT-01"
+          ]
+        },
+        {
+          "type": "STOCK_GAP",
+          "severity": "HIGH",
+          "material": "FAN-B",
+          "required": "100",
+          "available": "80",
+          "gap": "20",
+          "evidenceRefs": [
+            "DS-ORACLE-01/stock_snapshots/FAN-B"
+          ]
+        },
+        {
+          "type": "OUTDATED_INSTRUCTION_REFERENCE",
+          "severity": "HIGH",
+          "material": "FAN-A",
+          "instructionId": "WI-COOL-100-TST",
+          "instructionVersion": 2,
+          "step": "0030",
+          "evidenceRefs": [
+            "DS-ORACLE-01/instructions/WI-COOL-100-TST/v2"
+          ]
+        }
+      ],
+      "summary": {
+        "instructionFindings": 1,
+        "instructionsToUpdate": 1,
+        "materialsShort": 2,
+        "materialsUnknown": 0,
+        "costDeltaTotal": "1200.00",
+        "costDeltaPercent": "21.43",
+        "findingsBySeverity": {
+          "HIGH": 3,
+          "MEDIUM": 2,
+          "LOW": 2
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "datasetId": "DS-DEMO-01",
+  "version": "1.0.1",
+  "purpose": "Demonstration fixture: PUMP-200 with 15 materials (Rev A 11 items, Rev B 12 items); expectations computed independently by tools/oracle.py and cross-checked by tools/crosscheck.mjs",
+  "synthetic": true,
+  "dataLabel": "SYNTHETIC DEMO DATA - fictional company NovaMotion Manufacturing - not SAP S/4HANA data",
+  "company": "NovaMotion Manufacturing",
+  "plant": "1000",
+  "currency": "EUR",
+  "referenceDate": "2026-11-08",
+  "randomness": "none - all values fixed",
+  "sourceOfFixedValues": "PROPOSED by Claude for M04 preparation; not from the handbook. Owner confirmation required.",
+  "scope": "TEST-ONLY rule-coverage fixture. PUMP-200 is NOT part of the product scope (handbook: one cooling module). Never seeded into the application or shown in the UI. Owner may replace it with a COOL-100 full-BOM fixture (option B in M04_Corrections_v1.1.md)."
+}

@@ -1,0 +1,10 @@
+instructionId,version,step,material,quantity,unit,text
+WI-COOL-100-ASM,2,0010,FAN-A,1,PC,Mount fan FAN-A on housing
+WI-COOL-100-ASM,2,0020,BRKT-01,2,PC,Fix two brackets BRKT-01
+WI-COOL-100-ASM,2,0030,SENS-01,1,PC,Install sensor SENS-01
+WI-COOL-100-ASM,3,0010,FAN-B,1,PC,Mount fan FAN-B on housing
+WI-COOL-100-ASM,3,0020,BRKT-01,3,PC,Fix three brackets BRKT-01
+WI-COOL-100-ASM,3,0030,SENS-01,1,PC,Install sensor SENS-01
+WI-COOL-100-ASM,3,0040,SEAL-01,1,PC,Insert housing seal SEAL-01
+WI-COOL-100-TST,2,0010,SENS-01,1,PC,Check sensor SENS-01 reading
+WI-COOL-100-TST,2,0030,FAN-A,1,PC,Run fan FAN-A at nominal speed for 60 s

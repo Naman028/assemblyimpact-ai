@@ -11,7 +11,7 @@
   },
   "scripts": {
     "start": "cds-serve",
-    "test": "node --test test/assembly-service.test.js",
+    "test": "node --test test/assembly-service.test.js test/impact-calculator.test.js test/engineering-review.test.js",
     "lint": "eslint srv test --max-warnings=0"
   },
   "private": true,
@@ -173,6 +173,72 @@
                 "plants": [
                   "1000",
                   null
+                ]
+              }
+            },
+            "analyst": {
+              "password": "test",
+              "roles": [
+                "ChangeAnalyst"
+              ],
+              "attr": {
+                "plants": [
+                  "1000"
+                ]
+              }
+            },
+            "cviewer": {
+              "password": "test",
+              "roles": [
+                "ChangeViewer"
+              ],
+              "attr": {
+                "plants": [
+                  "1000"
+                ]
+              }
+            },
+            "analyst2": {
+              "password": "test",
+              "roles": [
+                "ChangeAnalyst"
+              ],
+              "attr": {
+                "plants": [
+                  "2000"
+                ]
+              }
+            },
+            "cviewer2": {
+              "password": "test",
+              "roles": [
+                "ChangeViewer"
+              ],
+              "attr": {
+                "plants": [
+                  "2000"
+                ]
+              }
+            },
+            "cbad": {
+              "password": "test",
+              "roles": [
+                "ChangeViewer",
+                "ChangeAnalyst"
+              ],
+              "attr": {
+                "plants": "1000"
+              }
+            },
+            "cwild": {
+              "password": "test",
+              "roles": [
+                "ChangeViewer",
+                "ChangeAnalyst"
+              ],
+              "attr": {
+                "plants": [
+                  "*"
                 ]
               }
             }

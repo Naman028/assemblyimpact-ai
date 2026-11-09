@@ -1,0 +1,3 @@
+instructionId,version,assemblyCode,plant,title,appliesToRevision,status,validFrom,sourceType,valueStatus,evidenceRef
+WI-PUMP-200-ASM,5,PUMP-200,1000,Assemble coolant pump,,RELEASED,2026-03-01,SYNTHETIC_FIXTURE,PROPOSED,DS-DEMO-01/instructions/WI-PUMP-200-ASM/v5
+WI-PUMP-200-TST,3,PUMP-200,1000,Leak and flow test,B,RELEASED,2027-01-01,SYNTHETIC_FIXTURE,PROPOSED,DS-DEMO-01/instructions/WI-PUMP-200-TST/v3
