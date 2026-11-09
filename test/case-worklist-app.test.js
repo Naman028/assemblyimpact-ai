@@ -87,6 +87,8 @@ test('UI annotations implement the agreed worklist contract without draft', asyn
   const runs = block('ImpactRuns');
   for (const facet of ['findings/@UI.LineItem', 'materialLines/@UI.LineItem', 'comparisonLines/@UI.LineItem']) assert(runs.includes(facet), facet);
   assert.match(block('Findings'), /Property="Criticality">\s*<If>/, 'severity criticality');
+  for (const [target, first] of [['ImpactComparisonLines', 'itemNo'], ['ImpactMaterialLines', 'material'], ['Findings', 'severity']])
+    assert.match(block(target), new RegExp(`UI.PresentationVariant[\\s\\S]*?<PropertyValue Property="Property" PropertyPath="${first}"`), `${target} sorted by ${first}`);
   assert.doesNotMatch(edmx, /Draft/, 'service stays non-draft');
   const metadata = await request(`${SVC}/$metadata`);
   assert.equal(metadata.status, 200);
@@ -98,7 +100,9 @@ test('CAP serves the app statically', async () => {
     const r = await request(`/case-worklist/webapp/${file}`, { user: null });
     assert.equal(r.status, 200, file);
   }
-  assert.match((await request('/case-worklist/webapp/index.html', { user: null })).data, /ui5\.sap\.com\/1\.120\.0\/resources\/sap-ui-core\.js/);
+  const html = (await request('/case-worklist/webapp/index.html', { user: null })).data;
+  assert.match(html, /#container-uiarea/, 'component area gets full height (standalone rendering fix)');
+  assert.match(html, /sapui5\.hana\.ondemand\.com\/1\.149\.0\/resources\/sap-ui-core\.js/);
 });
 
 test('List Report request returns only the user\'s plant; runImpact fills the columns', async () => {

@@ -234,6 +234,10 @@ annotate service.Findings with @(
         {Value: details},
         {Value: evidenceRefs}
     ],
+    UI.PresentationVariant: {
+        SortOrder     : [{Property: severity}, {Property: type}],
+        Visualizations: ['@UI.LineItem']
+    },
     UI.FieldGroup #Details: {Data: [
         {Value: type},
         {Value: severity},
@@ -262,7 +266,10 @@ annotate service.ImpactMaterialLines with {
     unitPrice @title: 'Unit Price (EUR)';
 };
 
-annotate service.ImpactMaterialLines with @(UI.LineItem: [
+annotate service.ImpactMaterialLines with @(UI.PresentationVariant: {
+    SortOrder     : [{Property: material}],
+    Visualizations: ['@UI.LineItem']
+}, UI.LineItem: [
     {Value: material},
     {Value: required},
     {Value: available},
@@ -291,7 +298,10 @@ annotate service.ImpactComparisonLines with {
     change       @title: 'Change';
 };
 
-annotate service.ImpactComparisonLines with @(UI.LineItem: [
+annotate service.ImpactComparisonLines with @(UI.PresentationVariant: {
+    SortOrder     : [{Property: itemNo}],
+    Visualizations: ['@UI.LineItem']
+}, UI.LineItem: [
     {Value: itemNo},
     {Value: fromMaterial},
     {Value: fromQuantity},
