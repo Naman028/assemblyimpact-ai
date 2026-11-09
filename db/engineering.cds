@@ -206,5 +206,8 @@ entity DecisionEvents : cuid {
 }
 
 annotate BOMItems with @assert.unique.itemPerState: [bomState, itemNo];
+// M05: database backstops for imports (validation checks these first and reports them per record).
+annotate BOMStates with @assert.unique.stateKeyPerPlant: [stateKey, plant]; // the plant-2000 mirror reuses keys
+annotate StockSnapshots with @assert.unique.snapshot: [material, plant, snapshotAt];
 annotate ReviewCases with @assert.unique.caseNumber: [caseNumber];
 annotate Instructions with @assert.unique.instructionVersion: [instructionId, version, plant];
