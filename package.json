@@ -387,6 +387,7 @@
         },
         "erp-source": {
           "fixtures": null,
+          "sandbox": null,
           "s4": {
             "enabled": false
           }
@@ -411,6 +412,12 @@
         },
         "db": {
           "kind": "hana"
+        },
+        "erp-source": {
+          "fixtures": null,
+          "s4": {
+            "enabled": false
+          }
         }
       }
     },
@@ -425,6 +432,11 @@
       }
     },
     "[production]": {
+      "features": {
+        "demo_import": false
+      }
+    },
+    "[hybrid]": {
       "features": {
         "demo_import": false
       }

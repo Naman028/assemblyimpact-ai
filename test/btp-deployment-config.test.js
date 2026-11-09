@@ -32,11 +32,16 @@ test('xs-security: a scope and role template for every role the CDS model requir
   assert.deepEqual(xs.attributes, [{ name: 'plants', description: 'Plants the user may access', valueType: 'string', valueRequired: true }]);
 });
 
-test('role collections: separation of duties and a least-privilege Joule identity', () => {
-  const rc = Object.fromEntries(xs['role-collections'].map(c => [c.name, c['role-template-references'].map(r => r.replace('$XSAPPNAME.', ''))]));
+test('role collections (cockpit definitions): separation of duties and a least-privilege Joule identity', () => {
+  assert.equal(xs['role-collections'], undefined, 'not in the descriptor: templates require the plants attribute');
+  const doc = JSON.parse(read('docs', 'btp', 'role-collections.json'));
+  const rc = Object.fromEntries(doc.collections.map(c => [c.name, c.roleTemplates]));
+  const templates = xs['role-templates'].map(t => t.name);
+  for (const roles of Object.values(rc)) for (const r of roles) assert(templates.includes(r), r);
   assert(!rc.AssemblyImpact_Analyst.includes('ChangeApprover'));
   assert(!rc.AssemblyImpact_Approver.includes('ChangeAnalyst'));
-  assert.deepEqual(rc.AssemblyImpact_JouleAssistant.sort(), ['ChangeAnalyst', 'ChangeViewer']);
+  assert.deepEqual(rc.AssemblyImpact_JouleAssistant.sort(), ['ChangeViewer', 'ImpactRunner']);
+  assert(rc.AssemblyImpact_ErpExtractor.includes('ErpExtractor'));
   for (const roles of Object.values(rc)) assert(!roles.includes('DemoDataImporter'), 'no collection grants the demo import');
 });
 
@@ -49,9 +54,18 @@ test('mta.yaml: CAP service, HDI deployer, app router, HANA/XSUAA/destination re
   const resources = Object.fromEntries(mta.resources.map(r => [r.name, r.parameters]));
   assert.deepEqual([resources['assemblyimpact-db'].service, resources['assemblyimpact-db']['service-plan']], ['hana', 'hdi-shared']);
   assert.deepEqual([resources['assemblyimpact-auth'].service, resources['assemblyimpact-auth'].path], ['xsuaa', './xs-security.json']);
+  // OAuth redirect: exactly this space's router host, no cross-landscape wildcard.
+  assert.deepEqual(resources['assemblyimpact-auth'].config['oauth2-configuration']['redirect-uris'],
+    ['https://${org}-${space}-assemblyimpact-router.${default-domain}/**']);
+  assert.equal(modules['assemblyimpact-router'].parameters.routes[0].route, '${org}-${space}-assemblyimpact-router.${default-domain}');
+  assert.doesNotMatch(read('xs-security.json'), /\*\.cfapps\.\*/);
+  // The build uses a pinned CAP CLI (not whatever npx resolves for "cds").
+  assert.match(read('mta.yaml'), /npx --yes -p @sap\/cds-dk@10\.2\.1 cds build --production/);
+  assert(JSON.parse(read('app', 'router', 'package-lock.json')).packages['node_modules/@sap/approuter'], 'router lockfile');
   assert.equal(resources['assemblyimpact-destination'].service, 'destination');
   for (const f of ['mta.yaml', 'mta-demo.mtaext', 'xs-security.json', 'app/router/xs-app.json']) assert.doesNotMatch(read(f), /clientsecret|password|BEGIN (RSA )?PRIVATE KEY/i, f);
-  assert.match(read('mta-demo.mtaext'), /stage-demo-data\.mjs/);
+  // Demo data is staged into db/data before the build (so CAP generates .hdbtabledata) and removed afterwards.
+  assert.match(read('mta-demo.mtaext'), /stage-demo-data\.mjs\n[\s\S]*cds build --production\n[\s\S]*stage-demo-data\.mjs --clean/);
   assert.doesNotMatch(read('mta.yaml'), /stage-demo-data/, 'demo data is opt-in only');
 });
 
@@ -68,12 +82,18 @@ test('app router: every route authenticates with XSUAA; OData is forwarded with 
   }
 });
 
-test('production profile: XSUAA, SAP HANA, demo import disabled, no seed data', () => {
-  const probe = "import('@sap/cds').then(({default:cds})=>console.log(JSON.stringify({auth:cds.env.requires.auth.kind,db:cds.env.requires.db.kind,demo:cds.env.features.demo_import,data:cds.env.requires.db.data??null})))";
-  const out = spawnSync(process.execPath, ['-e', probe], { cwd: ROOT, env: { ...process.env, CDS_ENV: 'production', CDS_CONFIG: '' }, encoding: 'utf8' });
-  assert.equal(out.status, 0, out.stderr);
-  const env = JSON.parse(out.stdout.trim().split('\n').at(-1));
+test('production and hybrid profiles: XSUAA, SAP HANA, demo import and non-S/4 ERP modes disabled, no seed data', () => {
+  const probe = "import('@sap/cds').then(({default:cds})=>console.log(JSON.stringify({auth:cds.env.requires.auth.kind,db:cds.env.requires.db.kind,demo:cds.env.features.demo_import,data:cds.env.requires.db.data??null,erp:cds.env.requires['erp-source']})))";
+  const envFor = profile => {
+    const out = spawnSync(process.execPath, ['-e', probe], { cwd: ROOT, env: { ...process.env, CDS_ENV: profile, CDS_CONFIG: '' }, encoding: 'utf8' });
+    assert.equal(out.status, 0, out.stderr);
+    return JSON.parse(out.stdout.trim().split('\n').at(-1));
+  };
+  const env = envFor('production');
   assert.deepEqual([env.auth, env.db, env.demo], ['xsuaa', 'hana', false]);
+  assert.deepEqual([env.erp.fixtures ?? null, env.erp.sandbox ?? null, env.erp.s4.enabled], [null, null, false]);
+  const hybrid = envFor('hybrid');
+  assert.deepEqual([hybrid.auth, hybrid.db, hybrid.demo, hybrid.erp.fixtures ?? null], ['xsuaa', 'hana', false, null]);
   assert(!JSON.stringify(env.data ?? []).includes('test'));
   const pkg = JSON.parse(read('package.json'));
   for (const dep of ['@cap-js/hana', '@sap/xssec']) assert(pkg.dependencies[dep], dep);

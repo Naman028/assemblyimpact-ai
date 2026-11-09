@@ -9,7 +9,7 @@ build-parameters:
     - builder: custom
       commands:
         - npm ci
-        - npx cds build --production
+        - npx --yes -p @sap/cds-dk@10.2.1 cds build --production
         - node tools/btp/stage-ui.mjs
 
 modules:
@@ -47,6 +47,8 @@ modules:
       memory: 256M
       disk-quota: 512M
       keep-existing-routes: true
+      routes:
+        - route: ${org}-${space}-assemblyimpact-router.${default-domain}
     requires:
       - name: srv-api
         group: destinations
@@ -71,6 +73,10 @@ resources:
       config:
         xsappname: assemblyimpact-ai-${org}-${space}
         tenant-mode: dedicated
+        oauth2-configuration:
+          # exact app router host of this space (no cross-landscape wildcard)
+          redirect-uris:
+            - https://${org}-${space}-assemblyimpact-router.${default-domain}/**
   - name: assemblyimpact-destination
     type: org.cloudfoundry.managed-service
     parameters:

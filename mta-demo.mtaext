@@ -8,6 +8,7 @@ build-parameters:
     - builder: custom
       commands:
         - npm ci
-        - npx cds build --production
-        - node tools/btp/stage-ui.mjs
         - node tools/btp/stage-demo-data.mjs
+        - npx --yes -p @sap/cds-dk@10.2.1 cds build --production
+        - node tools/btp/stage-demo-data.mjs --clean
+        - node tools/btp/stage-ui.mjs

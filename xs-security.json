@@ -30,6 +30,10 @@
     {
       "name": "$XSAPPNAME.DemoDataImporter",
       "description": "Development only: import synthetic demo scenarios (feature flag off in production)"
+    },
+    {
+      "name": "$XSAPPNAME.ImpactRunner",
+      "description": "Engineering changes: run the impact calculation only (Joule assistant)"
     }
   ],
   "attributes": [
@@ -124,48 +128,18 @@
           "name": "plants"
         }
       ]
-    }
-  ],
-  "role-collections": [
-    {
-      "name": "AssemblyImpact_Analyst",
-      "description": "Analyst: read, run impact, submit",
-      "role-template-references": [
-        "$XSAPPNAME.ChangeViewer",
-        "$XSAPPNAME.ChangeAnalyst",
-        "$XSAPPNAME.AssemblyViewer"
-      ]
     },
     {
-      "name": "AssemblyImpact_Approver",
-      "description": "Independent reviewer: read, approve, reject",
-      "role-template-references": [
-        "$XSAPPNAME.ChangeViewer",
-        "$XSAPPNAME.ChangeApprover",
-        "$XSAPPNAME.AssemblyViewer"
-      ]
-    },
-    {
-      "name": "AssemblyImpact_Viewer",
-      "description": "Read-only",
-      "role-template-references": [
-        "$XSAPPNAME.ChangeViewer",
-        "$XSAPPNAME.AssemblyViewer"
-      ]
-    },
-    {
-      "name": "AssemblyImpact_JouleAssistant",
-      "description": "Technical identity for SAP Build Actions / Joule: read and run impact only, no decisions",
-      "role-template-references": [
-        "$XSAPPNAME.ChangeViewer",
-        "$XSAPPNAME.ChangeAnalyst"
+      "name": "ImpactRunner",
+      "description": "Engineering changes: run the impact calculation only (Joule assistant)",
+      "scope-references": [
+        "$XSAPPNAME.ImpactRunner"
+      ],
+      "attribute-references": [
+        {
+          "name": "plants"
+        }
       ]
     }
-  ],
-  "oauth2-configuration": {
-    "redirect-uris": [
-      "https://*.cfapps.*.hana.ondemand.com/**"
-    ],
-    "token-validity": 3600
-  }
+  ]
 }
