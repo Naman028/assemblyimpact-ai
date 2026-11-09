@@ -15,9 +15,11 @@ annotate service.ReviewCases with {
     fromRevision       @title: 'Current Revision';
     toRevision         @title: 'Proposed Revision';
     productionQuantity @title: 'Production Quantity';
-    status             @title: 'Review Status';
+    status             @title: 'Review Status'  @Common.Text: statusText  @Common.TextArrangement: #TextOnly;
+    statusText         @title: 'Review Status' @UI.Hidden;
+    sourceTypeText     @title: 'Source Type' @UI.Hidden;
     owner              @title: 'Review Owner';
-    sourceType         @title: 'Source Type';
+    sourceType         @title: 'Source Type'  @Common.Text: sourceTypeText  @Common.TextArrangement: #TextOnly;
     evidenceRef        @title: 'Evidence Reference';
     latestRun          @title: 'Latest Impact Run';
 };
@@ -114,7 +116,12 @@ annotate service.ReviewCases with @(
 );
 
 annotate service.ReviewCases actions {
-    runImpact(asOfDate @title: 'As-of Date')
+    // M05: refresh the latest-impact figures and the run list after the action (it was silent before).
+    @Common.SideEffects: {
+        TargetProperties: ['in/latestRun_ID'],
+        TargetEntities  : ['in/latestRun', 'in/runs']
+    }
+    runImpact(asOfDate @title: 'As-of Date' @Common.QuickInfo: 'Leave empty to calculate as of today')
 };
 
 // ------------------------------------------------------------ Impact runs
@@ -263,7 +270,7 @@ annotate service.ImpactMaterialLines with {
     unit      @title: 'Unit';
     status    @title: 'Stock Status';
     stale     @title: 'Stale Snapshot';
-    unitPrice @title: 'Unit Price (EUR)';
+    unitPrice @title: 'Unit Price' @Measures.ISOCurrency: run.currency; // M05: currency format instead of 9 decimals
 };
 
 annotate service.ImpactMaterialLines with @(UI.PresentationVariant: {
