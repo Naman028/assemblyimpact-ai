@@ -1,0 +1,16 @@
+{
+  "report_date": "2026-11-09",
+  "pr_url": "https://github.com/Naman028/assemblyimpact-ai/pull/5",
+  "pr_status": "open, draft, mergeable (clean), not merged",
+  "ci_conclusion": "success",
+  "ci_sha": "18cacdb26a1ef27dc3f6869e3d18db45e6788bf6",
+  "ci_name": "M03 verification / verify, pull_request",
+  "ci_run_id": "42589847906",
+  "evidence_commit": "18cacdb26a1e",
+  "main_status": "unchanged at a0068c6 (verified by git fetch 2026-11-09)",
+  "extra_shots": [],
+  "ci_url": "https://github.com/Naman028/assemblyimpact-ai/actions/runs/42589847906",
+  "ci_steps": "npm ci, npm run lint, npm test, npm audit --package-lock-only --audit-level=high: success",
+  "pr_commits": 4,
+  "pr_changed_files": 86
+}

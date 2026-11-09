@@ -1,0 +1,8 @@
+ID;findingType_code;material;description;severity_code;sourceType;sourceReference;reviewCases_ID
+f0f81a58-9e6c-49f7-aaad-5a7179519b9d;ComponentReplaced;FAN-B;Cooling fan replaced due to failure;High;SyntheticFixture;BOM-123;3c813fdf-eefe-4515-b0f3-ff1939748a2a
+992b584b-46f1-4109-b78d-d7367645609b;StockGap;BRKT-01;Bracket shortage impacting assembly;Medium;SyntheticFixture;BOM-124;3c813fdf-eefe-4515-b0f3-ff1939748a2a
+b17abdb6-8e77-49f0-a2ca-ccc44e3977fb;QuantityChanged;SEAL-45;Seal quantity increased for better sealing;Low;Manual;BOM-200;75df4ce3-c8e4-4719-a8ef-fcea86727c22
+2c94a2ec-5e97-4e25-b4d2-7865d361e024;ComponentAdded;MTR-700;Added motor for pump upgrade;High;Manual;BOM-201;75df4ce3-c8e4-4719-a8ef-fcea86727c22
+ce151ac1-a8a9-4de8-9cd6-d015d3b1c30c;ComponentRemoved;VALVE-12;Removed obsolete valve component;Medium;GenAIProposal;BOM-300;51803fe8-4c11-41bc-b8a5-217605043707
+e37c99e6-3784-49bb-8795-a9acab8bfd7c;CostChange;HEAT-EX;Cost increase due to new heat exchanger;High;Imported;BOM-400;9b066baf-ca7f-471b-ab94-634e1d59d5e2
+44e8a1fa-93be-44c6-bd04-5615ebd09add;OutdatedInstructionReference;CTRL-FW;Instruction update required for firmware;Low;GenAIProposal;WI-500;bb7cbf72-5d9b-45ff-b3fa-90ce7055df32

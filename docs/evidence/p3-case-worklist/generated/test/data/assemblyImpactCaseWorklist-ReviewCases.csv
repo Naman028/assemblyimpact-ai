@@ -1,0 +1,11 @@
+ID;caseID;currentRevision;proposedRevision;numberOfInstructionFindings;numberOfMaterialsShort;estimatedCostDelta;sourceType_code;reviewStatus_code;plant;title;reviewOwner;productionQuantity;Assembly_ID
+3c813fdf-eefe-4515-b0f3-ff1939748a2a;EC-000473;A;B;1;2;1200.00;SyntheticFixture;InReview;1000;Replace cooling fan on COOL-100;Engineering Reviewer 1;100;624f06d1-e073-4bbf-8640-111f37a900ca
+75df4ce3-c8e4-4719-a8ef-fcea86727c22;EC-000471;B;C;0;1;450.50;Manual;Approved;2000;Pump seal replacement PUMP-200;Engineering Reviewer 2;150;06130f76-0014-4427-bad9-317eb53b1bc0
+51803fe8-4c11-41bc-b8a5-217605043707;EC-000469;A;B;2;0;0.00;GenAIProposal;Open;3000;Valve adjustment for VALVE-300;Engineering Reviewer 3;200;fa46c78a-28b1-4e63-ad71-cbee674c48b8
+9b066baf-ca7f-471b-ab94-634e1d59d5e2;EC-000466;C;D;3;1;780.75;Imported;InReview;4000;Heat exchanger upgrade HEAT-406;Engineering Reviewer 4;120;a276482e-72fc-4d39-bcb8-b77d251cabf8
+bb7cbf72-5d9b-45ff-b3fa-90ce7055df32;EC-000460;A;B;1;0;300.00;GenAIProposal;Approved;5000;Control unit firmware update CTRL-500;Engineering Reviewer 5;80;18a3c93c-e65d-4dbe-b1af-c03f499bad6b
+8eb44c04-d390-4504-b30b-9b4c133a2ccd;EC-000455;B;C;0;3;1500.00;Manual;Rejected;1000;Cooling fan bracket replacement COOL-100;Engineering Reviewer 1;90;624f06d1-e073-4bbf-8640-111f37a900ca
+f81bfe4b-fdd4-4337-8a40-bbd202dfef05;EC-000452;A;B;2;2;900.00;SyntheticFixture;InReview;2000;Pump motor replacement PUMP-200;Engineering Reviewer 2;110;06130f76-0014-4427-bad9-317eb53b1bc0
+6c50b121-a281-4ff0-8276-a630f68d0227;EC-000448;C;D;1;1;600.00;GenAIProposal;Open;3000;Valve seat replacement VALVE-300;Engineering Reviewer 3;130;fa46c78a-28b1-4e63-ad71-cbee674c48b8
+64c7e0aa-0484-4c62-8d48-0cedb1c74541;EC-000445;B;C;0;0;0.00;Imported;Approved;4000;Heat exchanger gasket HEAT-406;Engineering Reviewer 4;140;a276482e-72fc-4d39-bcb8-b77d251cabf8
+f6cf846b-a97e-437b-b628-38cfc6a17216;EC-000440;A;B;1;1;250.00;GenAIProposal;Rejected;5000;Control unit sensor update CTRL-500;Engineering Reviewer 5;70;18a3c93c-e65d-4dbe-b1af-c03f499bad6b

@@ -1,0 +1,161 @@
+{
+    "_version": "1.87.0",
+    "sap.app": {
+        "id": "assemblyimpactcaseworklist",
+        "type": "application",
+        "i18n": "i18n/i18n.properties",
+        "applicationVersion": {
+            "version": "0.0.1"
+        },
+        "title": "{{appTitle}}",
+        "description": "{{appDescription}}",
+        "resources": "resources.json",
+        "sourceTemplate": {
+            "id": "@sap/generator-fiori:lrop",
+            "version": "1.34.0",
+            "toolsId": "12e29dc0-78ac-4982-b8ff-6644fe1e60f7"
+        },
+        "dataSources": {
+            "mainService": {
+                "uri": "/odata/v4/assembly-impact-case-worklist-srv/",
+                "type": "OData",
+                "settings": {
+                    "annotations": [],
+                    "odataVersion": "4.0"
+                }
+            }
+        }
+    },
+    "sap.ui": {
+        "technology": "UI5",
+        "icons": {
+            "icon": "",
+            "favIcon": "",
+            "phone": "",
+            "phone@2": "",
+            "tablet": "",
+            "tablet@2": ""
+        },
+        "deviceTypes": {
+            "desktop": true,
+            "tablet": true,
+            "phone": true
+        }
+    },
+    "sap.ui5": {
+        "flexEnabled": true,
+        "dependencies": {
+            "minUI5Version": "1.149.0",
+            "libs": {
+                "sap.m": {},
+                "sap.ui.core": {},
+                "sap.fe.templates": {}
+            }
+        },
+        "contentDensities": {
+            "compact": true,
+            "cozy": true
+        },
+        "models": {
+            "i18n": {
+                "type": "sap.ui.model.resource.ResourceModel",
+                "settings": {
+                    "bundleName": "assemblyimpactcaseworklist.i18n.i18n"
+                }
+            },
+            "": {
+                "dataSource": "mainService",
+                "preload": true,
+                "settings": {
+                    "operationMode": "Server",
+                    "autoExpandSelect": true,
+                    "earlyRequests": true
+                }
+            },
+            "@i18n": {
+                "type": "sap.ui.model.resource.ResourceModel",
+                "uri": "i18n/i18n.properties"
+            }
+        },
+        "resources": {
+            "css": []
+        },
+        "routing": {
+            "config": {},
+            "routes": [
+                {
+                    "pattern": ":?query:",
+                    "name": "ReviewCasesList",
+                    "target": "ReviewCasesList"
+                },
+                {
+                    "pattern": "ReviewCases({key}):?query:",
+                    "name": "ReviewCasesObjectPage",
+                    "target": "ReviewCasesObjectPage"
+                },
+                {
+                    "pattern": "ReviewCases({key})/Findings({key2}):?query:",
+                    "name": "FindingsObjectPage",
+                    "target": "FindingsObjectPage"
+                }
+            ],
+            "targets": {
+                "ReviewCasesList": {
+                    "type": "Component",
+                    "id": "ReviewCasesList",
+                    "name": "sap.fe.templates.ListReport",
+                    "options": {
+                        "settings": {
+                            "contextPath": "/ReviewCases",
+                            "variantManagement": "Page",
+                            "initialLoad": "Enabled",
+                            "navigation": {
+                                "ReviewCases": {
+                                    "detail": {
+                                        "route": "ReviewCasesObjectPage"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "ReviewCasesObjectPage": {
+                    "type": "Component",
+                    "id": "ReviewCasesObjectPage",
+                    "name": "sap.fe.templates.ObjectPage",
+                    "options": {
+                        "settings": {
+                            "contextPath": "/ReviewCases",
+                            "navigation": {
+                                "Findings": {
+                                    "detail": {
+                                        "route": "FindingsObjectPage"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "FindingsObjectPage": {
+                    "type": "Component",
+                    "id": "FindingsObjectPage",
+                    "name": "sap.fe.templates.ObjectPage",
+                    "options": {
+                        "settings": {
+                            "contextPath": "/ReviewCases/Findings"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "sap.fiori": {
+        "registrationIds": [],
+        "archeType": "transactional"
+    },
+    "sap.fe": {
+        "app": {
+            "enableLazyLoading": true
+        }
+    }
+}

@@ -1,0 +1,1982 @@
+2026-11-09T03:33:30.499Z [info] Project generation uses model: "gpt-4.1-mini", version: "latest"
+2026-11-09T03:33:30.499Z [info] 1/8: Generate CAP model using LLM
+2026-11-09T03:33:33.099Z [info] 
+==========LLM call for step "extractImage":==========
+The below image is used to describe a Fiori Element application. 
+Your task is to characterize this image!
+
+You must format your output as a JSON value that adheres to a given "JSON Schema" instance.
+
+"JSON Schema" is a declarative language that allows you to annotate and validate JSON documents.
+
+For example, the example "JSON Schema" instance {{"properties": {{"foo": {{"description": "a list of test words", "type": "array", "items": {{"type": "string"}}}}}}, "required": ["foo"]}}
+would match an object with one required property, "foo". The "type" property specifies "foo" must be an "array", and the "description" property semantically describes it as "a list of test words". The items within "foo" must be strings.
+Thus, the object {{"foo": ["bar", "baz"]}} is a well-formatted instance of this example "JSON Schema". The object {{"properties": {{"foo": ["bar", "baz"]}}}} is not well-formatted.
+
+Your output will be parsed and type-checked according to the provided schema instance, so make sure all fields in your output match the schema exactly and there are no trailing commas!
+
+Here is the JSON Schema instance your output must adhere to. Include the enclosing markdown codeblock:
+```json
+{
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "user readable name to refer to that image; upperCamelCase, no spaces"
+    },
+    "description": {
+      "type": "string",
+      "description": "short description of what is on this image (single sentence)"
+    },
+    "contentKindReason": {
+      "type": "string",
+      "description": "provide short reason for the chosen 'contentKind'"
+    },
+    "contentKind": {
+      "enum": [
+        "ListReport",
+        "ObjectPage",
+        "DataModel",
+        "Mixture",
+        "None"
+      ],
+      "description": "image is showing a Fiori ELement List Report page ('ListReport'), Object Page ('ObjectPage'), a data model diagram consisting of entities, their properties and associations ('DataModel'), a 'Mixture' of these or 'None' of these"
+    },
+    "contentSize": {
+      "enum": [
+        "small",
+        "medium",
+        "large"
+      ],
+      "description": "use 'small' for e.g. icons or company logos, 'medium' for screenshot or diagram with up to twelve labels/captions/texts, 'large' for screenshot or diagram with more than twelve labels/captions/texts"
+    }
+  },
+  "required": [
+    "name",
+    "description",
+    "contentKind",
+    "contentSize"
+  ],
+  "additionalProperties": false
+}
+```
+
+Output ONLY the json contents and try to be as accurate as comprehensive as possible.
+
+<userImage>
+
+
+----------Response:----------
+```json
+{
+  "name": "EngineeringChangeWorklist",
+  "description": "A Fiori Elements List Report page showing a worklist of engineering change requests with filters and status indicators.",
+  "contentKindReason": "The image displays a tabular list of change requests with filter options and action buttons typical for a List Report page.",
+  "contentKind": "ListReport",
+  "contentSize": "large"
+}
+```
+2026-11-09T03:33:37.213Z [info] 
+==========LLM call for step "extractAppSkeleton":==========
+You help the user building a Fiori Elements application described in the user input.
+
+A Fiori Elements application typically starts with a ListReport page showing the data of the base entity of the application in a table.
+Details of a specific table row are shown in the ObjectPage. This first ObjectPage is therefore based on the base entity of the application.
+An ObjectPage can contain one or more table sections based on to-many associations of its entity type.
+The details of a table section row can be shown in an another ObjectPage based on the associations target entity.
+
+Your task is to find the entities (with their to-many associations) as well as the ObjectPages (with the to-many associations they use in table sections) described in the user input below.
+
+You must format your output as a JSON value that adheres to a given "JSON Schema" instance.
+
+"JSON Schema" is a declarative language that allows you to annotate and validate JSON documents.
+
+For example, the example "JSON Schema" instance {{"properties": {{"foo": {{"description": "a list of test words", "type": "array", "items": {{"type": "string"}}}}}}, "required": ["foo"]}}
+would match an object with one required property, "foo". The "type" property specifies "foo" must be an "array", and the "description" property semantically describes it as "a list of test words". The items within "foo" must be strings.
+Thus, the object {{"foo": ["bar", "baz"]}} is a well-formatted instance of this example "JSON Schema". The object {{"properties": {{"foo": ["bar", "baz"]}}}} is not well-formatted.
+
+Your output will be parsed and type-checked according to the provided schema instance, so make sure all fields in your output match the schema exactly and there are no trailing commas!
+
+Here is the JSON Schema instance your output must adhere to. Include the enclosing markdown codeblock:
+```json
+{
+  "type": "object",
+  "properties": {
+    "entities": {
+      "type": "array",
+      "description": "Define all entities and their to-many associations; entity properties will be determined later",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "UpperCamelCase, no spaces, plural, e.g. 'Orders'"
+          },
+          "label": {
+            "type": "string",
+            "description": "max two words, singular"
+          },
+          "associations": {
+            "type": "array",
+            "description": "Define to-many associations between entities",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "target": {
+                  "type": "string",
+                  "description": "Points to existing entity, value is entities.name"
+                },
+                "nameForReverseAssociation": {
+                  "type": "string",
+                  "description": "Name of the reverse to-one association in the target entity; required if target entity is same as source entity"
+                },
+                "multiplicity": {
+                  "type": "string",
+                  "enum": [
+                    "many",
+                    "one"
+                  ],
+                  "description": "Cardinality of the association"
+                }
+              },
+              "required": [
+                "name",
+                "target",
+                "multiplicity"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "labelPlural": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "label",
+          "associations",
+          "labelPlural"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "baseEntity": {
+      "type": "string",
+      "description": "base entity of ListReport page (if present) and first ObjectPage"
+    },
+    "noListReportPage": {
+      "type": "boolean",
+      "description": "true: no ListReport page will generated, e.g. for applications which start with an (input enabled) Object Page to enter data"
+    },
+    "objectPages": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "entityType": {
+            "type": "string",
+            "description": "Entity that the ObjectPage is based on, the first ObjectPage is always based on base entity. There can at most be a single ObjectPage per entityType"
+          },
+          "tableSectionsAssociations": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "to-many associations of page entity for table sections shown in the ObjectPage"
+          }
+        },
+        "required": [
+          "entityType"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "namespace": {
+      "type": "string",
+      "description": "lowerCamelCase, no spaces allowed"
+    },
+    "applicationName": {
+      "type": "string",
+      "description": "lowerCamelCase, no spaces allowed"
+    },
+    "userInputKind": {
+      "enum": [
+        "UserInterfaceFirst",
+        "DataModelFirst"
+      ],
+      "description": "use 'UserInterfaceFirst' if User input describes the app based on the user interface, i.e. how List Report and Object Pages should look like; use 'DataModelFirst' if User input describes the app based on its data model, i.e. its entities, their elements and associations"
+    }
+  },
+  "required": [
+    "entities",
+    "baseEntity",
+    "objectPages",
+    "namespace",
+    "applicationName",
+    "userInputKind"
+  ],
+  "additionalProperties": false
+}
+```
+
+Output ONLY the json contents and try to be as accurate as comprehensive as possible.
+
+<UserInput>
+I want to create an application called AssemblyImpact Case Worklist for engineering change review cases in a manufacturing company.
+
+All data in this application is synthetic demonstration data for the fictional company NovaMotion Manufacturing. It is not real company data and not real SAP S/4HANA data. Do not create real person names; use role names such as "Engineering Reviewer 1".
+
+The main page is a list of review cases. Each review case belongs to exactly one assembly. The list page should follow this layout:
+
+
+<image_EngineeringChangeWorklist> (ListReport): A Fiori Elements List Report page showing a worklist of engineering change requests with filters and status indicators.
+
+
+Use the image only for the layout, the filter fields and the column order. The values shown in the image are illustrative.
+
+An assembly has an assembly code (for example COOL-100), a description (for example Cooling Module) and a plant (four characters, for example 1000).
+
+A review case has the following details:
+- Case ID, for example EC-000473
+- Title
+- Assembly
+- Plant
+- Current revision, for example A
+- Proposed revision, for example B
+- Production quantity, for example 100
+- Number of instruction findings
+- Number of materials short
+- Estimated cost delta in EUR
+- Source type with the values: Synthetic Fixture, Manual, GenAI Proposal, Imported
+- Review status with the values: Open, In Review, Approved, Rejected. Show Open as neutral, In Review as warning, Approved as positive and Rejected as negative.
+- Review owner
+
+The list should have filter fields for Assembly, Plant, Proposed revision, Review status and Source type.
+
+The list should show these columns: Assembly, Case ID, Current revision, Proposed revision, Number of instruction findings, Number of materials short, Estimated cost delta, Source type, Review status.
+
+Clicking a review case opens the review case details page. The details page should have these sections as tabs:
+- General Information: Case ID, Title, Assembly, Plant, Current revision, Proposed revision, Production quantity, Review status, Review owner, Source type.
+- Findings: a table of findings for the case. Each finding has a finding type with the values Component Replaced, Quantity Changed, Component Added, Component Removed, Stock Gap, Cost Change, Outdated Instruction Reference; a material; a description; a severity with the values High, Medium, Low (show High as negative, Medium as warning, Low as neutral); a source type; and a source reference such as a BOM item or work instruction identifier.
+- Material Impact: a table with material, required quantity, available quantity, gap quantity and unit of measure.
+- Decision History: a table with event time, from status, to status, actor and comment.
+
+A review case can have many findings, many material impact lines and many decision history entries.
+
+Clicking a finding opens a finding details page that shows all fields of the finding.
+
+Use this synthetic example as one of the review cases: Case ID EC-000473, title "Replace cooling fan on COOL-100", assembly COOL-100, plant 1000, current revision A, proposed revision B, production quantity 100, 1 instruction finding, 2 materials short, estimated cost delta 1200.00 EUR, source type Synthetic Fixture, review status In Review.
+
+Its material impact lines are: FAN-B required 100, available 80, gap 20, unit PC; BRKT-01 required 300, available 250, gap 50, unit PC.
+
+The application only displays review cases. Cost, stock and instruction results are calculated by the backend later and are not calculated in this application.
+
+
+</UserInput>
+
+----------Response:----------
+```json
+{
+  "entities": [
+    {
+      "name": "ReviewCases",
+      "label": "Review Case",
+      "labelPlural": "Review Cases",
+      "associations": [
+        {
+          "name": "Findings",
+          "target": "Findings",
+          "multiplicity": "many"
+        },
+        {
+          "name": "MaterialImpacts",
+          "target": "MaterialImpacts",
+          "multiplicity": "many"
+        },
+        {
+          "name": "DecisionHistories",
+          "target": "DecisionHistories",
+          "multiplicity": "many"
+        },
+        {
+          "name": "Assembly",
+          "target": "Assemblies",
+          "multiplicity": "one"
+        }
+      ]
+    },
+    {
+      "name": "Assemblies",
+      "label": "Assembly",
+      "labelPlural": "Assemblies",
+      "associations": []
+    },
+    {
+      "name": "Findings",
+      "label": "Finding",
+      "labelPlural": "Findings",
+      "associations": []
+    },
+    {
+      "name": "MaterialImpacts",
+      "label": "Material Impact",
+      "labelPlural": "Material Impacts",
+      "associations": []
+    },
+    {
+      "name": "DecisionHistories",
+      "label": "Decision History",
+      "labelPlural": "Decision Histories",
+      "associations": []
+    }
+  ],
+  "baseEntity": "ReviewCases",
+  "noListReportPage": false,
+  "objectPages": [
+    {
+      "entityType": "ReviewCases",
+      "tableSectionsAssociations": [
+        "Findings",
+        "MaterialImpacts",
+        "DecisionHistories"
+      ]
+    },
+    {
+      "entityType": "Findings",
+      "tableSectionsAssociations": []
+    }
+  ],
+  "namespace": "assemblyImpactCaseWorklist",
+  "applicationName": "assemblyImpactCaseWorklist",
+  "userInputKind": "UserInterfaceFirst"
+}
+```
+2026-11-09T03:33:37.215Z [info] Step "switchBasedOnAppSkeleton": case 0 blocked! Evaluation details:
+ - JSONPath "$.model.applications[0].pages[0]" : [{"type":"ListReport","entityType":"ReviewCases"}]
+2026-11-09T03:33:37.215Z [info] Step "switchBasedOnAppSkeleton": case 1 blocked! Evaluation details:
+ - JSONPath "$.model.applications[0].pages[0].type" : ["ListReport"]
+2026-11-09T03:33:37.215Z [info] Step "switchBasedOnAppSkeleton": case 2 blocked! Evaluation details:
+ - JSONPath "$.userInput.imageCount" : [1]
+2026-11-09T03:33:37.215Z [info] Step "switchBasedOnAppSkeleton": case 3 blocked! Evaluation details:
+ - JSONPath "$.userInput.imageCount" : [1]
+ - JSONPath "$.userInput.lineCount" : [57]
+2026-11-09T03:33:37.216Z [info] Step "switchBasedOnAppSkeleton": no condition met - running default steps
+2026-11-09T03:33:37.216Z [info] Step "runUiFirst": workflow "givenSkeletonExtractUiFirst" started
+"
+2026-11-09T03:33:44.085Z [info] 
+==========LLM call for classifier:==========
+The user input below describes a Fiori Elements application with a ListReport page and multiple ObjectPages.
+ListReport page shows the data of the specific business object as a list or table. ObjectPage shows details of a specific business object instance.
+Your task is to classify the lines based on the same business object representation to the following categories, one line can refer only to a single category:
+ - LIST_REPORT_REVIEWCASES: line describes the ListReport page for "ReviewCases"
+ - OBJECT_PAGE_REVIEWCASES: line describes the ObjectPage for "ReviewCases" with a table of "Findings" and a table of "MaterialImpacts" and a table of "DecisionHistories"
+ - OBJECT_PAGE_FINDINGS: line describes the ObjectPage for "Findings"
+ - NONE: line is not describing any ListReport page or ObjectPage
+
+Return your findings as csv file with columns "lineContent" and "category"!
+
+<UserInput>
+I want to create an application called AssemblyImpact Case Worklist for engineering change review cases in a manufacturing company.
+
+All data in this application is synthetic demonstration data for the fictional company NovaMotion Manufacturing.
+It is not real company data and not real SAP S/4HANA data.
+Do not create real person names; use role names such as "Engineering Reviewer 1".
+
+The main page is a list of review cases.
+Each review case belongs to exactly one assembly.
+The list page should follow this layout:
+
+
+<image_EngineeringChangeWorklist> (ListReport): A Fiori Elements List Report page showing a worklist of engineering change requests with filters and status indicators.
+
+
+Use the image only for the layout, the filter fields and the column order.
+The values shown in the image are illustrative.
+
+An assembly has an assembly code (for example COOL-100), a description (for example Cooling Module) and a plant (four characters, for example 1000).
+
+A review case has the following details:
+- Case ID, for example EC-000473
+- Title
+- Assembly
+- Plant
+- Current revision, for example A
+- Proposed revision, for example B
+- Production quantity, for example 100
+- Number of instruction findings
+- Number of materials short
+- Estimated cost delta in EUR
+- Source type with the values: Synthetic Fixture, Manual, GenAI Proposal, Imported
+- Review status with the values: Open, In Review, Approved, Rejected.
+Show Open as neutral, In Review as warning, Approved as positive and Rejected as negative.
+- Review owner
+
+The list should have filter fields for Assembly, Plant, Proposed revision, Review status and Source type.
+
+The list should show these columns: Assembly, Case ID, Current revision, Proposed revision, Number of instruction findings, Number of materials short, Estimated cost delta, Source type, Review status.
+
+Clicking a review case opens the review case details page.
+The details page should have these sections as tabs:
+- General Information: Case ID, Title, Assembly, Plant, Current revision, Proposed revision, Production quantity, Review status, Review owner, Source type.
+- Findings: a table of findings for the case.
+Each finding has a finding type with the values Component Replaced, Quantity Changed, Component Added, Component Removed, Stock Gap, Cost Change, Outdated Instruction Reference; a material; a description; a severity with the values High, Medium, Low (show High as negative, Medium as warning, Low as neutral); a source type; and a source reference such as a BOM item or work instruction identifier.
+- Material Impact: a table with material, required quantity, available quantity, gap quantity and unit of measure.
+- Decision History: a table with event time, from status, to status, actor and comment.
+
+A review case can have many findings, many material impact lines and many decision history entries.
+
+Clicking a finding opens a finding details page that shows all fields of the finding.
+
+Use this synthetic example as one of the review cases: Case ID EC-000473, title "Replace cooling fan on COOL-100", assembly COOL-100, plant 1000, current revision A, proposed revision B, production quantity 100, 1 instruction finding, 2 materials short, estimated cost delta 1200.00 EUR, source type Synthetic Fixture, review status In Review.
+
+Its material impact lines are: FAN-B required 100, available 80, gap 20, unit PC; BRKT-01 required 300, available 250, gap 50, unit PC.
+
+The application only displays review cases.
+Cost, stock and instruction results are calculated by the backend later and are not calculated in this application.
+
+
+</UserInput>
+
+----------Response:----------
+```csv
+lineContent,category
+"I want to create an application called AssemblyImpact Case Worklist for engineering change review cases in a manufacturing company.",NONE
+"All data in this application is synthetic demonstration data for the fictional company NovaMotion Manufacturing.",NONE
+"It is not real company data and not real SAP S/4HANA data.",NONE
+"Do not create real person names; use role names such as \"Engineering Reviewer 1\".",NONE
+"The main page is a list of review cases.",LIST_REPORT_REVIEWCASES
+"Each review case belongs to exactly one assembly.",NONE
+"The list page should follow this layout:",NONE
+"<image_EngineeringChangeWorklist> (ListReport): A Fiori Elements List Report page showing a worklist of engineering change requests with filters and status indicators.",LIST_REPORT_REVIEWCASES
+"Use the image only for the layout, the filter fields and the column order.",NONE
+"The values shown in the image are illustrative.",NONE
+"An assembly has an assembly code (for example COOL-100), a description (for example Cooling Module) and a plant (four characters, for example 1000).",NONE
+"A review case has the following details:",NONE
+"- Case ID, for example EC-000473",NONE
+"- Title",NONE
+"- Assembly",NONE
+"- Plant",NONE
+"- Current revision, for example A",NONE
+"- Proposed revision, for example B",NONE
+"- Production quantity, for example 100",NONE
+"- Number of instruction findings",NONE
+"- Number of materials short",NONE
+"- Estimated cost delta in EUR",NONE
+"- Source type with the values: Synthetic Fixture, Manual, GenAI Proposal, Imported",NONE
+"- Review status with the values: Open, In Review, Approved, Rejected.",NONE
+"Show Open as neutral, In Review as warning, Approved as positive and Rejected as negative.",NONE
+"- Review owner",NONE
+"The list should have filter fields for Assembly, Plant, Proposed revision, Review status and Source type.",LIST_REPORT_REVIEWCASES
+"The list should show these columns: Assembly, Case ID, Current revision, Proposed revision, Number of instruction findings, Number of materials short, Estimated cost delta, Source type, Review status.",LIST_REPORT_REVIEWCASES
+"Clicking a review case opens the review case details page.",NONE
+"The details page should have these sections as tabs:",OBJECT_PAGE_REVIEWCASES
+"- General Information: Case ID, Title, Assembly, Plant, Current revision, Proposed revision, Production quantity, Review status, Review owner, Source type.",OBJECT_PAGE_REVIEWCASES
+"- Findings: a table of findings for the case.",OBJECT_PAGE_REVIEWCASES
+"Each finding has a finding type with the values Component Replaced, Quantity Changed, Component Added, Component Removed, Stock Gap, Cost Change, Outdated Instruction Reference; a material; a description; a severity with the values High, Medium, Low (show High as negative, Medium as warning, Low as neutral); a source type; and a source reference such as a BOM item or work instruction identifier.",OBJECT_PAGE_REVIEWCASES
+"- Material Impact: a table with material, required quantity, available quantity, gap quantity and unit of measure.",OBJECT_PAGE_REVIEWCASES
+"- Decision History: a table with event time, from status, to status, actor and comment.",OBJECT_PAGE_REVIEWCASES
+"A review case can have many findings, many material impact lines and many decision history entries.",OBJECT_PAGE_REVIEWCASES
+"Clicking a finding opens a finding details page that shows all fields of the finding.",OBJECT_PAGE_FINDINGS
+"Use this synthetic example as one of the review cases: Case ID EC-000473, title \"Replace cooling fan on COOL-100\", assembly COOL-100, plant 1000, current revision A, proposed revision B, production quantity 100, 1 instruction finding, 2 materials short, estimated cost delta 1200.00 EUR, source type Synthetic Fixture, review status In Review.",NONE
+"Its material impact lines are: FAN-B required 100, available 80, gap 20, unit PC; BRKT-01 required 300, available 250, gap 50, unit PC.",NONE
+"The application only displays review cases.",NONE
+"Cost, stock and instruction results are calculated by the backend later and are not calculated in this application.",NONE
+```
+2026-11-09T03:33:44.086Z [info] Step "loopOverPages": looping over 3 entries
+"
+2026-11-09T03:33:44.086Z [info] Step "loopOverPages" index 0: pageType=ListReport, entityType=ReviewCases
+2026-11-09T03:33:44.086Z [info] Step "ifListReportPage": case 0 passed! Evaluation details:
+ - Variable "pageType" : "ListReport"
+2026-11-09T03:33:51.614Z [info] 
+==========LLM call for step "extractListReport":==========
+
+A Fiori Elements ListReport page is organized as follows:
+<flowImage>
+
+The user input below describes a Fiori Elements ListReport page defined on entity "ReviewCases". 
+
+Available entities with their associations are:
+- entity "ReviewCases" (with to-many associations to "Findings" and "MaterialImpacts" and "DecisionHistories" and to-one association to "Assemblies")
+- entity "Assemblies"
+- entity "Findings" (with to-one association to "ReviewCases")
+- entity "MaterialImpacts" (with to-one association to "ReviewCases")
+- entity "DecisionHistories" (with to-one association to "ReviewCases")
+
+You help the user defining the ListReport page. 
+
+You must format your output as a JSON value that adheres to a given "JSON Schema" instance.
+
+"JSON Schema" is a declarative language that allows you to annotate and validate JSON documents.
+
+For example, the example "JSON Schema" instance {{"properties": {{"foo": {{"description": "a list of test words", "type": "array", "items": {{"type": "string"}}}}}}, "required": ["foo"]}}
+would match an object with one required property, "foo". The "type" property specifies "foo" must be an "array", and the "description" property semantically describes it as "a list of test words". The items within "foo" must be strings.
+Thus, the object {{"foo": ["bar", "baz"]}} is a well-formatted instance of this example "JSON Schema". The object {{"properties": {{"foo": ["bar", "baz"]}}}} is not well-formatted.
+
+Your output will be parsed and type-checked according to the provided schema instance, so make sure all fields in your output match the schema exactly and there are no trailing commas!
+
+Here is the JSON Schema instance your output must adhere to. Include the enclosing markdown codeblock:
+```json
+{
+  "type": "object",
+  "properties": {
+    "loadDataOnAppLaunch": {
+      "type": "string",
+      "enum": [
+        "Auto",
+        "Disabled",
+        "Enabled"
+      ],
+      "description": "'Auto': no explicit user input to load the data after start or an explicit user input to set InitialLoad for table to Auto; 'Disabled': An initial load of data does not occur at app start and the user has to actively click the Go button;  'Enabled': An initial load of data occurs automatically after start  (list is visible without pressing the GO Button)."
+    },
+    "tables": {
+      "type": "array",
+      "description": "tables (views) expected in user input",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "baseEntityType": {
+            "type": "string",
+            "description": "base entity type for the table"
+          },
+          "columns": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "fieldNames"
+          }
+        },
+        "required": [
+          "title",
+          "baseEntityType",
+          "columns"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "filters": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "fieldNames for filters specified in user input. If not specified, empty array"
+    },
+    "fields": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "technical name to identify the field (e.g. in filters or columns); camelCase for CAP and strict PascalCase for RAP"
+          },
+          "type": {
+            "type": "string",
+            "description": "Allowed values: String(50), Boolean, Integer, Decimal, Double, Date, Time, DateTime, Timestamp; String length can vary - i.e. String(20)"
+          },
+          "key": {
+            "type": "boolean",
+            "description": "max. one optional key per entity, only if this element is a semantic key and can uniquely identify the instance"
+          },
+          "label": {
+            "type": "string"
+          },
+          "hasFixedValuesList": {
+            "type": "boolean",
+            "description": "Only limited list of values expected, e.g. elements representing types, statuses, categories, units, organizations"
+          },
+          "values": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "for 'hasFixedValuesList' true: values from user input; don't make up or invent any values"
+          },
+          "isAmount": {
+            "type": "boolean",
+            "description": "true if element has semantic type amount or price"
+          },
+          "isQuantity": {
+            "type": "boolean",
+            "description": "Set to true only if the element represents a measurable quantity that requires or can have a unit of measure (e.g., weight, length, duration). Do not use for simple integer counts"
+          }
+        },
+        "required": [
+          "name",
+          "type",
+          "label"
+        ],
+        "additionalProperties": false
+      },
+      "description": "all fields which are used in filters or columns (the same field can be used in both - no duplicate needed)"
+    }
+  },
+  "required": [
+    "tables",
+    "fields"
+  ],
+  "additionalProperties": false
+}
+```
+
+Output ONLY the json contents and try to be as accurate as comprehensive as possible.
+
+<UserInput>
+I want to create an application called AssemblyImpact Case Worklist for engineering change review cases in a manufacturing company.
+All data in this application is synthetic demonstration data for the fictional company NovaMotion Manufacturing.
+It is not real company data and not real SAP S/4HANA data.
+Do not create real person names; use role names such as \"Engineering Reviewer 1\".
+The main page is a list of review cases.
+Each review case belongs to exactly one assembly.
+The list page should follow this layout:
+<userImage>
+"Use the image only for the layout, the filter fields and the column order."
+The values shown in the image are illustrative.
+"An assembly has an assembly code (for example COOL-100), a description (for example Cooling Module) and a plant (four characters, for example 1000)."
+A review case has the following details:
+"- Case ID, for example EC-000473"
+- Title
+- Assembly
+- Plant
+"- Current revision, for example A"
+"- Proposed revision, for example B"
+"- Production quantity, for example 100"
+- Number of instruction findings
+- Number of materials short
+- Estimated cost delta in EUR
+"- Source type with the values: Synthetic Fixture, Manual, GenAI Proposal, Imported"
+"- Review status with the values: Open, In Review, Approved, Rejected."
+"Show Open as neutral, In Review as warning, Approved as positive and Rejected as negative."
+- Review owner
+"The list should have filter fields for Assembly, Plant, Proposed revision, Review status and Source type."
+"The list should show these columns: Assembly, Case ID, Current revision, Proposed revision, Number of instruction findings, Number of materials short, Estimated cost delta, Source type, Review status."
+Clicking a review case opens the review case details page.
+</UserInput>
+
+----------Response:----------
+```json
+{
+  "loadDataOnAppLaunch": "Enabled",
+  "filters": [
+    "assembly",
+    "plant",
+    "proposedRevision",
+    "reviewStatus",
+    "sourceType"
+  ],
+  "tables": [
+    {
+      "title": "Change Requests",
+      "baseEntityType": "ReviewCases",
+      "columns": [
+        "assembly",
+        "caseID",
+        "currentRevision",
+        "proposedRevision",
+        "numberOfInstructionFindings",
+        "numberOfMaterialsShort",
+        "estimatedCostDelta",
+        "sourceType",
+        "reviewStatus"
+      ]
+    }
+  ],
+  "fields": [
+    {
+      "name": "assembly",
+      "type": "String(20)",
+      "label": "Assembly"
+    },
+    {
+      "name": "caseID",
+      "type": "String(20)",
+      "key": true,
+      "label": "Change ID"
+    },
+    {
+      "name": "currentRevision",
+      "type": "String(5)",
+      "label": "Current revision"
+    },
+    {
+      "name": "proposedRevision",
+      "type": "String(5)",
+      "label": "Proposed revision"
+    },
+    {
+      "name": "numberOfInstructionFindings",
+      "type": "Integer",
+      "label": "Number of instruction findings"
+    },
+    {
+      "name": "numberOfMaterialsShort",
+      "type": "Integer",
+      "label": "Number of materials short"
+    },
+    {
+      "name": "estimatedCostDelta",
+      "type": "Decimal",
+      "label": "Estimated cost delta",
+      "isAmount": true
+    },
+    {
+      "name": "sourceType",
+      "type": "String(20)",
+      "label": "Source type",
+      "hasFixedValuesList": true,
+      "values": [
+        "Synthetic Fixture",
+        "Manual",
+        "GenAI Proposal",
+        "Imported"
+      ]
+    },
+    {
+      "name": "reviewStatus",
+      "type": "String(20)",
+      "label": "Review status",
+      "hasFixedValuesList": true,
+      "values": [
+        "Open",
+        "In Review",
+        "Approved",
+        "Rejected"
+      ]
+    },
+    {
+      "name": "plant",
+      "type": "String(10)",
+      "label": "Plant"
+    },
+    {
+      "name": "title",
+      "type": "String(100)",
+      "label": "Title"
+    },
+    {
+      "name": "reviewOwner",
+      "type": "String(50)",
+      "label": "Review owner"
+    },
+    {
+      "name": "productionQuantity",
+      "type": "Integer",
+      "label": "Production quantity"
+    }
+  ]
+}
+```
+2026-11-09T03:33:51.616Z [info] Step "loopOverPages" index 1: pageType=ObjectPage, entityType=ReviewCases
+2026-11-09T03:33:51.617Z [info] Step "ifListReportPage": case 0 blocked! Evaluation details:
+ - Variable "pageType" : "ObjectPage"
+2026-11-09T03:33:51.617Z [info] Step "ifListReportPage": no condition met - running default steps
+2026-11-09T03:34:04.879Z [info] 
+==========LLM call for step "extractSingleObjectPageOfMany":==========
+The user input below describes such an ObjectPage defined on entity "ReviewCases".
+
+Your task is to find the details of the ObjectPage for "ReviewCases".
+The base entity of the ObjectPage is ReviewCases.
+This ObjectPage can contain tabs and/or sections which in turn contain tables and fields.
+It must contain table sections containing data for:
+ - associated entity "Findings" (via association Findings)
+ - associated entity "MaterialImpacts" (via association MaterialImpacts)
+ - associated entity "DecisionHistories" (via association DecisionHistories);
+
+The following elements of entity "ReviewCases" are already known:
+ - "caseID" (String(20)): Change ID
+ - "currentRevision" (String(5)): Current revision
+ - "proposedRevision" (String(5)): Proposed revision
+ - "numberOfInstructionFindings" (Integer): Number of instruction findings
+ - "numberOfMaterialsShort" (Integer): Number of materials short
+ - "estimatedCostDelta" (Decimal): Estimated cost delta
+ - "sourceType" (String(20)): Source type (values: "Synthetic Fixture', 'Manual', 'GenAI Proposal', 'Imported")
+ - "reviewStatus" (String(20)): Review status (values: "Open', 'In Review', 'Approved', 'Rejected")
+ - "plant" (String(10)): Plant
+ - "title" (String(100)): Title
+ - "reviewOwner" (String(50)): Review owner
+ - "productionQuantity" (Integer): Production quantity 
+
+Your task is to extract the details of this ObjectPage (Header Sections, Form Sections, Table Sections and their Fields and Columns). 
+This also includes finding additional 1:n associations or additional elements for entity "ReviewCases":
+ - for all Header and Form Sections: fields need to be based on elements of entity "ReviewCases" - use an already known element or add a new one
+ - for all Table Sections: use existing 1:n associations from entity "ReviewCases" or create a new one with new target entity, extract all columns
+
+You must format your output as a JSON value that adheres to a given "JSON Schema" instance.
+
+"JSON Schema" is a declarative language that allows you to annotate and validate JSON documents.
+
+For example, the example "JSON Schema" instance {{"properties": {{"foo": {{"description": "a list of test words", "type": "array", "items": {{"type": "string"}}}}}}, "required": ["foo"]}}
+would match an object with one required property, "foo". The "type" property specifies "foo" must be an "array", and the "description" property semantically describes it as "a list of test words". The items within "foo" must be strings.
+Thus, the object {{"foo": ["bar", "baz"]}} is a well-formatted instance of this example "JSON Schema". The object {{"properties": {{"foo": ["bar", "baz"]}}}} is not well-formatted.
+
+Your output will be parsed and type-checked according to the provided schema instance, so make sure all fields in your output match the schema exactly and there are no trailing commas!
+
+Here is the JSON Schema instance your output must adhere to. Include the enclosing markdown codeblock:
+```json
+{
+  "type": "object",
+  "properties": {
+    "headerSections": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string",
+            "description": "provide id unique over all sections"
+          },
+          "fields": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "label": {
+                  "type": "string"
+                },
+                "value": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string",
+                  "description": "technical name to identify the field; camelCase for CAP and strict PascalCase for RAP"
+                },
+                "type": {
+                  "type": "string",
+                  "description": "Allowed values: String(50), Boolean, Integer, Decimal, Double, Date, Time, DateTime, Timestamp; String length can vary - i.e. String(20)"
+                }
+              },
+              "required": [
+                "label",
+                "name",
+                "type"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "title",
+          "id",
+          "fields"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "formSections": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string",
+            "description": "provide id unique over all sections"
+          },
+          "fields": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "label": {
+                  "type": "string"
+                },
+                "value": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string",
+                  "description": "technical name to identify the field; camelCase for CAP and strict PascalCase for RAP"
+                },
+                "type": {
+                  "type": "string",
+                  "description": "Allowed values: String(50), Boolean, Integer, Decimal, Double, Date, Time, DateTime, Timestamp; String length can vary - i.e. String(20)"
+                }
+              },
+              "required": [
+                "label",
+                "name",
+                "type"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "title",
+          "id",
+          "fields"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "tableSections": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string",
+            "description": "provide id unique over all sections"
+          },
+          "targetEntity": {
+            "type": "object",
+            "description": "entity name for entries shown in this table section",
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "use singular; lowerCamelCase"
+              },
+              "label": {
+                "type": "string"
+              },
+              "labelPlural": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "name",
+              "label",
+              "labelPlural"
+            ],
+            "additionalProperties": false
+          },
+          "associationName": {
+            "type": "string",
+            "description": "name of 1:n association from current entity to targetEntity"
+          },
+          "isComposition": {
+            "type": "boolean",
+            "description": "true: targetEntitiy is contained in current entity - it cannot exist without this entity. A target can only be contained in max. one entity. 'multiplicity' must be 'many'"
+          },
+          "columns": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "label": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string",
+                  "description": "technical name to identify column; camelCase for CAP and strict PascalCase for RAP"
+                },
+                "type": {
+                  "type": "string",
+                  "description": "Allowed values: String(50), Boolean, Integer, Decimal, Double, Date, Time, DateTime, Timestamp; String length can vary - i.e. String(20)"
+                },
+                "key": {
+                  "type": "boolean",
+                  "description": "column is key column (maximum one)"
+                },
+                "hasFixedValuesList": {
+                  "type": "boolean",
+                  "description": "Only limited list of values expected, e.g. elements representing types, statuses, categories, units, organizations"
+                },
+                "values": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "description": "for 'hasFixedValuesList' true: values from user input; don't make up or invent any values"
+                },
+                "isAmount": {
+                  "type": "boolean",
+                  "description": "true if element has semantic type amount or price"
+                },
+                "isQuantity": {
+                  "type": "boolean",
+                  "description": "Set to true only if the element represents a measurable quantity that requires or can have a unit of measure (e.g., weight, length, duration). Do not use for simple integer counts"
+                }
+              },
+              "required": [
+                "label",
+                "name",
+                "type"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "title",
+          "id",
+          "targetEntity",
+          "associationName",
+          "columns"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "tabs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "sections": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "list of sections ids (of formSections or tableSections) contained in the tab"
+          }
+        },
+        "required": [
+          "title",
+          "id",
+          "sections"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "headerSections",
+    "formSections",
+    "tableSections",
+    "tabs"
+  ],
+  "additionalProperties": false
+}
+```
+
+Output ONLY the json contents and try to be as accurate as comprehensive as possible.
+
+<UserInput>
+The details page should have these sections as tabs:
+"- General Information: Case ID, Title, Assembly, Plant, Current revision, Proposed revision, Production quantity, Review status, Review owner, Source type."
+- Findings: a table of findings for the case.
+"Each finding has a finding type with the values Component Replaced, Quantity Changed, Component Added, Component Removed, Stock Gap, Cost Change, Outdated Instruction Reference; a material; a description; a severity with the values High, Medium, Low (show High as negative, Medium as warning, Low as neutral); a source type; and a source reference such as a BOM item or work instruction identifier."
+"- Material Impact: a table with material, required quantity, available quantity, gap quantity and unit of measure."
+"- Decision History: a table with event time, from status, to status, actor and comment."
+"A review case can have many findings, many material impact lines and many decision history entries."
+</UserInput>
+
+----------Response:----------
+```json
+{
+  "headerSections": [
+    {
+      "title": "Review Case Header",
+      "id": "headerSectionReviewCase",
+      "fields": [
+        {
+          "label": "Case ID",
+          "name": "caseID",
+          "type": "String(20)"
+        },
+        {
+          "label": "Title",
+          "name": "title",
+          "type": "String(100)"
+        },
+        {
+          "label": "Plant",
+          "name": "plant",
+          "type": "String(10)"
+        },
+        {
+          "label": "Current Revision",
+          "name": "currentRevision",
+          "type": "String(5)"
+        },
+        {
+          "label": "Proposed Revision",
+          "name": "proposedRevision",
+          "type": "String(5)"
+        }
+      ]
+    }
+  ],
+  "formSections": [
+    {
+      "title": "General Information",
+      "id": "formSectionGeneralInformation",
+      "fields": [
+        {
+          "label": "Production Quantity",
+          "name": "productionQuantity",
+          "type": "Integer"
+        },
+        {
+          "label": "Review Status",
+          "name": "reviewStatus",
+          "type": "String(20)"
+        },
+        {
+          "label": "Review Owner",
+          "name": "reviewOwner",
+          "type": "String(50)"
+        },
+        {
+          "label": "Source Type",
+          "name": "sourceType",
+          "type": "String(20)"
+        }
+      ]
+    }
+  ],
+  "tableSections": [
+    {
+      "title": "Findings",
+      "id": "tableSectionFindings",
+      "targetEntity": {
+        "name": "finding",
+        "label": "Finding",
+        "labelPlural": "Findings"
+      },
+      "associationName": "Findings",
+      "isComposition": true,
+      "columns": [
+        {
+          "label": "Finding Type",
+          "name": "findingType",
+          "type": "String(50)",
+          "hasFixedValuesList": true,
+          "values": [
+            "Component Replaced",
+            "Quantity Changed",
+            "Component Added",
+            "Component Removed",
+            "Stock Gap",
+            "Cost Change",
+            "Outdated Instruction Reference"
+          ]
+        },
+        {
+          "label": "Material",
+          "name": "material",
+          "type": "String(50)"
+        },
+        {
+          "label": "Description",
+          "name": "description",
+          "type": "String(255)"
+        },
+        {
+          "label": "Severity",
+          "name": "severity",
+          "type": "String(20)",
+          "hasFixedValuesList": true,
+          "values": [
+            "High",
+            "Medium",
+            "Low"
+          ]
+        },
+        {
+          "label": "Source Type",
+          "name": "sourceType",
+          "type": "String(50)"
+        },
+        {
+          "label": "Source Reference",
+          "name": "sourceReference",
+          "type": "String(100)"
+        }
+      ]
+    },
+    {
+      "title": "Material Impact",
+      "id": "tableSectionMaterialImpacts",
+      "targetEntity": {
+        "name": "materialImpact",
+        "label": "Material Impact",
+        "labelPlural": "Material Impacts"
+      },
+      "associationName": "MaterialImpacts",
+      "isComposition": true,
+      "columns": [
+        {
+          "label": "Material",
+          "name": "material",
+          "type": "String(50)"
+        },
+        {
+          "label": "Required Quantity",
+          "name": "requiredQuantity",
+          "type": "Decimal",
+          "isQuantity": true
+        },
+        {
+          "label": "Available Quantity",
+          "name": "availableQuantity",
+          "type": "Decimal",
+          "isQuantity": true
+        },
+        {
+          "label": "Gap Quantity",
+          "name": "gapQuantity",
+          "type": "Decimal",
+          "isQuantity": true
+        },
+        {
+          "label": "Unit of Measure",
+          "name": "unitOfMeasure",
+          "type": "String(20)"
+        }
+      ]
+    },
+    {
+      "title": "Decision History",
+      "id": "tableSectionDecisionHistories",
+      "targetEntity": {
+        "name": "decisionHistory",
+        "label": "Decision History",
+        "labelPlural": "Decision Histories"
+      },
+      "associationName": "DecisionHistories",
+      "isComposition": true,
+      "columns": [
+        {
+          "label": "Event Time",
+          "name": "eventTime",
+          "type": "DateTime"
+        },
+        {
+          "label": "From Status",
+          "name": "fromStatus",
+          "type": "String(20)",
+          "hasFixedValuesList": true,
+          "values": [
+            "Open",
+            "In Review",
+            "Approved",
+            "Rejected"
+          ]
+        },
+        {
+          "label": "To Status",
+          "name": "toStatus",
+          "type": "String(20)",
+          "hasFixedValuesList": true,
+          "values": [
+            "Open",
+            "In Review",
+            "Approved",
+            "Rejected"
+          ]
+        },
+        {
+          "label": "Actor",
+          "name": "actor",
+          "type": "String(50)"
+        },
+        {
+          "label": "Comment",
+          "name": "comment",
+          "type": "String(255)"
+        }
+      ]
+    }
+  ],
+  "tabs": [
+    {
+      "title": "General Information",
+      "id": "tabGeneralInformation",
+      "sections": [
+        "formSectionGeneralInformation"
+      ]
+    },
+    {
+      "title": "Findings",
+      "id": "tabFindings",
+      "sections": [
+        "tableSectionFindings"
+      ]
+    },
+    {
+      "title": "Material Impact",
+      "id": "tabMaterialImpact",
+      "sections": [
+        "tableSectionMaterialImpacts"
+      ]
+    },
+    {
+      "title": "Decision History",
+      "id": "tabDecisionHistory",
+      "sections": [
+        "tableSectionDecisionHistories"
+      ]
+    }
+  ]
+}
+```
+2026-11-09T03:34:04.881Z [info] Step "loopOverPages" index 2: pageType=ObjectPage, entityType=Findings
+2026-11-09T03:34:04.881Z [info] Step "ifListReportPage": case 0 blocked! Evaluation details:
+ - Variable "pageType" : "ObjectPage"
+2026-11-09T03:34:04.881Z [info] Step "ifListReportPage": no condition met - running default steps
+2026-11-09T03:34:14.499Z [info] 
+==========LLM call for step "extractSingleObjectPageOfMany":==========
+The user input below describes such an ObjectPage defined on entity "Findings".
+
+Your task is to find the details of the ObjectPage for "Findings".
+The base entity of the ObjectPage is ReviewCases.
+This ObjectPage can contain tabs and/or sections which in turn contain tables and fields.
+It must contain table sections containing data for:
+ - associated entity "Findings" (via association Findings)
+ - associated entity "MaterialImpacts" (via association MaterialImpacts)
+ - associated entity "DecisionHistories" (via association DecisionHistories);
+
+The following elements of entity "Findings" are already known:
+ - "findingType" (String(50)): Finding Type (values: "Component Replaced', 'Quantity Changed', 'Component Added', 'Component Removed', 'Stock Gap', 'Cost Change', 'Outdated Instruction Reference")
+ - "material" (String(50)): Material
+ - "description" (String(255)): Description
+ - "severity" (String(20)): Severity (values: "High', 'Medium', 'Low")
+ - "sourceType" (String(50)): Source Type
+ - "sourceReference" (String(100)): Source Reference 
+
+Your task is to extract the details of this ObjectPage (Header Sections, Form Sections, Table Sections and their Fields and Columns). 
+This also includes finding additional 1:n associations or additional elements for entity "Findings":
+ - for all Header and Form Sections: fields need to be based on elements of entity "Findings" - use an already known element or add a new one
+ - for all Table Sections: use existing 1:n associations from entity "Findings" or create a new one with new target entity, extract all columns
+
+You must format your output as a JSON value that adheres to a given "JSON Schema" instance.
+
+"JSON Schema" is a declarative language that allows you to annotate and validate JSON documents.
+
+For example, the example "JSON Schema" instance {{"properties": {{"foo": {{"description": "a list of test words", "type": "array", "items": {{"type": "string"}}}}}}, "required": ["foo"]}}
+would match an object with one required property, "foo". The "type" property specifies "foo" must be an "array", and the "description" property semantically describes it as "a list of test words". The items within "foo" must be strings.
+Thus, the object {{"foo": ["bar", "baz"]}} is a well-formatted instance of this example "JSON Schema". The object {{"properties": {{"foo": ["bar", "baz"]}}}} is not well-formatted.
+
+Your output will be parsed and type-checked according to the provided schema instance, so make sure all fields in your output match the schema exactly and there are no trailing commas!
+
+Here is the JSON Schema instance your output must adhere to. Include the enclosing markdown codeblock:
+```json
+{
+  "type": "object",
+  "properties": {
+    "headerSections": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string",
+            "description": "provide id unique over all sections"
+          },
+          "fields": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "label": {
+                  "type": "string"
+                },
+                "value": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string",
+                  "description": "technical name to identify the field; camelCase for CAP and strict PascalCase for RAP"
+                },
+                "type": {
+                  "type": "string",
+                  "description": "Allowed values: String(50), Boolean, Integer, Decimal, Double, Date, Time, DateTime, Timestamp; String length can vary - i.e. String(20)"
+                }
+              },
+              "required": [
+                "label",
+                "name",
+                "type"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "title",
+          "id",
+          "fields"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "formSections": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string",
+            "description": "provide id unique over all sections"
+          },
+          "fields": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "label": {
+                  "type": "string"
+                },
+                "value": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string",
+                  "description": "technical name to identify the field; camelCase for CAP and strict PascalCase for RAP"
+                },
+                "type": {
+                  "type": "string",
+                  "description": "Allowed values: String(50), Boolean, Integer, Decimal, Double, Date, Time, DateTime, Timestamp; String length can vary - i.e. String(20)"
+                }
+              },
+              "required": [
+                "label",
+                "name",
+                "type"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "title",
+          "id",
+          "fields"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "tableSections": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string",
+            "description": "provide id unique over all sections"
+          },
+          "targetEntity": {
+            "type": "object",
+            "description": "entity name for entries shown in this table section",
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "use singular; lowerCamelCase"
+              },
+              "label": {
+                "type": "string"
+              },
+              "labelPlural": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "name",
+              "label",
+              "labelPlural"
+            ],
+            "additionalProperties": false
+          },
+          "associationName": {
+            "type": "string",
+            "description": "name of 1:n association from current entity to targetEntity"
+          },
+          "isComposition": {
+            "type": "boolean",
+            "description": "true: targetEntitiy is contained in current entity - it cannot exist without this entity. A target can only be contained in max. one entity. 'multiplicity' must be 'many'"
+          },
+          "columns": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "label": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string",
+                  "description": "technical name to identify column; camelCase for CAP and strict PascalCase for RAP"
+                },
+                "type": {
+                  "type": "string",
+                  "description": "Allowed values: String(50), Boolean, Integer, Decimal, Double, Date, Time, DateTime, Timestamp; String length can vary - i.e. String(20)"
+                },
+                "key": {
+                  "type": "boolean",
+                  "description": "column is key column (maximum one)"
+                },
+                "hasFixedValuesList": {
+                  "type": "boolean",
+                  "description": "Only limited list of values expected, e.g. elements representing types, statuses, categories, units, organizations"
+                },
+                "values": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "description": "for 'hasFixedValuesList' true: values from user input; don't make up or invent any values"
+                },
+                "isAmount": {
+                  "type": "boolean",
+                  "description": "true if element has semantic type amount or price"
+                },
+                "isQuantity": {
+                  "type": "boolean",
+                  "description": "Set to true only if the element represents a measurable quantity that requires or can have a unit of measure (e.g., weight, length, duration). Do not use for simple integer counts"
+                }
+              },
+              "required": [
+                "label",
+                "name",
+                "type"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "title",
+          "id",
+          "targetEntity",
+          "associationName",
+          "columns"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "tabs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "sections": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "list of sections ids (of formSections or tableSections) contained in the tab"
+          }
+        },
+        "required": [
+          "title",
+          "id",
+          "sections"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "headerSections",
+    "formSections",
+    "tableSections",
+    "tabs"
+  ],
+  "additionalProperties": false
+}
+```
+
+Output ONLY the json contents and try to be as accurate as comprehensive as possible.
+
+<UserInput>
+Clicking a finding opens a finding details page that shows all fields of the finding.
+"Use this synthetic example as one of the review cases: Case ID EC-000473, title \"Replace cooling fan on COOL-100\", assembly COOL-100, plant 1000, current revision A, proposed revision B, production quantity 100, 1 instruction finding, 2 materials short, estimated cost delta 1200.00 EUR, source type Synthetic Fixture, review status In Review."
+"Its material impact lines are: FAN-B required 100, available 80, gap 20, unit PC; BRKT-01 required 300, available 250, gap 50, unit PC."
+The application only displays review cases.
+"Cost, stock and instruction results are calculated by the backend later and are not calculated in this application."
+</UserInput>
+
+----------Response:----------
+```json
+{
+  "headerSections": [
+    {
+      "title": "Finding Overview",
+      "id": "headerFindingOverview",
+      "fields": [
+        {
+          "label": "Finding Type",
+          "name": "findingType",
+          "type": "String(50)"
+        },
+        {
+          "label": "Material",
+          "name": "material",
+          "type": "String(50)"
+        },
+        {
+          "label": "Severity",
+          "name": "severity",
+          "type": "String(20)"
+        },
+        {
+          "label": "Source Type",
+          "name": "sourceType",
+          "type": "String(50)"
+        },
+        {
+          "label": "Source Reference",
+          "name": "sourceReference",
+          "type": "String(100)"
+        }
+      ]
+    }
+  ],
+  "formSections": [
+    {
+      "title": "Finding Details",
+      "id": "formFindingDetails",
+      "fields": [
+        {
+          "label": "Description",
+          "name": "description",
+          "type": "String(255)"
+        }
+      ]
+    }
+  ],
+  "tableSections": [
+    {
+      "title": "Findings",
+      "id": "tableFindings",
+      "targetEntity": {
+        "name": "finding",
+        "label": "Finding",
+        "labelPlural": "Findings"
+      },
+      "associationName": "Findings",
+      "isComposition": true,
+      "columns": [
+        {
+          "label": "Finding Type",
+          "name": "findingType",
+          "type": "String(50)",
+          "hasFixedValuesList": true,
+          "values": [
+            "Component Replaced",
+            "Quantity Changed",
+            "Component Added",
+            "Component Removed",
+            "Stock Gap",
+            "Cost Change",
+            "Outdated Instruction Reference"
+          ]
+        },
+        {
+          "label": "Material",
+          "name": "material",
+          "type": "String(50)"
+        },
+        {
+          "label": "Description",
+          "name": "description",
+          "type": "String(255)"
+        },
+        {
+          "label": "Severity",
+          "name": "severity",
+          "type": "String(20)",
+          "hasFixedValuesList": true,
+          "values": [
+            "High",
+            "Medium",
+            "Low"
+          ]
+        },
+        {
+          "label": "Source Type",
+          "name": "sourceType",
+          "type": "String(50)"
+        },
+        {
+          "label": "Source Reference",
+          "name": "sourceReference",
+          "type": "String(100)"
+        }
+      ]
+    },
+    {
+      "title": "Material Impacts",
+      "id": "tableMaterialImpacts",
+      "targetEntity": {
+        "name": "materialImpact",
+        "label": "Material Impact",
+        "labelPlural": "Material Impacts"
+      },
+      "associationName": "MaterialImpacts",
+      "isComposition": true,
+      "columns": [
+        {
+          "label": "Material",
+          "name": "material",
+          "type": "String(50)"
+        },
+        {
+          "label": "Required Quantity",
+          "name": "requiredQuantity",
+          "type": "Decimal",
+          "isQuantity": true
+        },
+        {
+          "label": "Available Quantity",
+          "name": "availableQuantity",
+          "type": "Decimal",
+          "isQuantity": true
+        },
+        {
+          "label": "Gap Quantity",
+          "name": "gapQuantity",
+          "type": "Decimal",
+          "isQuantity": true
+        },
+        {
+          "label": "Unit",
+          "name": "unit",
+          "type": "String(20)"
+        }
+      ]
+    },
+    {
+      "title": "Decision Histories",
+      "id": "tableDecisionHistories",
+      "targetEntity": {
+        "name": "decisionHistory",
+        "label": "Decision History",
+        "labelPlural": "Decision Histories"
+      },
+      "associationName": "DecisionHistories",
+      "isComposition": true,
+      "columns": [
+        {
+          "label": "Decision Date",
+          "name": "decisionDate",
+          "type": "DateTime"
+        },
+        {
+          "label": "Decision By",
+          "name": "decisionBy",
+          "type": "String(100)"
+        },
+        {
+          "label": "Decision",
+          "name": "decision",
+          "type": "String(100)"
+        },
+        {
+          "label": "Comments",
+          "name": "comments",
+          "type": "String(255)"
+        }
+      ]
+    }
+  ],
+  "tabs": [
+    {
+      "title": "General",
+      "id": "tabGeneral",
+      "sections": [
+        "headerFindingOverview",
+        "formFindingDetails"
+      ]
+    },
+    {
+      "title": "Findings",
+      "id": "tabFindings",
+      "sections": [
+        "tableFindings"
+      ]
+    },
+    {
+      "title": "Material Impacts",
+      "id": "tabMaterialImpacts",
+      "sections": [
+        "tableMaterialImpacts"
+      ]
+    },
+    {
+      "title": "Decision Histories",
+      "id": "tabDecisionHistories",
+      "sections": [
+        "tableDecisionHistories"
+      ]
+    }
+  ]
+}
+```
+2026-11-09T03:34:14.501Z [info] 2/8: Build CDS files
+2026-11-09T03:34:14.526Z [info] 3/8: Checking staging project root folder "&#x2F;home&#x2F;user&#x2F;projects&#x2F;pa-sandbox&#x2F;case-worklist"
+2026-11-09T03:34:14.528Z [info] 4/8: Generating mock data
+2026-11-09T03:34:28.838Z [info] 
+==========LLM call for data generation:==========
+
+For the following list of entities, create data for the empty CSV files.
+Entity "ReviewCases" - Properties:
+    caseID: String(20), Change ID
+    currentRevision: String(5), Current revision
+    proposedRevision: String(5), Proposed revision
+    numberOfInstructionFindings: Integer, Number of instruction findings
+    numberOfMaterialsShort: Integer, Number of materials short
+    estimatedCostDelta: Decimal, Estimated cost delta
+    sourceType: String(20), Source type
+    reviewStatus: String(20), Review status
+    plant: String(10), Plant
+    title: String(100), Title
+    reviewOwner: String(50), Review owner
+    productionQuantity: Integer, Production quantity
+    Assembly_name: String(50), name of associated Assemblies
+
+Entity "Assemblies" - Properties:
+    name: String(50), Name of Assembly
+
+Entity "Findings" - Properties:
+    findingType: String(50), Finding Type
+    material: String(50), Material
+    description: String(255), Description
+    severity: String(20), Severity
+    sourceType: String(50), Source Type
+    sourceReference: String(100), Source Reference
+    reviewCases_caseID: String(20), caseID of associated ReviewCases
+
+Entity "MaterialImpacts" - Properties:
+    material: String(50), Material
+    requiredQuantity: Decimal, Required Quantity
+    availableQuantity: Decimal, Available Quantity
+    gapQuantity: Decimal, Gap Quantity
+    unitOfMeasure: String(20), Unit of Measure
+    unit: String(20), Unit
+    reviewCases_caseID: String(20), caseID of associated ReviewCases
+    findings_findingType: String(50), findingType of associated Findings
+
+Entity "DecisionHistories" - Properties:
+    eventTime: DateTime, Event Time
+    fromStatus: String(20), From Status
+    toStatus: String(20), To Status
+    actor: String(50), Actor
+    comment: String(255), Comment
+    decisionDate: DateTime, Decision Date
+    decisionBy: String(100), Decision By
+    decision: String(100), Decision
+    comments: String(255), Comments
+    reviewCases_caseID: String(20), caseID of associated ReviewCases
+    findings_findingType: String(50), findingType of associated Findings
+
+Empty CSV files in json format (only generate content for these files!):
+{"ReviewCases.csv":"caseID;currentRevision;proposedRevision;numberOfInstructionFindings;numberOfMaterialsShort;estimatedCostDelta;sourceType;reviewStatus;plant;title;reviewOwner;productionQuantity;Assembly_name","Assemblies.csv":"name","Findings.csv":"findingType;material;description;severity;sourceType;sourceReference;reviewCases_caseID","MaterialImpacts.csv":"material;requiredQuantity;availableQuantity;gapQuantity;unitOfMeasure;unit;reviewCases_caseID;findings_findingType","DecisionHistories.csv":"eventTime;fromStatus;toStatus;actor;comment;decisionDate;decisionBy;decision;comments;reviewCases_caseID;findings_findingType"}
+
+Rules:
+    - Take over the given header line, do not invent new columns!
+    - For a given file, add rows, add '\n' characters before each row but don't break the JSON string
+    - Do not generate rows with same key values, they must be unique!
+    - Make sure that associations match, i.e. a field containing "Name of the associated Customer" must contain an existing Name of entity Customer
+    - Always use ";" as a delimiter in CSV files
+    - The result must be proper JSON format so it can be parsed, don't break JSON strings within, don't add quotes around values.
+    - Create exactly 10 rows (data records) for EACH csv file (do NOT count the header line as a row)
+    - All values must be realistic with meaningful content, e.g. 'Laptop Screen' and not just placeholder values with incremented numbers like 'Product 1', 'Product 2' etc.
+
+Use format for values:
+  String(50): string no longer than 50 characters
+  Integer, Double: only numbers, no special symbols
+  Decimal(3,2): 1.23
+  DateTime: 2021-06-27T14:52:23Z
+
+For the following fields, use only the supplied allowed values (as they are, don't insert spaces or change case):
+- sourceType (of ReviewCases): SyntheticFixture, Manual, GenAIProposal, Imported
+- reviewStatus (of ReviewCases): Open, InReview, Approved, Rejected
+- findingType (of Findings): ComponentReplaced, QuantityChanged, ComponentAdded, ComponentRemoved, StockGap, CostChange, OutdatedInstructionReference
+- severity (of Findings): High, Medium, Low
+- fromStatus (of DecisionHistories): Open, InReview, Approved, Rejected
+- toStatus (of DecisionHistories): Open, InReview, Approved, Rejected
+
+Example output (Do NOT include in output!):
+```json
+{"Blogs":"blogID;title;description;createdDateTime;views\nBlog1;Tech Blog;A blog about the latest technology trends.;2023-06-27T14:52:23Z;1000\nBlog2;Fashion Blog;Explore the world of fashion and style.;2023-06-27T14:52:23Z;500","Posts":"postID;title;content;publishDate;likes;comments;blogID\n1;The Future of Artificial Intelligence;Artificial intelligence is shaping the future of technology.;2023-06-27;50;10;Blog1
+2;Summer Fashion Trends;Discover the hottest fashion trends for the summer season.;2023-06-27;100;20;Blog2\n3;Must-Have Accessories;10 must-have accessories for the upcoming season;2023-06-27;100;20;Blog2"}
+```
+Output ONLY the json contents for the csv files and try to be as accurate as possible.
+The generated data should be suitable for the following User Input:
+ I want to create an application called AssemblyImpact Case Worklist for engineering change review cases in a manufacturing company.
+
+All data in this application is synthetic demonstration data for the fictional company NovaMotion Manufacturing. It is not real company data and not real SAP S/4HANA data. Do not create real person names; use role names such as "Engineering Reviewer 1".
+
+The main page is a list of review cases. Each review case belongs to exactly one assembly. The list page should follow this layout:
+
+<userImage>
+
+Use the image only for the layout, the filter fields and the column order. The values shown in the image are illustrative.
+
+An assembly has an assembly code (for example COOL-100), a description (for example Cooling Module) and a plant (four characters, for example 1000).
+
+A review case has the following details:
+- Case ID, for example EC-000473
+- Title
+- Assembly
+- Plant
+- Current revision, for example A
+- Proposed revision, for example B
+- Production quantity, for example 100
+- Number of instruction findings
+- Number of materials short
+- Estimated cost delta in EUR
+- Source type with the values: Synthetic Fixture, Manual, GenAI Proposal, Imported
+- Review status with the values: Open, In Review, Approved, Rejected. Show Open as neutral, In Review as warning, Approved as positive and Rejected as negative.
+- Review owner
+
+The list should have filter fields for Assembly, Plant, Proposed revision, Review status and Source type.
+
+The list should show these columns: Assembly, Case ID, Current revision, Proposed revision, Number of instruction findings, Number of materials short, Estimated cost delta, Source type, Review status.
+
+Clicking a review case opens the review case details page. The details page should have these sections as tabs:
+- General Information: Case ID, Title, Assembly, Plant, Current revision, Proposed revision, Production quantity, Review status, Review owner, Source type.
+- Findings: a table of findings for the case. Each finding has a finding type with the values Component Replaced, Quantity Changed, Component Added, Component Removed, Stock Gap, Cost Change, Outdated Instruction Reference; a material; a description; a severity with the values High, Medium, Low (show High as negative, Medium as warning, Low as neutral); a source type; and a source reference such as a BOM item or work instruction identifier.
+- Material Impact: a table with material, required quantity, available quantity, gap quantity and unit of measure.
+- Decision History: a table with event time, from status, to status, actor and comment.
+
+A review case can have many findings, many material impact lines and many decision history entries.
+
+Clicking a finding opens a finding details page that shows all fields of the finding.
+
+Use this synthetic example as one of the review cases: Case ID EC-000473, title "Replace cooling fan on COOL-100", assembly COOL-100, plant 1000, current revision A, proposed revision B, production quantity 100, 1 instruction finding, 2 materials short, estimated cost delta 1200.00 EUR, source type Synthetic Fixture, review status In Review.
+
+Its material impact lines are: FAN-B required 100, available 80, gap 20, unit PC; BRKT-01 required 300, available 250, gap 50, unit PC.
+
+The application only displays review cases. Cost, stock and instruction results are calculated by the backend later and are not calculated in this application.
+
+
+
+
+----------Response:----------
+{"ReviewCases.csv":"caseID;currentRevision;proposedRevision;numberOfInstructionFindings;numberOfMaterialsShort;estimatedCostDelta;sourceType;reviewStatus;plant;title;reviewOwner;productionQuantity;Assembly_name\nEC-000473;A;B;1;2;1200.00;SyntheticFixture;InReview;1000;Replace cooling fan on COOL-100;Engineering Reviewer 1;100;COOL-100\nEC-000471;B;C;0;1;450.50;Manual;Approved;2000;Pump seal replacement PUMP-200;Engineering Reviewer 2;150;PUMP-200\nEC-000469;A;B;2;0;0.00;GenAIProposal;Open;3000;Valve adjustment for VALVE-300;Engineering Reviewer 3;200;VALVE-300\nEC-000466;C;D;3;1;780.75;Imported;InReview;4000;Heat exchanger upgrade HEAT-406;Engineering Reviewer 4;120;HEAT-406\nEC-000460;A;B;1;0;300.00;GenAIProposal;Approved;5000;Control unit firmware update CTRL-500;Engineering Reviewer 5;80;CTRL-500\nEC-000455;B;C;0;3;1500.00;Manual;Rejected;1000;Cooling fan bracket replacement COOL-100;Engineering Reviewer 1;90;COOL-100\nEC-000452;A;B;2;2;900.00;SyntheticFixture;InReview;2000;Pump motor replacement PUMP-200;Engineering Reviewer 2;110;PUMP-200\nEC-000448;C;D;1;1;600.00;GenAIProposal;Open;3000;Valve seat replacement VALVE-300;Engineering Reviewer 3;130;VALVE-300\nEC-000445;B;C;0;0;0.00;Imported;Approved;4000;Heat exchanger gasket HEAT-406;Engineering Reviewer 4;140;HEAT-406\nEC-000440;A;B;1;1;250.00;GenAIProposal;Rejected;5000;Control unit sensor update CTRL-500;Engineering Reviewer 5;70;CTRL-500","Assemblies.csv":"name\nCOOL-100\nPUMP-200\nVALVE-300\nHEAT-406\nCTRL-500\nFAN-900\nBRKT-01\nMTR-700\nSENS-800\nGASK-600","Findings.csv":"findingType;material;description;severity;sourceType;sourceReference;reviewCases_caseID\nComponentReplaced;FAN-B;Cooling fan replaced due to failure;High;SyntheticFixture;BOM-123;EC-000473\nStockGap;BRKT-01;Bracket shortage impacting assembly;Medium;SyntheticFixture;BOM-124;EC-000473\nQuantityChanged;SEAL-45;Seal quantity increased for better sealing;Low;Manual;BOM-200;EC-000471\nComponentAdded;MTR-700;Added motor for pump upgrade;High;Manual;BOM-201;EC-000471\nComponentRemoved;VALVE-12;Removed obsolete valve component;Medium;GenAIProposal;BOM-300;EC-000469\nCostChange;HEAT-EX;Cost increase due to new heat exchanger;High;Imported;BOM-400;EC-000466\nOutdatedInstructionReference;CTRL-FW;Instruction update required for firmware;Low;GenAIProposal;WI-500;EC-000460\nStockGap;FAN-B;Fan stock gap identified;Medium;Manual;BOM-125;EC-000455\nQuantityChanged;MTR-700;Motor quantity adjusted;Low;SyntheticFixture;BOM-202;EC-000452\nComponentAdded;SENS-800;Added sensor for control unit;High;GenAIProposal;BOM-600;EC-000440","MaterialImpacts.csv":"material;requiredQuantity;availableQuantity;gapQuantity;unitOfMeasure;unit;reviewCases_caseID;findings_findingType\nFAN-B;100;80;20;Pieces;PC;EC-000473;ComponentReplaced\nBRKT-01;300;250;50;Pieces;PC;EC-000473;StockGap\nSEAL-45;200;200;0;Pieces;PC;EC-000471;QuantityChanged\nMTR-700;50;45;5;Pieces;PC;EC-000471;ComponentAdded\nVALVE-12;30;30;0;Pieces;PC;EC-000469;ComponentRemoved\nHEAT-EX;10;8;2;Units;PC;EC-000466;CostChange\nCTRL-FW;1;1;0;Units;PC;EC-000460;OutdatedInstructionReference\nFAN-B;120;100;20;Pieces;PC;EC-000455;StockGap\nMTR-700;60;55;5;Pieces;PC;EC-000452;QuantityChanged\nSENS-800;15;10;5;Pieces;PC;EC-000440;ComponentAdded","DecisionHistories.csv":"eventTime;fromStatus;toStatus;actor;comment;decisionDate;decisionBy;decision;comments;reviewCases_caseID;findings_findingType\n2024-01-10T09:00:00Z;Open;InReview;Engineering Reviewer 1;Initial review started;2024-01-10T09:00:00Z;Engineering Reviewer 1;Start Review;No issues yet;EC-000473;ComponentReplaced\n2024-01-12T15:30:00Z;InReview;Approved;Engineering Reviewer 2;Approved after validation;2024-01-12T15:30:00Z;Engineering Reviewer 2;Approve;Validated all findings;EC-000471;QuantityChanged\n2024-01-11T11:00:00Z;Open;Rejected;Engineering Reviewer 3;Rejected due to missing data;2024-01-11T11:00:00Z;Engineering Reviewer 3;Reject;Incomplete info;EC-000469;ComponentRemoved\n2024-01-15T14:45:00Z;InReview;InReview;Engineering Reviewer 4;Further analysis required;2024-01-15T14:45:00Z;Engineering Reviewer 4;Hold;Need more data;EC-000466;CostChange\n2024-01-20T10:00:00Z;Open;Approved;Engineering Reviewer 5;Firmware update approved;2024-01-20T10:00:00Z;Engineering Reviewer 5;Approve;Ready for deployment;EC-000460;OutdatedInstructionReference\n2024-01-18T08:30:00Z;Rejected;Open;Engineering Reviewer 1;Reopened for rework;2024-01-18T08:30:00Z;Engineering Reviewer 1;Reopen;Rework needed;EC-000455;StockGap\n2024-01-22T13:00:00Z;Open;InReview;Engineering Reviewer 2;Started motor replacement review;2024-01-22T13:00:00Z;Engineering Reviewer 2;Start Review;Initial check;EC-000452;QuantityChanged\n2024-01-25T16:15:00Z;InReview;Rejected;Engineering Reviewer 3;Rejected due to cost concerns;2024-01-25T16:15:00Z;Engineering Reviewer 3;Reject;Cost too high;EC-000448;ComponentAdded\n2024-01-28T09:45:00Z;Approved;Approved;Engineering Reviewer 4;Final approval granted;2024-01-28T09:45:00Z;Engineering Reviewer 4;Approve;All good;EC-000445;CostChange\n2024-01-30T11:30:00Z;Rejected;Rejected;Engineering Reviewer 5;Rejected after review;2024-01-30T11:30:00Z;Engineering Reviewer 5;Reject;Not feasible;EC-000440;ComponentAdded"}
+2026-11-09T03:34:28.843Z [info] 5/8: Initializing CAP project
+2026-11-09T03:34:29.620Z [info] 6/8: Copying files to CAP project
+2026-11-09T03:34:29.625Z [info] 7/8: Generating applications
+2026-11-09T03:34:37.506Z [info] 8/8: Installing node module dependencies
