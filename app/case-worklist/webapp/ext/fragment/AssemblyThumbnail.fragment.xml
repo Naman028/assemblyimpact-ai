@@ -1,7 +1,7 @@
 <core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core">
 	<!-- Same availability rule as AssemblyIllustration: COOL-100-B. -->
 	<Image src="{= 'assets/assemblies/' + ${assemblyCode} + '-' + ${toRevision} + '-thumb.svg' }"
-		visible="{= (${path: 'assemblyCode', targetType: 'any'} + '-' + ${path: 'toRevision', targetType: 'any'}) === 'COOL-100-B' }"
+		visible="{= (${path: 'assemblyCode', targetType: 'any'} + '-' + ${path: 'toRevision', targetType: 'any'}) === 'COOL-100-B' || (${path: 'assemblyCode', targetType: 'any'} + '-' + ${path: 'toRevision', targetType: 'any'}) === 'GEAR-210-B' || (${path: 'assemblyCode', targetType: 'any'} + '-' + ${path: 'toRevision', targetType: 'any'}) === 'VALV-320-B' || (${path: 'assemblyCode', targetType: 'any'} + '-' + ${path: 'toRevision', targetType: 'any'}) === 'CTRL-400-B' || (${path: 'assemblyCode', targetType: 'any'} + '-' + ${path: 'toRevision', targetType: 'any'}) === 'FRAME-500-B' || (${path: 'assemblyCode', targetType: 'any'} + '-' + ${path: 'toRevision', targetType: 'any'}) === 'HVAC-610-B' || (${path: 'assemblyCode', targetType: 'any'} + '-' + ${path: 'toRevision', targetType: 'any'}) === 'DRIV-700-B' }"
 		alt="{= 'Synthetic illustration of assembly ' + ${assemblyCode} + ', revision ' + ${toRevision} }"
 		decorative="false" densityAware="false" width="3rem" height="2rem" class="aiAssemblyThumb"/>
 </core:FragmentDefinition>

@@ -1,0 +1,6 @@
+material,description,baseUnit,sourceType
+PCB-400,Controller PCB (bare),PC,SYNTHETIC_FIXTURE
+CAP-470U,Capacitor 470 uF 35 V,PC,SYNTHETIC_FIXTURE
+CAP-470U-AQ,Capacitor 470 uF 35 V AEC-Q200,PC,SYNTHETIC_FIXTURE
+CONN-6P,Connector 6-pin,PC,SYNTHETIC_FIXTURE
+MCU-32,Microcontroller 32-bit,PC,SYNTHETIC_FIXTURE

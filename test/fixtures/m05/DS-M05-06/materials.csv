@@ -1,0 +1,4 @@
+material,description,baseUnit,sourceType
+MOT-07,Gear motor 0.75 kW,PC,SYNTHETIC_FIXTURE
+CPL-20,Shaft coupling 20 mm,PC,SYNTHETIC_FIXTURE
+ENC-1024,Incremental encoder 1024 ppr,PC,SYNTHETIC_FIXTURE

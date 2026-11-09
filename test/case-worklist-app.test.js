@@ -110,17 +110,19 @@ test('CAP serves the app statically', async () => {
 test('List Report request returns only the user\'s plant; runImpact fills the columns', async () => {
   const before = await request(`${SVC}${LIST}`);
   assert.equal(before.status, 200, JSON.stringify(before.data));
-  assert.equal(before.data['@odata.count'], 1);
-  assert.deepEqual(before.data.value.map(c => [c.caseNumber, c.assemblyCode, c.status, c.latestRun]), [['EC-000473', 'COOL-100', 'OPEN', null]]);
+  assert.equal(before.data['@odata.count'], 6, 'six plant-1000 cases (EC-000473 + five M05 scenarios)');
+  const cool = before.data.value.find(c => c.caseNumber === 'EC-000473');
+  assert.deepEqual([cool.assemblyCode, cool.status, cool.latestRun], ['COOL-100', 'OPEN', null]);
+  assert(before.data.value.every(c => c.latestRun === null), 'no impact results are seeded');
   const other = await request(`${SVC}${LIST}`, { user: 'analyst2' });
-  assert.deepEqual(other.data.value.map(c => c.caseNumber), ['EC-200473']);
+  assert.deepEqual(other.data.value.map(c => c.caseNumber).sort(), ['EC-200473', 'EC-200610']);
   // The action button is shown to everyone; the server decides.
   const run = await request(`${SVC}/ReviewCases(${CASE_1000})/EngineeringReview.runImpact`, { user: 'analyst', method: 'POST', body: { asOfDate: '2026-11-08' } });
   assert.equal(run.status, 200, JSON.stringify(run.data));
   assert.equal((await request(`${SVC}/ReviewCases(${CASE_1000})/EngineeringReview.runImpact`, { user: 'cviewer', method: 'POST', body: { asOfDate: '2026-11-08' } })).status, 403);
   assert.equal((await request(`${SVC}/ReviewCases(${CASE_1000})/EngineeringReview.runImpact`, { user: 'analyst2', method: 'POST', body: { asOfDate: '2026-11-08' } })).status, 404);
   const after = await request(`${SVC}${LIST}`);
-  const row = after.data.value[0];
+  const row = after.data.value.find(c => c.caseNumber === 'EC-000473');
   assert.deepEqual([row.latestRun.instructionFindings, row.latestRun.materialsShort, Number(row.latestRun.costDeltaTotal)], [1, 2, 1200]);
 });
 

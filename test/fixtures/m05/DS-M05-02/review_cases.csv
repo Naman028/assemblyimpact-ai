@@ -1,0 +1,2 @@
+caseNumber,title,assemblyCode,plant,fromBomStateId,toBomStateId,productionQuantity,status,sourceType,owner,evidenceRef
+EC-000538,Remove obsolete O-ring from VALV-320,VALV-320,1000,BOM-VALV-320-A,BOM-VALV-320-B,120,OPEN,SYNTHETIC_FIXTURE,Engineering Reviewer 1,DS-M05-02/review_cases/EC-000538

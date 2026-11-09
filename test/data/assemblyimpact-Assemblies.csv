@@ -1,3 +1,9 @@
 ID,assemblyCode,plant,description,version
 4be16ff8-bb28-543e-ba97-1a4e30dbff59,COOL-100,1000,Cooling Module [SYNTHETIC DS-ORACLE-01],afa0945a-7e5d-5f75-92a1-1437c780fa07
 8d5b7805-a79a-58a2-aafb-caa0c85c6c75,COOL-100,2000,Cooling Module [SYNTHETIC DS-ORACLE-01 mirror 2000],7b13650a-0cac-5ffc-ad2f-dcfbc3b69485
+03d9186c-3736-54f1-b891-ccca866889cf,GEAR-210,1000,Two-stage gearbox [SYNTHETIC DS-M05-01],a3222c8c-8880-5ce6-a0ae-75049ad79627
+80c76293-de6c-5332-9952-823e11f636b2,VALV-320,1000,Hydraulic valve block [SYNTHETIC DS-M05-02],b3ae7fab-3988-5eb7-b81f-2513bb28c447
+4d2cf91e-9c85-5c52-86d6-2914c1134cc1,CTRL-400,1000,Motor controller board [SYNTHETIC DS-M05-03],423b910d-5bd8-5fbf-b20c-bdeaab44ad1f
+2d540ffd-214c-5e35-9fbc-dbad0d16abe1,FRAME-500,1000,Welded machine frame [SYNTHETIC DS-M05-04],9eb3694e-07d4-548e-8a65-e59cbe1dac2e
+bd6bad03-5603-5b6b-8393-502f563beb4a,HVAC-610,2000,Rooftop HVAC unit [SYNTHETIC DS-M05-05],40ec7363-03b2-5621-9fca-034e160af5bb
+be7c1112-6ff2-59f7-83f8-3763458e4b2c,DRIV-700,1000,Conveyor drive unit [SYNTHETIC DS-M05-06],da3d5eeb-0d72-5e11-bb47-40a52f205402

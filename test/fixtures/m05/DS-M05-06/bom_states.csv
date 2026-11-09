@@ -1,0 +1,3 @@
+bomStateId,assemblyCode,plant,bomUsage,alternative,revision,validFrom,validTo,status,changeNumber,sourceType,evidenceRef
+BOM-DRIV-700-A,DRIV-700,1000,1,01,A,2026-01-01,2026-11-30,RELEASED,,SYNTHETIC_FIXTURE,DS-M05-06/bom_states/BOM-DRIV-700-A
+BOM-DRIV-700-B,DRIV-700,1000,1,01,B,2026-12-01,9999-12-31,PROPOSED,EC-000703,SYNTHETIC_FIXTURE,DS-M05-06/bom_states/BOM-DRIV-700-B

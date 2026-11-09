@@ -1,0 +1,3 @@
+instructionId,version,step,material,quantity,unit,text
+WI-DRIV-700-ASM,1,0010,MOT-07,1,PC,Mount motor
+WI-DRIV-700-ASM,1,0020,CPL-20,1,PC,Fit coupling

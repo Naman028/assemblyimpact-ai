@@ -1,0 +1,2 @@
+caseNumber,title,assemblyCode,plant,fromBomStateId,toBomStateId,productionQuantity,status,sourceType,owner,evidenceRef
+EC-000561,Automotive-grade capacitor and extra connector on CTRL-400,CTRL-400,1000,BOM-CTRL-400-A,BOM-CTRL-400-B,200,OPEN,SYNTHETIC_FIXTURE,Engineering Reviewer 2,DS-M05-03/review_cases/EC-000561

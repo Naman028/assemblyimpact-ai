@@ -1,0 +1,2 @@
+caseNumber,title,assemblyCode,plant,fromBomStateId,toBomStateId,productionQuantity,status,sourceType,owner,evidenceRef
+EC-200610,Inverter compressor on HVAC-610 (plant 2000),HVAC-610,2000,BOM-HVAC-610-A,BOM-HVAC-610-B,10,OPEN,SYNTHETIC_FIXTURE,Engineering Reviewer 3,DS-M05-05/review_cases/EC-200610

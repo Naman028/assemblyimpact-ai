@@ -1,0 +1,4 @@
+instructionId,version,step,material,quantity,unit,text
+WI-VALV-320-ASM,2,0010,SPOOL-32,1,PC,Insert spool
+WI-VALV-320-ASM,2,0020,ORING-12,4,PC,Fit four O-rings
+WI-VALV-320-ASM,2,0030,PLUG-G14,3,PC,Close ports with plugs

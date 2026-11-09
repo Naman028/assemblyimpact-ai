@@ -1,0 +1,3 @@
+instructionId,version,assemblyCode,plant,title,appliesToRevision,status,validFrom,sourceType,valueStatus,evidenceRef
+WI-CTRL-400-SMT,3,CTRL-400,1000,SMT placement program,B,RELEASED,2026-12-01,SYNTHETIC_FIXTURE,SYNTHETIC,DS-M05-03/instructions/WI-CTRL-400-SMT/v3
+WI-CTRL-400-THT,1,CTRL-400,1000,Connector soldering,,RELEASED,2026-04-01,SYNTHETIC_FIXTURE,SYNTHETIC,DS-M05-03/instructions/WI-CTRL-400-THT/v1

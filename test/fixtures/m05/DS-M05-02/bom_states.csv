@@ -1,0 +1,3 @@
+bomStateId,assemblyCode,plant,bomUsage,alternative,revision,validFrom,validTo,status,changeNumber,sourceType,evidenceRef
+BOM-VALV-320-A,VALV-320,1000,1,01,A,2026-01-01,2026-11-30,RELEASED,,SYNTHETIC_FIXTURE,DS-M05-02/bom_states/BOM-VALV-320-A
+BOM-VALV-320-B,VALV-320,1000,1,01,B,2026-12-01,9999-12-31,PROPOSED,EC-000538,SYNTHETIC_FIXTURE,DS-M05-02/bom_states/BOM-VALV-320-B

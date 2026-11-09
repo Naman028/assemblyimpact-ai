@@ -1,0 +1,13 @@
+{
+  "datasetId": "DS-M05-03",
+  "version": "1.0.0",
+  "purpose": "Material cost increase through replacement, quantity increase, inventory shortage of the new part (zero stock)",
+  "synthetic": true,
+  "dataLabel": "SYNTHETIC DEMO DATA - fictional company NovaMotion Manufacturing - not SAP S/4HANA data",
+  "company": "NovaMotion Manufacturing",
+  "plant": "1000",
+  "currency": "EUR",
+  "referenceDate": "2026-11-08",
+  "randomness": "none - all values fixed",
+  "sourceOfFixedValues": "Synthetic M05 scenario spec (tools/m05/scenarios.mjs); no impact results are stored"
+}

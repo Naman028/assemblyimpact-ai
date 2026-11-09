@@ -1,0 +1,3 @@
+instructionId,version,assemblyCode,plant,title,appliesToRevision,status,validFrom,sourceType,valueStatus,evidenceRef
+WI-FRAME-500-ASM,5,FRAME-500,1000,Assemble frame,A,SUPERSEDED,2026-01-01,SYNTHETIC_FIXTURE,SYNTHETIC,DS-M05-04/instructions/WI-FRAME-500-ASM/v5
+WI-FRAME-500-ASM,6,FRAME-500,1000,Assemble frame,B,RELEASED,2026-12-01,SYNTHETIC_FIXTURE,SYNTHETIC,DS-M05-04/instructions/WI-FRAME-500-ASM/v6

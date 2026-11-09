@@ -1,0 +1,6 @@
+instructionId,version,step,material,quantity,unit,text
+WI-FRAME-500-ASM,5,0010,BEAM-80,4,PC,Align beams
+WI-FRAME-500-ASM,5,0020,BOLT-M10,8,PC,Fit eight bolts
+WI-FRAME-500-ASM,6,0010,BEAM-80,4,PC,Align beams
+WI-FRAME-500-ASM,6,0020,BOLT-M10,12,PC,Fit twelve bolts
+WI-FRAME-500-ASM,6,0030,PLATE-R5,2,PC,Weld reinforcement plates

@@ -1,0 +1,5 @@
+material,description,baseUnit,sourceType
+COMP-F10,Compressor (fixed speed),PC,SYNTHETIC_FIXTURE
+COMP-I10,Compressor (inverter),PC,SYNTHETIC_FIXTURE
+COIL-61,Condenser coil,PC,SYNTHETIC_FIXTURE
+CTRL-HV1,HVAC control unit,PC,SYNTHETIC_FIXTURE

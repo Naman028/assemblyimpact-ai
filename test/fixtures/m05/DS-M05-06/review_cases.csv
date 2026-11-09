@@ -1,0 +1,2 @@
+caseNumber,title,assemblyCode,plant,fromBomStateId,toBomStateId,productionQuantity,status,sourceType,owner,evidenceRef
+EC-000703,Add encoder to DRIV-700 (price not yet maintained),DRIV-700,1000,BOM-DRIV-700-A,BOM-DRIV-700-B,30,OPEN,SYNTHETIC_FIXTURE,Engineering Reviewer 2,DS-M05-06/review_cases/EC-000703

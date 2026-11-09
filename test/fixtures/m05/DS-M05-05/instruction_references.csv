@@ -1,0 +1,3 @@
+instructionId,version,step,material,quantity,unit,text
+WI-HVAC-610-ASM,2,0010,COIL-61,1,PC,Mount coil
+WI-HVAC-610-ASM,2,0020,COMP-F10,1,PC,Mount fixed-speed compressor

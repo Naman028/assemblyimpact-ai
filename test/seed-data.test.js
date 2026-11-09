@@ -17,6 +17,7 @@ const ROOT = join(import.meta.dirname, '..');
 const AS_OF = '2026-11-08';
 const seed = buildSeed();
 const byNumber = n => seed.ReviewCases.find(c => c.caseNumber === n);
+const INTENTIONALLY_UNPRICED = new Set(['EC-000703|ENC-1024']); // M05 scenario DS-M05-06
 const CASE_1000 = byNumber('EC-000473').ID;
 const CASE_2000 = byNumber('EC-200473').ID;
 let server, root;
@@ -111,11 +112,13 @@ test('seed data is referentially and semantically consistent', () => {
     assert(from.validTo < to.validFrom, `${c.caseNumber}: revision ${from.revision} ends before ${to.revision} becomes effective`);
     assert(Number.isInteger(Number(c.productionQuantity)) && Number(c.productionQuantity) > 0);
     assert(uuid.test(c.version), `${c.caseNumber} has a concurrency token`);
-    // Every BOM material is priced and stocked in the case plant with a matching unit.
+    // Every BOM material is priced and stocked in the case plant with a matching unit,
+    // except the one deliberately unpriced M05 scenario (EC-000703 demonstrates INCOMPLETE evidence).
     for (const item of seed.BOMItems.filter(i => [from.ID, to.ID].includes(i.bomState_ID))) {
       const price = seed.CostPrices.find(p => p.material === item.material && p.plant === c.plant);
       const stock = seed.StockSnapshots.find(s => s.material === item.material && s.plant === c.plant);
-      assert(price && price.unit === item.unit && price.currency === 'EUR', `${c.caseNumber} ${item.material} price`);
+      if (INTENTIONALLY_UNPRICED.has(`${c.caseNumber}|${item.material}`)) assert(!price, `${c.caseNumber} ${item.material} stays unpriced`);
+      else assert(price && price.unit === item.unit && price.currency === 'EUR', `${c.caseNumber} ${item.material} price`);
       assert(stock && stock.unit === item.unit, `${c.caseNumber} ${item.material} stock`);
     }
   }
@@ -124,7 +127,7 @@ test('seed data is referentially and semantically consistent', () => {
     for (const r of seed[e]) assert.equal(r.sourceType, 'SYNTHETIC_FIXTURE', `${e} sourceType`);
   for (const e of ENTITIES.filter(e => !['Assemblies', 'InstructionReferences'].includes(e)))
     for (const r of seed[e]) assert(r.evidenceRef?.length, `${e} evidenceRef`);
-  for (const a of seed.Assemblies) assert.match(a.description, /\[SYNTHETIC DS-ORACLE-01/);
+  for (const a of seed.Assemblies) assert.match(a.description, /\[SYNTHETIC DS-(ORACLE-01|M05-0[1-6])/);
   assert(!seed.Assemblies.some(a => a.assemblyCode === 'PUMP-200'), 'PUMP-200 is not application seed data');
 });
 
@@ -135,22 +138,31 @@ test('CAP loads test/data; authenticated OData returns the seeded records per pl
       out[set] = Number((await er(`/${set}/$count`, { user })).data);
     return out;
   };
-  const expected = { ReviewCases: 1, BOMStates: 2, BOMItems: 7, CostPrices: 5, StockSnapshots: 5, Instructions: 3, InstructionReferences: 9 };
-  assert.deepEqual(await counts('cviewer'), expected);
-  assert.deepEqual(await counts('analyst2'), expected);
+  // Expected per-plant counts come from the generator itself (M05 added six scenarios).
+  const statesOf = plant => new Set(seed.BOMStates.filter(s => s.plant === plant).map(s => s.ID));
+  const instrOf = plant => new Set(seed.Instructions.filter(i => i.plant === plant).map(i => i.ID));
+  const expectedFor = plant => ({ ReviewCases: seed.ReviewCases.filter(c => c.plant === plant).length,
+    BOMStates: statesOf(plant).size, BOMItems: seed.BOMItems.filter(i => statesOf(plant).has(i.bomState_ID)).length,
+    CostPrices: seed.CostPrices.filter(p => p.plant === plant).length, StockSnapshots: seed.StockSnapshots.filter(s => s.plant === plant).length,
+    Instructions: instrOf(plant).size, InstructionReferences: seed.InstructionReferences.filter(r => instrOf(plant).has(r.instruction_ID)).length });
+  assert.deepEqual(await counts('cviewer'), expectedFor('1000'));
+  assert.deepEqual(await counts('analyst2'), expectedFor('2000'));
+  assert.deepEqual(expectedFor('1000').ReviewCases, 6);
   const cases = (await er('/ReviewCases?$orderby=caseNumber', { user: 'cviewer' })).data.value;
-  assert.deepEqual(cases.map(c => [c.caseNumber, c.plant, c.assemblyCode, c.fromRevision, c.toRevision, c.productionQuantity, c.sourceType]),
-    [['EC-000473', '1000', 'COOL-100', 'A', 'B', 100, 'SYNTHETIC_FIXTURE']]);
-  const other = (await er('/ReviewCases', { user: 'analyst2' })).data.value;
-  assert.deepEqual(other.map(c => [c.caseNumber, c.plant]), [['EC-200473', '2000']]);
+  assert.deepEqual(cases.map(c => c.caseNumber), ['EC-000473', 'EC-000512', 'EC-000538', 'EC-000561', 'EC-000587', 'EC-000703']);
+  assert(cases.every(c => c.plant === '1000' && c.sourceType === 'SYNTHETIC_FIXTURE' && c.status === 'OPEN'));
+  assert.deepEqual([cases[0].assemblyCode, cases[0].fromRevision, cases[0].toRevision, cases[0].productionQuantity], ['COOL-100', 'A', 'B', 100]);
+  const other = (await er('/ReviewCases?$orderby=caseNumber', { user: 'analyst2' })).data.value;
+  assert.deepEqual(other.map(c => [c.caseNumber, c.plant]), [['EC-200473', '2000'], ['EC-200610', '2000']]);
   const items = (await er(`/BOMItems?$filter=bomState/stateKey eq 'BOM-COOL-100-B'&$orderby=itemNo`, { user: 'cviewer' })).data.value;
   assert.deepEqual(items.map(i => [i.itemNo, i.material, Number(i.quantity), i.unit]),
     [['0010', 'FAN-B', 1, 'PC'], ['0020', 'BRKT-01', 3, 'PC'], ['0030', 'SENS-01', 1, 'PC'], ['0040', 'SEAL-01', 1, 'PC']]);
   // M03 still serves its own entity, now with the seeded assembly, and still filters by plant.
   const m03 = await request('/odata/v4/assembly-catalog/Assemblies', { user: 'viewer' });
   assert.equal(m03.status, 200);
-  assert.deepEqual(m03.data.value.map(a => [a.assemblyCode, a.plant]), [['COOL-100', '1000']]);
-  assert.match(m03.data.value[0].description, /\[SYNTHETIC DS-ORACLE-01\]/);
+  const m03rows = m03.data.value.map(a => [a.assemblyCode, a.plant]).sort();
+  assert.deepEqual(m03rows, [['COOL-100', '1000'], ['CTRL-400', '1000'], ['DRIV-700', '1000'], ['FRAME-500', '1000'], ['GEAR-210', '1000'], ['VALV-320', '1000']]);
+  assert.match(m03.data.value.find(a => a.assemblyCode === 'COOL-100').description, /\[SYNTHETIC DS-ORACLE-01\]/);
 });
 
 test('runImpact on the persisted seed case reproduces DS-ORACLE-01 and is deterministic', async () => {

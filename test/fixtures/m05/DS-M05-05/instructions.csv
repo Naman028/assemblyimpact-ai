@@ -1,0 +1,2 @@
+instructionId,version,assemblyCode,plant,title,appliesToRevision,status,validFrom,sourceType,valueStatus,evidenceRef
+WI-HVAC-610-ASM,2,HVAC-610,2000,Assemble HVAC unit,,RELEASED,2026-05-01,SYNTHETIC_FIXTURE,SYNTHETIC,DS-M05-05/instructions/WI-HVAC-610-ASM/v2

@@ -1,0 +1,5 @@
+material,description,baseUnit,sourceType
+BEAM-80,Steel beam 80x80,PC,SYNTHETIC_FIXTURE
+BOLT-M10,Bolt M10x30 8.8,PC,SYNTHETIC_FIXTURE
+PLATE-R5,Reinforcement plate 5 mm,PC,SYNTHETIC_FIXTURE
+FOOT-50,Levelling foot,PC,SYNTHETIC_FIXTURE

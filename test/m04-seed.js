@@ -22,6 +22,13 @@ export const SEED_INITIAL_CASE_STATUS = 'OPEN';
 export const SEED_SCENARIOS = [
   { dataset: 'DS-ORACLE-01', caseNumber: 'EC-000473' },
   { dataset: 'DS-ORACLE-01', caseNumber: 'EC-000473', mirrorToPlant: '2000', mirrorCaseNumber: 'EC-200473' },
+  // M05: six additional synthetic scenarios (tools/m05/scenarios.mjs). No impact results are seeded.
+  { dataset: 'DS-M05-01', caseNumber: 'EC-000512' },
+  { dataset: 'DS-M05-02', caseNumber: 'EC-000538' },
+  { dataset: 'DS-M05-03', caseNumber: 'EC-000561' },
+  { dataset: 'DS-M05-04', caseNumber: 'EC-000587' },
+  { dataset: 'DS-M05-05', caseNumber: 'EC-200610' },
+  { dataset: 'DS-M05-06', caseNumber: 'EC-000703' },
 ];
 
 /** CSV column order per entity (CAP element names; associations as <name>_ID). */

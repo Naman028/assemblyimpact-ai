@@ -1,0 +1,4 @@
+instructionId,version,step,material,quantity,unit,text
+WI-CTRL-400-SMT,3,0010,MCU-32,1,PC,Place MCU
+WI-CTRL-400-SMT,3,0020,CAP-470U-AQ,4,PC,Place capacitors (AEC-Q200)
+WI-CTRL-400-THT,1,0010,CONN-6P,1,PC,Solder one connector
