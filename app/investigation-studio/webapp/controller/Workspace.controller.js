@@ -17,7 +17,7 @@ sap.ui.define([
 
   function empty() {
     return { busy: false, tab: "assembly", view: "B", selected: null, detail: null, case: {}, run: null, lines: [], allMaterials: [],
-      materials: [], findings: [], decisions: [], runs: [], instructions: [], visualNote: "" };
+      materials: [], findings: [], decisions: [], runs: [], instructions: [], visualNote: "", explanation: null };
   }
 
   return Controller.extend("assemblyimpact.investigationstudio.controller.Workspace", {
@@ -56,6 +56,8 @@ sap.ui.define([
         var materials = run ? run.materialLines.slice().sort(function (a, b) { return a.material < b.material ? -1 : 1; }) : [];
         ws.setProperty("/case", data);
         ws.setProperty("/run", run);
+        // An explanation belongs to one run; drop it when the latest run changes.
+        if (ws.getProperty("/explanation") && (!run || ws.getProperty("/explanation/runID") !== run.ID)) { ws.setProperty("/explanation", null); }
         ws.setProperty("/lines", lines);
         ws.setProperty("/allMaterials", materials);
         ws.setProperty("/materials", that.byId("shortOnly") && that.byId("shortOnly").getPressed() ? materials.filter(function (m) { return m.status === "SHORT"; }) : materials);
@@ -275,6 +277,18 @@ sap.ui.define([
         MessageBox.error(error.message || "The action failed.", { title: "Not saved" });
         return that._load(true);
       }).finally(function () { operation.destroy(); });
+    },
+
+    /** P2: GenAI explanation of the latest run (bound function explainImpact; validated on the server). */
+    onExplain: function () {
+      var ws = this.getView().getModel("ws"), that = this;
+      var operation = this.getView().getModel().bindContext("EngineeringReview.explainImpact(...)", this._binding.getBoundContext());
+      ws.setProperty("/busy", true);
+      return operation.execute().then(function () {
+        ws.setProperty("/explanation", operation.getBoundContext().getObject());
+      }).catch(function (error) {
+        MessageBox.error(error.message || "The explanation is not available.", { title: "AI explanation" });
+      }).finally(function () { ws.setProperty("/busy", false); operation.destroy(); that.byId("btnExplain").focus(); });
     },
 
     /** Refreshes only the case list so status and figures match the server (the workspace reloads itself). */

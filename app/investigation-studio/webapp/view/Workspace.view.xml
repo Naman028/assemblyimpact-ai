@@ -214,6 +214,16 @@
 						<MessageStrip class="sapUiSmallMarginTop" type="Information" showIcon="true"
 							text="Material cost from synthetic standard prices valid on the as-of date ({ws>/run/asOfDate}), calculated by the CAP ruleset {ws>/run/ruleset}. Labour and overhead are not included."/>
 					</IconTabFilter>
+					<IconTabFilter key="explain" text="AI Explanation" icon="sap-icon://ai">
+						<VBox class="sapUiSmallMargin">
+							<MessageStrip type="Information" showIcon="true" text="P2 GenAI: SAP Generative AI Hub explains the latest impact run using only that run's figures, findings, shortages and BOM changes. Every figure and citation is checked against the run; answers that fail the check are withheld. The model does not calculate or decide."/>
+							<Button id="btnExplain" text="Explain latest run" icon="sap-icon://ai" type="Emphasized" press=".onExplain" enabled="{= !!${ws>/run} }" class="sapUiSmallMarginTop"/>
+							<MessageStrip type="Warning" showIcon="true" visible="{= ${ws>/explanation/status} === 'WITHHELD' }" text="The model's answer was withheld because it did not match the run evidence ({ws>/explanation/issues})." class="sapUiSmallMarginTop"/>
+							<Text text="{ws>/explanation/text}" visible="{= !!${ws>/explanation/text} }" wrapping="true" class="sapUiSmallMarginTop"/>
+							<Text visible="{= !!${ws>/explanation} }" class="sapUiTinyMarginTop" wrapping="true"
+								text="{= 'Source: ' + ${ws>/explanation/generatedBy} + ' (' + ${ws>/explanation/model} + '), cites: ' + (${ws>/explanation/citations} || 'none') + '. Fact ids refer to the BOM, Materials and Findings of run ' + ${ws>/explanation/runID} + '.' }"/>
+						</VBox>
+					</IconTabFilter>
 					<IconTabFilter key="instructions" text="Work Instructions" icon="sap-icon://document-text" count="{= ${ws>/run/instructionFindings} > 0 ? ${ws>/run/instructionFindings} : '' }">
 						<List items="{ws>/instructions}" noDataText="No work instructions for this assembly.">
 							<items>

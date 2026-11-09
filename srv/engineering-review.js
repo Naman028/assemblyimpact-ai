@@ -6,6 +6,7 @@ import { decide, DecisionError, TRANSITIONS, submittersOf, availabilityFor } fro
 import { parseImport, validateBundle, commitBundle, checksum, ImportFormatError, ImportConflictError } from './lib/scenario-import.js';
 import { extract, transportFor, ErpConfigError, ErpTransportError, MODE_SOURCE_TYPE } from './integration/erp/erp-source.js';
 import { MappingError } from './integration/erp/s4-mapping.js';
+import { explain, providerFor, GenAiConfigError, GenAiTransportError } from './integration/genai/impact-explanation.js';
 
 // Calculations are deterministic server-side (lib/impact-calculator.js); no LLM is involved.
 export default class EngineeringReview extends cds.ApplicationService {
@@ -18,8 +19,34 @@ export default class EngineeringReview extends cds.ApplicationService {
     this.after('READ', 'ReviewCases', (rows, req) => annotateAvailability(rows, req));
     this.on('myCapabilities', req => capabilitiesOf(req.user));
     this.on('lookupCases', req => this.#lookupCases(req));
+    this.on('explainImpact', 'ReviewCases', req => this.#explainImpact(req));
     for (const action of Object.keys(TRANSITIONS)) this.on(action, 'ReviewCases', req => this.#decide(req, TRANSITIONS[action]));
     return super.init();
+  }
+
+  // P2: GenAI explanation of the latest run (lib: integration/genai/impact-explanation.js).
+  async #explainImpact(req) {
+    const key = req.params.at(-1);
+    const caseID = typeof key === 'object' ? key.ID : key;
+    const plants = userPlants(req.user);
+    if (!plants) return req.reject(404);
+    const { ReviewCases, ImpactRuns } = cds.entities('assemblyimpact');
+    const rc = await SELECT.one.from(ReviewCases).columns(c => { c.ID, c.caseNumber, c.title, c.plant, c.sourceType, c.status, c.latestRun_ID, c.assembly(a => { a.assemblyCode; }); })
+      .where({ ID: caseID, plant: { in: plants } });
+    if (!rc) return req.reject(404); // missing and foreign-plant cases are indistinguishable
+    if (!rc.latestRun_ID) return req.reject({ status: 409, code: 'NO_IMPACT_RUN', message: 'Run the impact calculation before requesting an explanation.' });
+    const run = await SELECT.one.from(ImpactRuns, rc.latestRun_ID).columns(r => { r('*'), r.findings('*'), r.materialLines('*'), r.comparisonLines('*'); });
+    let provider;
+    try { provider = providerFor(); } catch (error) {
+      if (error instanceof GenAiConfigError) return req.reject({ status: 409, code: 'GENAI_NOT_CONFIGURED', message: error.message });
+      throw error;
+    }
+    try {
+      return await explain({ ...rc, assemblyCode: rc.assembly?.assemblyCode }, run, provider);
+    } catch (error) {
+      if (error instanceof GenAiTransportError) return req.reject({ status: 502, code: 'GENAI_UNAVAILABLE', message: error.message });
+      throw error;
+    }
   }
 
   // P1: read-only case lookup with named parameters (Joule contract, ported from PR #11). Plant-filtered, max 50 rows.
