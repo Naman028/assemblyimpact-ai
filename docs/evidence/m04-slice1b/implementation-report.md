@@ -6,16 +6,16 @@ Generated from `build_report.py`; PDF: `M04_Slice1b_Report.pdf`.
 
 **Objective.** Complete a reproducible synthetic manufacturing dataset and make it available through the existing SAP CAP services (M04 Slice 1b), without starting P3 Project Accelerator generation or P4 UI work.
 
-**Status.** Implemented and verified in SAP Business Application Studio (BAS). Implementation commit `68d6501126a1` on `feat/m04-slice1b`. GitHub Actions: not yet available when this report was generated. Draft pull request: not yet created. Not merged.
+**Status.** Implemented and verified in SAP Business Application Studio (BAS). Implementation commit `68d6501126a1` on `feat/m04-slice1b`. GitHub Actions on 1c53628: success (M03 verification / verify (pull_request): npm ci, lint, test, audit all success, run 42553591994). Draft pull request: https://github.com/Naman028/assemblyimpact-ai/pull/4. Not merged.
 
-- CAP development seed SEED-M04-01 in `test/data`: COOL-100 / EC-000473 (DS-ORACLE-01, plant 1000) and a labelled plant-2000 mirror (EC-200473). 66 rows in 8 entities, all synthetic and traceable to versioned fixtures.
+- CAP development seed SEED-M04-01 in `test/data`: COOL-100 / EC-000473 (DS-ORACLE-01, plant 1000) and a labelled plant-2000 mirror (EC-200473). 66 synthetic rows in eight CSV files (8 entities), all and traceable to versioned fixtures.
 - Generator with deterministic keys and a drift test; the committed CSVs are byte-identical to generator output.
 - Seed loads with `npm start` (development); excluded from the test profile by configuration and never resolved in production (verified).
 - runImpact on the persisted seed reproduces the independent DS-ORACLE-01 oracle; DS-DEMO-01 is verified through a persisted run in tests only (Decision A).
 - Plant isolation, roles, authentication, read-only and malformed-input behaviour re-verified on seeded records.
 - BAS: npm ci, lint, 35/35 tests and npm audit (0 vulnerabilities) all exit 0.
 
-**Remaining limitations.** No Fiori UI; no live S/4HANA data; no Joule; no BTP deployment, HANA persistence or xs-security role definitions; development credentials are public mock values. Synthetic data is not SAP data.
+**Remaining limitations.** No Fiori UI; no real S/4HANA data or connection; no Joule Skill or agent; no BTP deployment, HANA persistence or xs-security role definitions; development credentials are public mock values. Synthetic data is not SAP data. Fixture values marked PROPOSED require owner review. The development and test data-loading profiles were checked and the production profile was verified by configuration and test only; **no production deployment has been performed**.
 
 ## 2. Starting state
 
@@ -141,6 +141,18 @@ With the real run ID: DELETE 405 and PATCH 405 on ImpactRuns, run still present 
 
 npm ci 0, lint 0, npm test 35/35 (0 fail), npm audit 0 vulnerabilities, build-seed --check up to date, no tracked changes after tests.
 
+**E-08a — GitHub publication: normal push of the feature branch from BAS** (2026-11-09T02:54:13Z UTC)
+
+![E-08a](screenshots/E-08a_github-push.jpg)
+
+Pre-push check (both commits: author and committer Naman Patel, no trailers), passphrase entered by the owner (not shown), new branch feat/m04-slice1b at 1c53628, PUSH_EXIT=0. No force push.
+
+**E-08b — GitHub draft pull request #4 with CI status** (2026-11-09T02:57:00Z UTC)
+
+![E-08b](screenshots/E-08b_github-draft-pr-ci.jpg)
+
+Draft PR into main with commits 68d6501 and 1c53628; All checks have passed (M03 verification / verify, pull_request, 10 s); draft pull requests cannot be merged.
+
 ## 7. Security and quality
 
 | Area | Result | Evidence |
@@ -163,11 +175,12 @@ npm ci 0, lint 0, npm test 35/35 (0 fail), npm audit 0 vulnerabilities, build-se
 | --- | --- | --- |
 | Branch | feat/m04-slice1b (from main eaf97f2) | verified |
 | Implementation commit | 68d6501126a1dafcb9f35e0b65a226f11cfc9efb — feat(m04): seed synthetic development dataset (Slice 1b); author and committer Naman Patel <108478447+Naman028@users.noreply.github.com>; no co-author trailer | verified (BAS, E-01) |
-| Evidence commit | Adds docs/evidence/m04-slice1b (this report). Its SHA is recorded in the PR; a file cannot contain its own commit hash. | see PR |
+| Evidence commit | 1c536289a0ca0dc66ccfe27381503233d6656bd1 — docs(m04): add Slice 1b evidence archive and report (25 files under docs/evidence/m04-slice1b; its PDF was generated before CI and showed CI as pending) | verified |
+| Evidence correction commit | docs(m04): finalize Slice 1b evidence with PR #4 and CI results — replaces this PDF and the Markdown report with the final versions, adds E-08a/E-08b, updates github.json, the verification summary and the manifest. A file cannot contain its own commit hash; see PR #4. | see PR #4 |
 | Changed files (implementation) | 15 files, +518 / -9: package.json, readme.md, test/data/* (9), test/m04-seed.js, test/seed-data.test.js, tools/m04/build-seed.mjs, tools/m04/README.md | verified |
-| Pull request | not created | pending (created after push) |
-| CI | GitHub Actions: not yet available when this report was generated | pending |
-| main | unchanged at eaf97f2780d3 | verified unchanged before push |
+| Pull request | https://github.com/Naman028/assemblyimpact-ai/pull/4 | verified: open, draft, not merged, base main, 40 files (+1693/-9), author Naman028 |
+| CI | GitHub Actions on 1c53628: success (M03 verification / verify (pull_request): npm ci, lint, test, audit all success, run 42553591994) | verified |
+| main | unchanged at eaf97f2780d3 | verified unchanged after PR creation |
 
 ## 9. Four-project relevance
 
@@ -213,6 +226,8 @@ npm ci 0, lint 0, npm test 35/35 (0 fail), npm audit 0 vulnerabilities, build-se
 | E-06a | E-06a_authorization-negative-checks.jpg | 2026-11-09T02:45:27Z | 3994af137d1f1276607ebb518db88afc1763f4210e1ea331b5e1b6c67332595c |
 | E-06b | E-06b_authorization-recheck.jpg | 2026-11-09T02:45:47Z | 77a55457a49d236fb58d4da7e40b69316f8d2e51fb79e39581dbe4ef44423ce3 |
 | E-07 | E-07_bas-regression-gate.jpg | 2026-11-09T02:46:06Z | 82795b6e0126e254e1d9222502e314c47ed2dc62c8ca72710d6f5549691307a7 |
+| E-08a | E-08a_github-push.jpg | 2026-11-09T02:54:13Z | 7bef3b8538a323e084412a12b3183345c18f2d171dbed1016d4cb10dbc74d9bf |
+| E-08b | E-08b_github-draft-pr-ci.jpg | 2026-11-09T02:57:00Z | bee74735d5c726c68726242c799256ccc5d905f8967a202be6d2d8f8882a3b4c |
 
 Logs captured in BAS (docs/evidence/m04-slice1b/logs, E-01 to E-07) are hashed in evidence-manifest.json, generated in BAS when the evidence was committed.
 

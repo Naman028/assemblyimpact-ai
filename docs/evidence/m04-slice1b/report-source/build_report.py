@@ -42,8 +42,8 @@ SCREENSHOTS = [
     ('E-07', 'E-07_bas-regression-gate.jpg', 'Final BAS regression results',
      'npm ci 0, lint 0, npm test 35/35 (0 fail), npm audit 0 vulnerabilities, build-seed --check up to date, no tracked changes after tests.'),
 ]
-if GH.get('pr_screenshot'):
-    SCREENSHOTS.append(('E-08', GH['pr_screenshot'], 'GitHub feature branch and draft pull request with CI status', GH['pr_screenshot_desc']))
+for eid, f, title, desc in GH.get('extra_shots', []):
+    SCREENSHOTS.append((eid, f, title, desc))
 
 # ---------------------------------------------------------------- content
 S = []  # list of blocks: ('h1'|'h2'|'p'|'bullets'|'table'|'code'|'shot'|'pb', payload)
@@ -65,14 +65,16 @@ p(f"<b>Status.</b> Implemented and verified in SAP Business Application Studio (
   f"<font face='Mono'>{IMPL[:12]}</font> on <font face='Mono'>feat/m04-slice1b</font>. {ci_line}. "
   f"Draft pull request: {GH.get('pr_url') or 'not yet created'}. Not merged.")
 bullets(
-    'CAP development seed SEED-M04-01 in <font face="Mono">test/data</font>: COOL-100 / EC-000473 (DS-ORACLE-01, plant 1000) and a labelled plant-2000 mirror (EC-200473). 66 rows in 8 entities, all synthetic and traceable to versioned fixtures.',
+    'CAP development seed SEED-M04-01 in <font face="Mono">test/data</font>: COOL-100 / EC-000473 (DS-ORACLE-01, plant 1000) and a labelled plant-2000 mirror (EC-200473). 66 synthetic rows in eight CSV files (8 entities), all and traceable to versioned fixtures.',
     'Generator with deterministic keys and a drift test; the committed CSVs are byte-identical to generator output.',
     'Seed loads with <font face="Mono">npm start</font> (development); excluded from the test profile by configuration and never resolved in production (verified).',
     'runImpact on the persisted seed reproduces the independent DS-ORACLE-01 oracle; DS-DEMO-01 is verified through a persisted run in tests only (Decision A).',
     'Plant isolation, roles, authentication, read-only and malformed-input behaviour re-verified on seeded records.',
     'BAS: npm ci, lint, 35/35 tests and npm audit (0 vulnerabilities) all exit 0.')
-p('<b>Remaining limitations.</b> No Fiori UI; no live S/4HANA data; no Joule; no BTP deployment, HANA persistence or '
-  'xs-security role definitions; development credentials are public mock values. Synthetic data is not SAP data.')
+p('<b>Remaining limitations.</b> No Fiori UI; no real S/4HANA data or connection; no Joule Skill or agent; no BTP deployment, HANA persistence or '
+  'xs-security role definitions; development credentials are public mock values. Synthetic data is not SAP data. '
+  'Fixture values marked PROPOSED require owner review. The development and test data-loading profiles were checked and the production '
+  'profile was verified by configuration and test only; <b>no production deployment has been performed</b>.')
 
 h1('2. Starting state')
 table([
@@ -182,7 +184,8 @@ table([
     ['Item', 'Value', 'Status'],
     ['Branch', 'feat/m04-slice1b (from main eaf97f2)', 'verified'],
     ['Implementation commit', f'{IMPL} — feat(m04): seed synthetic development dataset (Slice 1b); author and committer Naman Patel <108478447+Naman028@users.noreply.github.com>; no co-author trailer', 'verified (BAS, E-01)'],
-    ['Evidence commit', 'Adds docs/evidence/m04-slice1b (this report). Its SHA is recorded in the PR; a file cannot contain its own commit hash.', 'see PR'],
+    ['Evidence commit', GH.get('evidence_commit', 'see PR') + ' — docs(m04): add Slice 1b evidence archive and report (25 files under docs/evidence/m04-slice1b; its PDF was generated before CI and showed CI as pending)', 'verified' if GH.get('evidence_commit') else 'see PR'],
+    ['Evidence correction commit', 'docs(m04): finalize Slice 1b evidence with PR #4 and CI results — replaces this PDF and the Markdown report with the final versions, adds E-08a/E-08b, updates github.json, the verification summary and the manifest. A file cannot contain its own commit hash; see PR #4.', 'see PR #4'],
     ['Changed files (implementation)', '15 files, +518 / -9: package.json, readme.md, test/data/* (9), test/m04-seed.js, test/seed-data.test.js, tools/m04/build-seed.mjs, tools/m04/README.md', 'verified'],
     ['Pull request', GH.get('pr_url') or 'not created', GH.get('pr_status', 'pending')],
     ['CI', ci_line, 'verified' if GH.get('ci_conclusion') == 'success' else 'pending'],
@@ -224,7 +227,7 @@ table([
 h1('Appendix B — Evidence manifest (screenshots)')
 rows = [['ID', 'File', 'Captured (UTC)', 'SHA-256']]
 for eid, f, *_ in SCREENSHOTS:
-    rows.append([eid, f, TIMES.get(eid, GH.get('pr_screenshot_time', '')), sha(os.path.join(SHOTS, f))])
+    rows.append([eid, f, TIMES.get(eid, ''), sha(os.path.join(SHOTS, f))])
 table(rows, [12*mm, 62*mm, 34*mm, 62*mm])
 p('Logs captured in BAS (docs/evidence/m04-slice1b/logs, E-01 to E-07) are hashed in evidence-manifest.json, generated in BAS when the evidence was committed.')
 h1('Appendix C — Key log excerpt (BAS, E-07)')
@@ -260,7 +263,7 @@ for kind, x in S:
     elif kind == 'code': md += ['```', x, '```', '']
     elif kind == 'shot':
         eid, f, title, desc = x
-        md += [f'**{eid} — {title}** ({TIMES.get(eid, GH.get("pr_screenshot_time", ""))} UTC)', '', f'![{eid}](screenshots/{f})', '', desc, '']
+        md += [f'**{eid} — {title}** ({TIMES.get(eid, "")} UTC)', '', f'![{eid}](screenshots/{f})', '', desc, '']
 open(os.path.join(OUT, 'implementation-report.md'), 'w').write('\n'.join(md))
 
 # ---------------------------------------------------------------- pdf
@@ -273,7 +276,7 @@ ss = getSampleStyleSheet()
 st = {
     'title': ParagraphStyle('t', fontName='Sans-Bold', fontSize=18, leading=23, spaceAfter=6, textColor=colors.HexColor('#0a2540')),
     'sub': ParagraphStyle('s', fontName='Sans', fontSize=10, leading=14, textColor=colors.HexColor('#444444')),
-    'h1': ParagraphStyle('h1', fontName='Sans-Bold', fontSize=13.5, leading=17, spaceBefore=12, spaceAfter=6, textColor=colors.HexColor('#0a2540')),
+    'h1': ParagraphStyle('h1', fontName='Sans-Bold', fontSize=13.5, leading=17, spaceBefore=12, spaceAfter=6, keepWithNext=1, textColor=colors.HexColor('#0a2540')),
     'h2': ParagraphStyle('h2', fontName='Sans-Bold', fontSize=11, leading=14, spaceBefore=8, spaceAfter=4),
     'p': ParagraphStyle('p', fontName='Sans', fontSize=9.2, leading=13, spaceAfter=5),
     'cell': ParagraphStyle('c', fontName='Sans', fontSize=7.8, leading=10),
@@ -318,7 +321,7 @@ for kind, x in S:
         w, h = PILImage.open(path).size
         width = 170*mm; height = width * h / w
         flow.append(KeepTogether([para(f'<b>{eid} — {html.escape(title)}</b>', 'h2'), Image(path, width=width, height=height),
-                                  para(f'{html.escape(desc)}<br/>Captured {TIMES.get(eid, GH.get("pr_screenshot_time", ""))} UTC · file screenshots/{f} · '
+                                  para(f'{html.escape(desc)}<br/>Captured {TIMES.get(eid, "")} UTC · file screenshots/{f} · '
                                        f'SHA-256 {sha(path)[:16]}…', 'cap')]))
 
 def decorate(c, doc):

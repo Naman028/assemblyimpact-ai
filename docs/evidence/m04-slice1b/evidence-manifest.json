@@ -2,17 +2,24 @@
   "milestone": "M04 Slice 1b",
   "repository": "Naman028/assemblyimpact-ai",
   "branch": "feat/m04-slice1b",
+  "pullRequest": "https://github.com/Naman028/assemblyimpact-ai/pull/4",
   "implementationCommit": "68d6501126a1dafcb9f35e0b65a226f11cfc9efb",
+  "evidenceCommit": "1c536289a0ca0dc66ccfe27381503233d6656bd1",
+  "ciRun": {
+    "id": 42553591994,
+    "sha": "1c536289a0ca0dc66ccfe27381503233d6656bd1",
+    "conclusion": "success"
+  },
   "baseCommit": "eaf97f2780d3d66b6bd636aee00d873b29377fdf",
   "environment": "SAP BAS dev space ws-lecln, Node v24.21.0",
-  "generatedAt": "2026-11-09T02:53:11.555Z",
-  "note": "Screenshots: unedited Claude in Chrome captures of the BAS tab. Logs: produced in BAS by the E-01..E-07 commands. Synthetic data only.",
+  "generatedAt": "2026-11-09T03:06:14.933Z",
+  "note": "Lists every file in this folder except evidence-manifest.json itself (no self-hash). Screenshots are unedited Claude in Chrome captures (E-01..E-07 BAS, E-08a BAS push, E-08b GitHub PR). Logs were produced in BAS. Synthetic data only.",
   "files": [
     {
       "evidenceId": null,
       "path": "docs/evidence/m04-slice1b/M04_Slice1b_Report.pdf",
-      "bytes": 896800,
-      "sha256": "33eca11e7188dd988747f19e69fa21f78e66a972472d4092a8a2e3f14d318cba"
+      "bytes": 1088787,
+      "sha256": "af5a95c33764ebb600e6b801235e3a0008d3b300d7acc5bd20e30803472e519d"
     },
     {
       "evidenceId": null,
@@ -23,8 +30,8 @@
     {
       "evidenceId": null,
       "path": "docs/evidence/m04-slice1b/implementation-report.md",
-      "bytes": 18994,
-      "sha256": "29e2e1917cac4b5b8e45300662ddae75ca67ead4dd8d72faa394b337530157e9"
+      "bytes": 20847,
+      "sha256": "110273404a9b1cf3740cb5e25c98880beb58fde0b7929397edc4fa74abb2f03c"
     },
     {
       "evidenceId": "E-01",
@@ -83,20 +90,20 @@
     {
       "evidenceId": null,
       "path": "docs/evidence/m04-slice1b/report-source/build_report.py",
-      "bytes": 27969,
-      "sha256": "6c8a64159b3f3fea068c25e72f4af0a29e78360bc69ab37fa36647d611e367a2"
+      "bytes": 28562,
+      "sha256": "7d9516f3ee9354dc4942b44e9fa761d4757204a3d8455e2d9b3b3f1860a7d9cb"
     },
     {
       "evidenceId": null,
       "path": "docs/evidence/m04-slice1b/report-source/github.json",
-      "bytes": 119,
-      "sha256": "ceca7aa08230d8f7b34ed22061bbf75e2cc24b98760fd6c437312bc6e46747cd"
+      "bytes": 1076,
+      "sha256": "1916718c61ee01a559e9505c40feb68cc833d018fb50e3091b4af9846a94af69"
     },
     {
       "evidenceId": null,
       "path": "docs/evidence/m04-slice1b/report-source/times.txt",
-      "bytes": 210,
-      "sha256": "167539d5d32b9cdd1bdfb2807fa427ee8b1bc9eb7c3e0bdb7a8f62b9b63a4de9"
+      "bytes": 264,
+      "sha256": "644fd9603653084f0bb79502c41f4ad82211ab64c31a69e17ee847677075ee63"
     },
     {
       "evidenceId": "E-01",
@@ -147,10 +154,22 @@
       "sha256": "82795b6e0126e254e1d9222502e314c47ed2dc62c8ca72710d6f5549691307a7"
     },
     {
+      "evidenceId": "E-08a",
+      "path": "docs/evidence/m04-slice1b/screenshots/E-08a_github-push.jpg",
+      "bytes": 101423,
+      "sha256": "7bef3b8538a323e084412a12b3183345c18f2d171dbed1016d4cb10dbc74d9bf"
+    },
+    {
+      "evidenceId": "E-08b",
+      "path": "docs/evidence/m04-slice1b/screenshots/E-08b_github-draft-pr-ci.jpg",
+      "bytes": 54602,
+      "sha256": "bee74735d5c726c68726242c799256ccc5d905f8967a202be6d2d8f8882a3b4c"
+    },
+    {
       "evidenceId": null,
       "path": "docs/evidence/m04-slice1b/test-results/verification-summary.md",
-      "bytes": 1506,
-      "sha256": "3f358cf80290f4b64990bf7d8952eb665d5ab3e3a75c1880211c459499861065"
+      "bytes": 2207,
+      "sha256": "67af8bbad8d8f681775ae50308abe2a0157ca17beb1ae1459bbafb10f283d071"
     }
   ]
 }
