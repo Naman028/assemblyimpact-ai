@@ -1,0 +1,37 @@
+{
+  "format": "assemblyimpact-demo-import",
+  "version": 1,
+  "synthetic": true,
+  "label": "SYNTHETIC demo scenario: hydraulic press cylinder upgrade (fictional NovaMotion data)",
+  "plant": "1000",
+  "assembly": { "assemblyCode": "PRESS-810", "description": "Hydraulic press cylinder" },
+  "materials": [
+    { "material": "CYL-810", "description": "Cylinder tube 80 mm", "unit": "PC", "price": 96.5, "stock": 40, "snapshotAt": "2026-11-07T08:00:00Z" },
+    { "material": "PIST-80", "description": "Piston 80 mm (cast)", "unit": "PC", "price": 31.2, "stock": 55, "snapshotAt": "2026-11-07T08:00:00Z" },
+    { "material": "PIST-80F", "description": "Piston 80 mm (forged)", "unit": "PC", "price": 44.9, "stock": 12, "snapshotAt": "2026-11-07T08:00:00Z" },
+    { "material": "SEALKIT-80", "description": "Seal kit 80 mm", "unit": "SET", "price": 12.4, "stock": 70, "snapshotAt": "2026-11-07T08:00:00Z" },
+    { "material": "ROD-40", "description": "Piston rod 40 mm", "unit": "PC", "price": 27.0, "stock": 60, "snapshotAt": "2026-11-07T08:00:00Z" }
+  ],
+  "revisions": {
+    "A": { "validFrom": "2026-01-01", "validTo": "2026-11-30", "items": [
+      { "itemNo": "0010", "material": "CYL-810", "quantity": 1 },
+      { "itemNo": "0020", "material": "PIST-80", "quantity": 1 },
+      { "itemNo": "0030", "material": "ROD-40", "quantity": 1 },
+      { "itemNo": "0040", "material": "SEALKIT-80", "quantity": 1 }
+    ] },
+    "B": { "validFrom": "2026-12-01", "validTo": "9999-12-31", "items": [
+      { "itemNo": "0010", "material": "CYL-810", "quantity": 1 },
+      { "itemNo": "0020", "material": "PIST-80F", "quantity": 1 },
+      { "itemNo": "0030", "material": "ROD-40", "quantity": 1 },
+      { "itemNo": "0040", "material": "SEALKIT-80", "quantity": 2 }
+    ] }
+  },
+  "instructions": [
+    { "instructionId": "WI-PRESS-810-ASM", "version": 1, "title": "Assemble press cylinder", "appliesToRevision": "", "status": "RELEASED", "validFrom": "2026-01-01",
+      "steps": [
+        { "step": "0010", "material": "PIST-80", "quantity": 1, "text": "Mount cast piston on rod" },
+        { "step": "0020", "material": "SEALKIT-80", "quantity": 1, "text": "Fit one seal kit" }
+      ] }
+  ],
+  "reviewCase": { "caseNumber": "EC-000810", "title": "Forged piston and double seal kit on PRESS-810", "productionQuantity": 30, "owner": "Engineering Reviewer 1" }
+}

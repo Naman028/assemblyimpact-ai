@@ -376,12 +376,18 @@ test('approve requires an evaluated impact run: missing reference 400, no run at
   const id = await newCase('ev-none', 'OPEN');
   assert.equal((await act(id, 'submitForReview', 'analyst')).status, 200);
   const missing = await request(`/ReviewCases(${id})/EngineeringReview.approve`, { method: 'POST', user: 'approver', body: { comment: 'x' } });
-  assert.equal(missing.status, 400);
+  assert.equal(missing.status, 400, JSON.stringify(missing.data));
   assert(['ASSERT_MANDATORY', 'EVIDENCE_REFERENCE_REQUIRED'].includes(errorCode(missing)), errorCode(missing));
   const noRun = await act(id, 'approve', 'approver', { basedOnRun: NO_RUN });
   assert.equal(noRun.status, 409);
   assert.equal(errorCode(noRun), 'NO_EVIDENCE');
   assert.deepEqual([await statusOf(id), (await eventsOf(id)).length], ['IN_REVIEW', 1]);
+  // With a run but without a reference, the request is refused as well.
+  await runFor(id);
+  const noRef = await request(`/ReviewCases(${id})/EngineeringReview.approve`, { method: 'POST', user: 'approver', body: { comment: 'x' } });
+  assert.equal(noRef.status, 400);
+  assert(['ASSERT_MANDATORY', 'EVIDENCE_REFERENCE_REQUIRED'].includes(errorCode(noRef)), errorCode(noRef));
+  assert.equal(await statusOf(id), 'IN_REVIEW');
 });
 
 test('approve refuses runs of other cases, other plants or unknown runs with the same 400', async () => {
@@ -435,4 +441,66 @@ test('reject: run reference optional; when given it must be the latest run and i
   assert.equal(await statusOf(id), 'IN_REVIEW');
   assert.equal((await act(id, 'reject', 'approver', { comment: 'B shows a shortage', basedOnRun: runB })).status, 200);
   assert.equal((await eventsOf(id)).at(-1).basedOnRun_ID, runB);
+});
+
+// ---- Slice 2b: evidence quality rules for approval, and per-user action flags ----
+test('approval refuses INCOMPLETE evidence; rejection stays possible', async () => {
+  const { CostPrices } = cds.entities('assemblyimpact');
+  const id = await newCase('ev-incomplete', 'OPEN');
+  assert.equal((await act(id, 'submitForReview', 'analyst')).status, 200);
+  const price = await SELECT.one.from(CostPrices).where({ material: 'FAN-B', plant: '1000' });
+  await DELETE.from(CostPrices).where({ ID: price.ID }); // a missing price makes the cost INCOMPLETE
+  try {
+    const run = await act(id, 'runImpact', 'analyst', { asOfDate: AS_OF });
+    assert.equal(run.data.status, 'INCOMPLETE');
+    const before = await snapshot(id);
+    const r = await act(id, 'approve', 'approver', { basedOnRun: run.data.ID });
+    assert.equal(r.status, 409);
+    assert.equal(errorCode(r), 'EVIDENCE_INCOMPLETE');
+    assert.deepEqual(await snapshot(id), before);
+    assert.equal((await act(id, 'reject', 'approver', { comment: 'price data missing', basedOnRun: run.data.ID })).status, 200);
+  } finally {
+    await INSERT.into(CostPrices).entries(price);
+  }
+});
+
+test('COMPLETE_WITH_WARNINGS needs an explicit acknowledgement, which is audited', async () => {
+  const id = await newCase('ev-warn', 'OPEN');
+  assert.equal((await act(id, 'submitForReview', 'analyst')).status, 200);
+  const run = await act(id, 'runImpact', 'analyst', { asOfDate: '2026-11-30' }); // stock snapshot older than allowed
+  assert.equal(run.data.status, 'COMPLETE_WITH_WARNINGS');
+  for (const acknowledgeWarnings of [undefined, false]) {
+    const r = await act(id, 'approve', 'approver', { basedOnRun: run.data.ID, acknowledgeWarnings });
+    assert.equal(errorCode(r), 'WARNINGS_NOT_ACKNOWLEDGED', String(acknowledgeWarnings));
+  }
+  assert.equal(await statusOf(id), 'IN_REVIEW');
+  const ok = await act(id, 'approve', 'approver', { basedOnRun: run.data.ID, acknowledgeWarnings: true, comment: 'stock re-checked by phone' });
+  assert.equal(ok.status, 200, JSON.stringify(ok.data));
+  const e = (await eventsOf(id)).at(-1);
+  assert.deepEqual([e.action, e.basedOnRun_ID, e.acknowledgedWarnings], ['APPROVE', run.data.ID, 'STOCK_STALE']);
+  // A COMPLETE run records no acknowledgement even if the flag is sent.
+  const id2 = await newCase('ev-complete', 'OPEN');
+  assert.equal((await act(id2, 'submitForReview', 'analyst')).status, 200);
+  await runFor(id2);
+  assert.equal((await act(id2, 'approve', 'approver', { acknowledgeWarnings: true })).status, 200);
+  assert.equal((await eventsOf(id2)).at(-1).acknowledgedWarnings, null);
+});
+
+test('per-user action flags follow role and status (UI hints only)', async () => {
+  const id = await newCase('flags', 'OPEN');
+  const flags = async user => {
+    const r = await request(`/ReviewCases(${id})?$select=status,canSubmit,canDecide,canRunImpact`, { user });
+    return [r.data.canSubmit, r.data.canDecide, r.data.canRunImpact];
+  };
+  assert.deepEqual(await flags('analyst'), [true, false, true]);
+  assert.deepEqual(await flags('approver'), [false, false, false]);
+  assert.deepEqual(await flags('cviewer'), [false, false, false]);
+  assert.equal((await act(id, 'submitForReview', 'analyst')).status, 200);
+  assert.deepEqual(await flags('analyst'), [false, false, true]);
+  assert.deepEqual(await flags('approver'), [false, true, false]);
+  await runFor(id);
+  assert.equal((await act(id, 'approve', 'approver')).status, 200);
+  for (const user of ['analyst', 'approver', 'dual']) assert.deepEqual(await flags(user), [false, false, false], `${user}: decided case is read-only`);
+  const list = await request(`/ReviewCases?$select=ID,status,canDecide&$filter=status eq 'IN_REVIEW'`, { user: 'approver' });
+  assert(list.data.value.every(c => c.canDecide === true), 'collection reads get the flags too');
 });

@@ -34,7 +34,10 @@
       "libs": {
         "sap.m": {},
         "sap.ui.core": {},
-        "sap.fe.templates": {}
+        "sap.fe.templates": {},
+        "sap.ui.unified": {
+          "lazy": true
+        }
       }
     },
     "contentDensities": {
@@ -116,6 +119,13 @@
                       "width": "4rem",
                       "horizontalAlign": "Center"
                     }
+                  },
+                  "actions": {
+                    "ImportDemoData": {
+                      "press": "assemblyimpact.caseworklist.ext.ImportDemo.onImport",
+                      "text": "Import Demo Data",
+                      "requiresSelection": false
+                    }
                   }
                 }
               }
@@ -146,6 +156,14 @@
                       "position": {
                         "anchor": "General",
                         "placement": "After"
+                      }
+                    },
+                    "InvestigationStudio": {
+                      "template": "assemblyimpact.caseworklist.ext.fragment.InvestigationStudio",
+                      "title": "Investigation Studio",
+                      "position": {
+                        "anchor": "General",
+                        "placement": "Before"
                       }
                     }
                   }

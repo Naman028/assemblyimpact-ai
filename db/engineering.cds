@@ -13,7 +13,7 @@ type UnitCode    : String(3);
 type Quantity    : Decimal(13, 3);
 type EvidenceRef : String(200);
 
-type SourceType  : String(20) enum { SYNTHETIC_FIXTURE; MANUAL; GENAI_PROPOSAL; S4_IMPORT; };
+type SourceType  : String(20) enum { SYNTHETIC_FIXTURE; MANUAL; GENAI_PROPOSAL; S4_IMPORT; DEMO_IMPORT; };
 type CaseStatus  : String(12) enum { OPEN; IN_REVIEW; APPROVED; REJECTED; };
 
 entity BOMStates : cuid {
@@ -183,8 +183,23 @@ entity DecisionEvents : cuid {
     at         : Timestamp not null;
     // M04 Slice 2a.1: the impact run the decision was based on (required for APPROVE).
     basedOnRun : Association to ImpactRuns;
+    // Slice 2b: run warnings the approver explicitly acknowledged (COMPLETE_WITH_WARNINGS only).
+    acknowledgedWarnings : String(200);
 }
 
 annotate BOMItems with @assert.unique.itemPerState: [bomState, itemNo];
 annotate ReviewCases with @assert.unique.caseNumber: [caseNumber];
 annotate Instructions with @assert.unique.instructionVersion: [instructionId, version, plant];
+
+// M05: one row per controlled demo import (srv/lib/demo-import.js). Records created by the batch carry
+// sourceType DEMO_IMPORT and evidenceRef "DEMO-IMPORT/<ID>/...", so a batch can be traced and purged.
+entity ImportBatches : cuid {
+    fileName     : String(120) not null;
+    sha256       : String(64) not null;
+    plant        : Plant not null;
+    caseNumber   : String(20) not null;
+    label        : String(120) not null;
+    importedBy   : String(255) not null;
+    importedAt   : Timestamp not null;
+    recordCounts : String(300);
+}

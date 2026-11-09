@@ -3,6 +3,7 @@ import { calculateImpact, ImpactRejection, RULESET } from './lib/impact-calculat
 import { loadImpactInput, fingerprint, persistImpactRun, ConcurrentRunError, CaseDecidedError, IMPACT_ALLOWED_STATUSES } from './lib/impact-persistence.js';
 import { userPlants } from './lib/plants.js';
 import { decide, DecisionError, TRANSITIONS } from './lib/review-decisions.js';
+import { validateDemoImport, commitDemoImport, purgeDemoImport } from './lib/demo-import.js';
 
 // Calculations are deterministic server-side (lib/impact-calculator.js); no LLM is involved.
 export default class EngineeringReview extends cds.ApplicationService {
@@ -11,6 +12,34 @@ export default class EngineeringReview extends cds.ApplicationService {
     this.before('*', req => { if (!userPlants(req.user)) req.reject(403); });
     this.on('runImpact', 'ReviewCases', req => this.#runImpact(req));
     for (const action of Object.keys(TRANSITIONS)) this.on(action, 'ReviewCases', req => this.#decide(req, TRANSITIONS[action]));
+    // Slice 2b: per-user action availability for the UI (hints; the actions enforce the rules).
+    this.after('READ', 'ReviewCases', (rows, req) => {
+      for (const row of Array.isArray(rows) ? rows : rows ? [rows] : []) {
+        if (row.status === undefined) continue;
+        row.canSubmit = row.status === 'OPEN' && req.user.is('ChangeAnalyst');
+        row.canDecide = row.status === 'IN_REVIEW' && req.user.is('ChangeApprover');
+        row.canRunImpact = IMPACT_ALLOWED_STATUSES.includes(row.status) && req.user.is('ChangeAnalyst');
+      }
+    });
+    // M05: controlled demo import (development/test only; see lib/demo-import.js).
+    this.before(['validateDemoImport', 'commitDemoImport', 'purgeDemoImport'], req => {
+      if (!cds.env.requires['demo-import']?.enabled) return req.reject(403, 'Demo data import is disabled in this environment.');
+    });
+    const shape = (r, committed) => ({ ok: r.ok, committed, batchID: r.batchID ?? null, plant: r.plant, caseNumber: r.caseNumber,
+      sha256: r.sha256, errors: r.errors, records: r.records });
+    this.on('validateDemoImport', async req => shape(await validateDemoImport({ content: req.data.content, plants: userPlants(req.user) }), false));
+    this.on('commitDemoImport', async req => {
+      if (req.data.confirm !== true) return req.reject(400, 'Confirm the import explicitly (confirm = true) after reviewing the preview.');
+      const r = await commitDemoImport({ content: req.data.content, fileName: req.data.fileName, plants: userPlants(req.user), user: req.user.id });
+      if (!r.ok) return req.reject({ status: 422, code: 'IMPORT_INVALID', message: `Import refused: ${r.errors.length} problem(s). Validate the file to see them.`, details: r.errors.slice(0, 20).map(e => ({ code: e.code, message: `${e.path}: ${e.message}`, target: e.path })) });
+      req.info({ message: `Imported synthetic case ${r.caseNumber} (batch ${r.batchID}).` });
+      return shape(r, true);
+    });
+    this.on('purgeDemoImport', async req => {
+      const r = await purgeDemoImport({ batchID: req.data.batchID, plants: userPlants(req.user) });
+      if (r.status !== 200) return req.reject(r.status === 404 ? 404 : { status: r.status, code: r.code, message: r.message });
+      return true;
+    });
     return super.init();
   }
 
@@ -20,7 +49,7 @@ export default class EngineeringReview extends cds.ApplicationService {
     const caseID = typeof key === 'object' ? key.ID : key;
     let result;
     try {
-      result = await decide({ caseID, transition, userID: req.user.id, plants: userPlants(req.user), rawComment: req.data.comment, basedOnRun: req.data.basedOnRun });
+      result = await decide({ caseID, transition, userID: req.user.id, plants: userPlants(req.user), rawComment: req.data.comment, basedOnRun: req.data.basedOnRun, acknowledgeWarnings: req.data.acknowledgeWarnings });
     } catch (error) {
       if (error instanceof DecisionError) return req.reject({ status: error.status, code: error.code, message: error.message });
       throw error;

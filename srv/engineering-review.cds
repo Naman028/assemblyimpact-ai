@@ -28,21 +28,30 @@ service EngineeringReview {
         case status when 'OPEN' then 'Open' when 'IN_REVIEW' then 'In Review'
             when 'APPROVED' then 'Approved' when 'REJECTED' then 'Rejected' else status end as statusText : String(20),
         case sourceType when 'SYNTHETIC_FIXTURE' then 'Synthetic Fixture' when 'MANUAL' then 'Manual'
-            when 'GENAI_PROPOSAL' then 'GenAI Proposal' when 'S4_IMPORT' then 'Imported' else sourceType end as sourceTypeText : String(30),
+            when 'GENAI_PROPOSAL' then 'GenAI Proposal' when 'S4_IMPORT' then 'Imported' when 'DEMO_IMPORT' then 'Demo Import (synthetic)' else sourceType end as sourceTypeText : String(30),
         createdAt, modifiedAt,
+        // Slice 2b: what the CURRENT user may do now (role + status), computed on read for the UI.
+        // Display hints only; every action re-checks role, plant, status and evidence on the server.
+        virtual null as canSubmit    : Boolean,
+        virtual null as canDecide    : Boolean,
+        virtual null as canRunImpact : Boolean,
         latestRun, runs, decisions
     } actions {
         action runImpact(asOfDate : Date) returns ImpactRuns;
         action submitForReview(comment : String(1000)) returns ReviewCases;
         // basedOnRun: the impact run the reviewer evaluated; must be the case's latest run (else 409 STALE_EVIDENCE).
-        action approve(comment : String(1000), basedOnRun : UUID @mandatory) returns ReviewCases;
+        action approve(comment : String(1000), basedOnRun : UUID @mandatory, acknowledgeWarnings : Boolean) returns ReviewCases;
         action reject(comment : String(1000) @mandatory, basedOnRun : UUID) returns ReviewCases;
     };
 
     // Decision history: read-only to every client, written only by the three review actions.
     @readonly
     @restrict: [{ grant: 'READ', to: ['ChangeViewer', 'ChangeAnalyst', 'ChangeApprover'], where: 'reviewCase.plant = $user.plants' }]
-    entity DecisionEvents as projection on db.DecisionEvents;
+    entity DecisionEvents as projection on db.DecisionEvents {
+        *,
+        case action when 'SUBMIT' then 'Submitted for review' when 'APPROVE' then 'Approved'
+            when 'REJECT' then 'Rejected' else action end as actionText : String(30)
+    };
 
     @readonly
     @restrict: [{ grant: 'READ', to: ['ChangeViewer', 'ChangeAnalyst', 'ChangeApprover'], where: 'reviewCase.plant = $user.plants' }]
@@ -83,4 +92,30 @@ service EngineeringReview {
     @readonly
     @restrict: [{ grant: 'READ', to: ['ChangeViewer', 'ChangeAnalyst', 'ChangeApprover'], where: 'instruction.plant = $user.plants' }]
     entity InstructionReferences as projection on db.InstructionReferences;
+
+    // ---- M05: controlled import of SYNTHETIC demonstration scenarios ----------------------------
+    // Enabled only where cds.requires['demo-import'].enabled is set (development/test profiles);
+    // restricted to DemoDataManager and to the user's plants. Not an ERP integration.
+    type ImportIssue  { path : String(200); code : String(40); message : String(300); }
+    type ImportRecord { kind : String(30); recordKey : String(80); details : String(300); }
+    type ImportResult {
+        ok         : Boolean;
+        committed  : Boolean;
+        batchID    : UUID;
+        plant      : String(4);
+        caseNumber : String(20);
+        sha256     : String(64);
+        errors     : many ImportIssue;
+        records    : many ImportRecord;
+    }
+    @requires: 'DemoDataManager'
+    action validateDemoImport(fileName : String(120), content : LargeString @mandatory) returns ImportResult;
+    @requires: 'DemoDataManager'
+    action commitDemoImport(fileName : String(120), content : LargeString @mandatory, confirm : Boolean) returns ImportResult;
+    @requires: 'DemoDataManager'
+    action purgeDemoImport(batchID : UUID @mandatory) returns Boolean;
+
+    @readonly
+    @restrict: [{ grant: 'READ', to: 'DemoDataManager', where: 'plant = $user.plants' }]
+    entity ImportBatches as projection on db.ImportBatches;
 }

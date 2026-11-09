@@ -1,0 +1,5 @@
+<core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core" xmlns:ai="assemblyimpact.caseworklist.ext.control">
+	<!-- P4 Investigation Studio: component map, stock/price, findings and evidence of the case's latest impact run. -->
+	<ai:InvestigationStudio caseId="{ID}" latestRunId="{latestRun_ID}" assemblyCode="{assemblyCode}"
+		fromRevision="{fromRevision}" toRevision="{toRevision}"/>
+</core:FragmentDefinition>

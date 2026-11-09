@@ -64,11 +64,34 @@ annotate service.ReviewCases with @(
             Label : 'Run Impact'
         }
     ],
-    UI.Identification     : [{
-        $Type : 'UI.DataFieldForAction',
-        Action: 'EngineeringReview.runImpact',
-        Label : 'Run Impact'
-    }],
+    // Slice 2b: header actions. Hidden when the current user may not perform them now
+    // (canX flags = role + status, computed by the service); the server re-checks everything.
+    UI.Identification     : [
+        {
+            $Type        : 'UI.DataFieldForAction',
+            Action       : 'EngineeringReview.runImpact',
+            Label        : 'Run Impact',
+            ![@UI.Hidden]: {$edmJson: {$Not: {$Path: 'canRunImpact'}}}
+        },
+        {
+            $Type        : 'UI.DataFieldForAction',
+            Action       : 'EngineeringReview.submitForReview',
+            Label        : 'Submit for Review',
+            ![@UI.Hidden]: {$edmJson: {$Not: {$Path: 'canSubmit'}}}
+        },
+        {
+            $Type        : 'UI.DataFieldForAction',
+            Action       : 'EngineeringReview.approve',
+            Label        : 'Approve',
+            ![@UI.Hidden]: {$edmJson: {$Not: {$Path: 'canDecide'}}}
+        },
+        {
+            $Type        : 'UI.DataFieldForAction',
+            Action       : 'EngineeringReview.reject',
+            Label        : 'Reject',
+            ![@UI.Hidden]: {$edmJson: {$Not: {$Path: 'canDecide'}}}
+        }
+    ],
     UI.FieldGroup #General: {Data: [
         {Value: caseNumber},
         {Value: title},
@@ -111,6 +134,12 @@ annotate service.ReviewCases with @(
             ID    : 'Runs',
             Label : 'Impact Runs',
             Target: 'runs/@UI.PresentationVariant'
+        },
+        {
+            $Type : 'UI.ReferenceFacet',
+            ID    : 'Decisions',
+            Label : 'Decision History',
+            Target: 'decisions/@UI.PresentationVariant'
         }
     ]
 );
@@ -121,8 +150,82 @@ annotate service.ReviewCases actions {
         TargetProperties: ['in/latestRun_ID'],
         TargetEntities  : ['in/latestRun', 'in/runs']
     }
-    runImpact(asOfDate @title: 'As-of Date' @Common.QuickInfo: 'Leave empty to calculate as of today')
+    // Slice 2b: disabled in the worklist toolbar for decided cases and for users without ChangeAnalyst.
+    @Core.OperationAvailable: {$edmJson: {$Path: 'in/canRunImpact'}}
+    runImpact(asOfDate @title: 'As-of Date' @Common.QuickInfo: 'Leave empty to calculate as of today');
+
+    // Slice 2b: decisions refresh the status, the action flags and the history.
+    @Common.SideEffects: {
+        TargetProperties: ['in/status', 'in/statusText', 'in/canSubmit', 'in/canDecide', 'in/canRunImpact'],
+        TargetEntities  : ['in/decisions']
+    }
+    @Core.OperationAvailable: {$edmJson: {$Path: 'in/canSubmit'}}
+    submitForReview(comment @title: 'Comment' @UI.MultiLineText);
+
+    // basedOnRun defaults to the latest run AS LOADED on the reviewer's screen (not re-read):
+    // if a newer run exists, the server answers 409 STALE_EVIDENCE and the reviewer must reload.
+    @Common.SideEffects: {
+        TargetProperties: ['in/status', 'in/statusText', 'in/canSubmit', 'in/canDecide', 'in/canRunImpact'],
+        TargetEntities  : ['in/decisions']
+    }
+    @Core.OperationAvailable: {$edmJson: {$Path: 'in/canDecide'}}
+    approve(
+        // Prefilled, not read-only: CAP skips @mandatory for read-only parameters, and the server
+        // validates any value anyway (400 UNKNOWN_EVIDENCE_RUN / 409 STALE_EVIDENCE).
+        basedOnRun          @title: 'Evaluated Impact Run' @UI.ParameterDefaultValue: {$edmJson: {$Path: 'in/latestRun_ID'}}
+                            @Common.QuickInfo: 'The impact run shown on this page',
+        acknowledgeWarnings @title: 'Acknowledge Warnings' @Common.QuickInfo: 'Required when the evaluated run is Complete with Warnings',
+        comment             @title: 'Comment' @UI.MultiLineText
+    );
+
+    @Common.SideEffects: {
+        TargetProperties: ['in/status', 'in/statusText', 'in/canSubmit', 'in/canDecide', 'in/canRunImpact'],
+        TargetEntities  : ['in/decisions']
+    }
+    @Core.OperationAvailable: {$edmJson: {$Path: 'in/canDecide'}}
+    reject(
+        comment    @title: 'Reason for Rejection' @UI.MultiLineText,
+        basedOnRun @title: 'Evaluated Impact Run' @UI.ParameterDefaultValue: {$edmJson: {$Path: 'in/latestRun_ID'}}
+    );
 };
+
+// ------------------------------------------------------------ Decision history (Slice 2b)
+annotate service.DecisionEvents with {
+    ID                   @UI.Hidden;
+    at                   @title: 'Decided At';
+    action               @title: 'Decision'  @Common.Text: actionText  @Common.TextArrangement: #TextOnly;
+    actionText           @UI.Hidden;
+    fromStatus           @title: 'From Status';
+    toStatus             @title: 'To Status';
+    actor                @title: 'User';
+    comment              @title: 'Comment';
+    basedOnRun           @title: 'Evaluated Impact Run';
+    acknowledgedWarnings @title: 'Acknowledged Warnings';
+};
+
+annotate service.DecisionEvents with @(
+    UI.HeaderInfo         : {
+        TypeName      : 'Decision',
+        TypeNamePlural: 'Decisions',
+        Title         : {Value: action}
+    },
+    UI.LineItem           : [
+        {Value: at},
+        {Value: action},
+        {Value: fromStatus},
+        {Value: toStatus},
+        {Value: actor},
+        {Value: comment},
+        {Value: basedOnRun.computedAt, Label: 'Evaluated Run, Computed At'},
+        {Value: basedOnRun.status, Label: 'Evaluated Run Status'},
+        {Value: basedOnRun.costDeltaTotal, Label: 'Evaluated Cost Delta (EUR)'},
+        {Value: acknowledgedWarnings}
+    ],
+    UI.PresentationVariant: {
+        SortOrder     : [{Property: at, Descending: true}],
+        Visualizations: ['@UI.LineItem']
+    }
+);
 
 // ------------------------------------------------------------ Impact runs
 annotate service.ImpactRuns with {

@@ -11,7 +11,7 @@
   },
   "scripts": {
     "start": "cds-serve",
-    "test": "node --test test/assembly-service.test.js test/impact-calculator.test.js test/engineering-review.test.js test/seed-data.test.js test/case-worklist-app.test.js test/m05-run-impact-ui.test.js test/assembly-visuals.test.js test/m04-review-decisions.test.js",
+    "test": "node --test test/assembly-service.test.js test/impact-calculator.test.js test/engineering-review.test.js test/seed-data.test.js test/case-worklist-app.test.js test/m05-run-impact-ui.test.js test/assembly-visuals.test.js test/m04-review-decisions.test.js test/m05-demo-import.test.js test/m05-workspace-ui.test.js",
     "lint": "eslint srv test --max-warnings=0"
   },
   "private": true,
@@ -97,8 +97,24 @@
                   "1000"
                 ]
               }
+            },
+            "demomanager": {
+              "password": "development-only",
+              "roles": [
+                "ChangeViewer",
+                "ChangeAnalyst",
+                "DemoDataManager"
+              ],
+              "attr": {
+                "plants": [
+                  "1000"
+                ]
+              }
             }
           }
+        },
+        "demo-import": {
+          "enabled": true
         }
       },
       "[test]": {
@@ -319,6 +335,30 @@
                   "1000"
                 ]
               }
+            },
+            "importer": {
+              "password": "test",
+              "roles": [
+                "ChangeViewer",
+                "DemoDataManager"
+              ],
+              "attr": {
+                "plants": [
+                  "1000"
+                ]
+              }
+            },
+            "importer2": {
+              "password": "test",
+              "roles": [
+                "ChangeViewer",
+                "DemoDataManager"
+              ],
+              "attr": {
+                "plants": [
+                  "2000"
+                ]
+              }
             }
           }
         },
@@ -327,6 +367,9 @@
             "db/data",
             "db/csv"
           ]
+        },
+        "demo-import": {
+          "enabled": true
         }
       },
       "[production]": {

@@ -1,3 +1,44 @@
 /* Assembly illustrations: keep the drawing readable without dominating the Object Page. */
 .aiAssemblyIllustration { max-width: 48rem; max-height: 24rem; object-fit: contain; }
 .aiAssemblyThumb { object-fit: contain; border: 1px solid var(--sapList_BorderColor, #e5e5e5); border-radius: 0.25rem; background: #fff; }
+
+/* P4 Investigation Studio (ext/control/InvestigationStudio.js). Theme parameters keep contrast in all themes. */
+.aiStudio { padding: 0.5rem 0; }
+.aiStudioHeader { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0.5rem; margin-bottom: 0.75rem; }
+.aiStudioLegend { display: flex; flex-wrap: wrap; gap: 0.375rem; }
+.aiChip, .aiBadge { display: inline-block; border-radius: 1rem; padding: 0.125rem 0.625rem; font-size: 0.8125rem; border: 2px solid; }
+.aiChange-added { border-color: #188918; background: #f1fdf6; }
+.aiChange-removed { border-color: #bb0000; background: #fff4f4; border-style: dashed; }
+.aiChange-replaced { border-color: #0a6ed1; background: #f0f7ff; }
+.aiChange-quantity-changed { border-color: #b06d00; background: #fff8eb; }
+.aiChange-unchanged, .aiChange-non-comparable, .aiChange-unknown { border-color: #89919a; background: var(--sapTile_Background, #fff); }
+.aiShortChip, .aiBadgeShort { border-color: #bb0000; color: #bb0000; background: #fff; font-weight: bold; }
+.aiRevSwitch { display: flex; gap: 0.25rem; }
+.aiRevBtn { border: 1px solid #0a6ed1; background: #fff; color: #0a6ed1; border-radius: 0.25rem; padding: 0.375rem 0.75rem; cursor: pointer; font: inherit; }
+.aiRevBtnOn { background: #0a6ed1; color: #fff; }
+.aiStudioBody { display: grid; grid-template-columns: minmax(0, 3fr) minmax(16rem, 2fr); gap: 1rem; }
+@media (max-width: 64rem) { .aiStudioBody { grid-template-columns: 1fr; } }
+.aiStudioImg { width: 100%; max-height: 22rem; object-fit: contain; border: 1px solid var(--sapList_BorderColor, #e5e5e5); border-radius: 0.5rem; background: #fff; }
+.aiStudioMsg { padding: 0.75rem; border-radius: 0.25rem; background: var(--sapInformationBackground, #f5faff); margin-bottom: 0.75rem; }
+.aiStudioErr { background: var(--sapErrorBackground, #fff4f4); }
+.aiKpis { display: grid; grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr)); gap: 0.5rem; margin: 0.75rem 0; }
+.aiKpi { border: 1px solid var(--sapList_BorderColor, #e5e5e5); border-radius: 0.5rem; padding: 0.5rem; display: flex; flex-direction: column; }
+.aiKpiLabel { font-size: 0.75rem; color: var(--sapContent_LabelColor, #556b82); }
+.aiKpiValue { font-size: 1.0625rem; font-weight: bold; }
+.aiTiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr)); gap: 0.5rem; }
+.aiTile { width: 100%; min-height: 5.5rem; text-align: left; border-radius: 0.5rem; padding: 0.5rem; cursor: pointer; font: inherit; display: flex; flex-direction: column; gap: 0.125rem; }
+.aiTile:focus-visible, .aiRevBtn:focus-visible { outline: 3px solid #000; outline-offset: 2px; }
+.aiTileOn { box-shadow: 0 0 0 3px #000 inset; }
+.aiTileNo { font-size: 0.75rem; color: var(--sapContent_LabelColor, #556b82); }
+.aiTileMat { font-weight: bold; }
+.aiTileChange { font-size: 0.8125rem; }
+.aiStudioDetail { border: 1px solid var(--sapList_BorderColor, #e5e5e5); border-radius: 0.5rem; padding: 0.75rem; }
+.aiDetailTitle { margin: 0 0 0.5rem; font-size: 1.125rem; }
+.aiDetailSub { margin: 0.75rem 0 0.25rem; }
+.aiDetailTable { width: 100%; border-collapse: collapse; margin-bottom: 0.5rem; }
+.aiDetailTable th, .aiDetailTable td { text-align: left; padding: 0.25rem 0.375rem; border-bottom: 1px solid var(--sapList_BorderColor, #e5e5e5); }
+.aiDetailCaption { text-align: left; font-weight: bold; padding: 0.25rem 0; }
+.aiFinding { border-left: 4px solid #89919a; padding: 0.25rem 0.5rem; margin-bottom: 0.375rem; background: var(--sapList_Background, #fff); }
+.aiSev-high { border-left-color: #bb0000; } .aiSev-medium { border-left-color: #b06d00; }
+.aiEvidence { font-size: 0.75rem; color: var(--sapContent_LabelColor, #556b82); word-break: break-all; }
+.aiNote { font-size: 0.8125rem; color: var(--sapContent_LabelColor, #556b82); }
