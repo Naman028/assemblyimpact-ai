@@ -1,0 +1,1031 @@
+{
+  "openapi": "3.0.2",
+  "info": {
+    "title": "AssemblyImpact Engineering Actions",
+    "version": "0.1.0",
+    "description": "Subset of the AssemblyImpact EngineeringReview OData V4 service (CAP) for SAP Build Actions and Joule. All data is synthetic (NovaMotion Manufacturing). Calculations are performed only by the backend runImpact action."
+  },
+  "servers": [
+    {
+      "url": "/odata/v4/engineering-review",
+      "description": "Relative path; the base URL comes from the SAP BTP destination selected in SAP Build."
+    }
+  ],
+  "security": [
+    {
+      "oauth2": []
+    }
+  ],
+  "tags": [
+    {
+      "name": "AssemblyImpact Engineering Actions"
+    }
+  ],
+  "paths": {
+    "/ReviewCases": {
+      "get": {
+        "summary": "Find engineering review cases",
+        "tags": [
+          "AssemblyImpact Engineering Actions"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/top"
+          },
+          {
+            "$ref": "#/components/parameters/skip"
+          },
+          {
+            "$ref": "#/components/parameters/search"
+          },
+          {
+            "name": "$filter",
+            "description": "Filter items by property values, see [Filtering](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionfilter)",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/count"
+          },
+          {
+            "name": "$orderby",
+            "description": "Order items by property values, see [Sorting](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionorderby)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "ID",
+                  "ID desc",
+                  "caseNumber",
+                  "caseNumber desc",
+                  "title",
+                  "title desc",
+                  "assemblyCode",
+                  "assemblyCode desc",
+                  "plant",
+                  "plant desc",
+                  "fromRevision",
+                  "fromRevision desc",
+                  "toRevision",
+                  "toRevision desc",
+                  "productionQuantity",
+                  "productionQuantity desc",
+                  "status",
+                  "status desc",
+                  "owner",
+                  "owner desc",
+                  "sourceType",
+                  "sourceType desc",
+                  "evidenceRef",
+                  "evidenceRef desc",
+                  "createdAt",
+                  "createdAt desc",
+                  "modifiedAt",
+                  "modifiedAt desc",
+                  "latestRun_ID",
+                  "latestRun_ID desc"
+                ]
+              }
+            }
+          },
+          {
+            "name": "$select",
+            "description": "Select properties to be returned, see [Select](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionselect)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "ID",
+                  "caseNumber",
+                  "title",
+                  "assemblyCode",
+                  "plant",
+                  "fromRevision",
+                  "toRevision",
+                  "productionQuantity",
+                  "status",
+                  "owner",
+                  "sourceType",
+                  "evidenceRef",
+                  "createdAt",
+                  "modifiedAt",
+                  "latestRun_ID"
+                ]
+              }
+            }
+          },
+          {
+            "name": "$expand",
+            "description": "The value of $expand query option is a comma-separated list of navigation property names, stream property names, or $value indicating the stream content of a media-entity. The corresponding related entities and stream values will be represented inline, see [Expand](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionexpand)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "*",
+                  "latestRun",
+                  "runs"
+                ]
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Retrieved review cases",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "title": "Collection of ReviewCases",
+                  "properties": {
+                    "@count": {
+                      "$ref": "#/components/schemas/count"
+                    },
+                    "value": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/EngineeringReview.ReviewCases"
+                      }
+                    },
+                    "@nextLink": {
+                      "type": "string",
+                      "format": "uri",
+                      "description": "URL of the next page in server-driven paging, see [Server-driven Paging](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_ServerDrivenPaging)"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        },
+        "operationId": "FindEngineeringCases",
+        "description": "Lists the review cases visible to the calling user. The service restricts results to the user's plants (plant attribute). Use $filter (e.g. status eq 'IN_REVIEW'), $select and $expand=latestRun to include the latest impact figures."
+      }
+    },
+    "/ImpactRuns({ID})": {
+      "get": {
+        "summary": "Get an engineering impact run",
+        "tags": [
+          "AssemblyImpact Engineering Actions"
+        ],
+        "parameters": [
+          {
+            "name": "$select",
+            "description": "Select properties to be returned, see [Select](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionselect)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "ID",
+                  "reviewCase_ID",
+                  "ruleset",
+                  "asOfDate",
+                  "inputFingerprint",
+                  "status",
+                  "flags",
+                  "currency",
+                  "productionQuantity",
+                  "fromRevision",
+                  "toRevision",
+                  "fromCostPerAssembly",
+                  "toCostPerAssembly",
+                  "deltaPerAssembly",
+                  "fromCostTotal",
+                  "toCostTotal",
+                  "costDeltaTotal",
+                  "costDeltaPercent",
+                  "instructionFindings",
+                  "instructionsToUpdate",
+                  "materialsShort",
+                  "materialsUnknown",
+                  "computedAt",
+                  "computedBy"
+                ]
+              }
+            }
+          },
+          {
+            "name": "$expand",
+            "description": "The value of $expand query option is a comma-separated list of navigation property names, stream property names, or $value indicating the stream content of a media-entity. The corresponding related entities and stream values will be represented inline, see [Expand](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionexpand)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "*",
+                  "reviewCase",
+                  "comparisonLines",
+                  "materialLines",
+                  "findings"
+                ]
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Retrieved impact run",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EngineeringReview.ImpactRuns"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        },
+        "operationId": "GetEngineeringImpact",
+        "description": "Returns one immutable impact run. Use $expand=findings,materialLines,comparisonLines to include findings, stock shortages and BOM changes. The run ID is ReviewCases.latestRun_ID or the result of RunEngineeringImpact. Cross-plant IDs return 404."
+      }
+    },
+    "/ReviewCases({ID})/EngineeringReview.runImpact": {
+      "post": {
+        "summary": "Run the engineering impact calculation",
+        "tags": [
+          "AssemblyImpact Engineering Actions"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/EngineeringReview.ImpactRuns"
+                    }
+                  ],
+                  "nullable": true
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        },
+        "parameters": [
+          {
+            "description": "key: ID",
+            "in": "path",
+            "name": "ID",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "01234567-89ab-cdef-0123-456789abcdef"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Action parameters",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "asOfDate": {
+                    "type": "string",
+                    "format": "date",
+                    "example": "2017-04-13",
+                    "nullable": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "operationId": "RunEngineeringImpact",
+        "description": "Invokes the existing bound OData V4 action runImpact for one review case. Allowed for role ChangeAnalyst within the user's plants only (403 otherwise, 404 for other plants). Returns the new immutable impact run. Body: {\"asOfDate\": \"YYYY-MM-DD\"}."
+      }
+    }
+  },
+  "components": {
+    "parameters": {
+      "top": {
+        "name": "$top",
+        "in": "query",
+        "description": "Show only the first n items, see [Paging - Top](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptiontop)",
+        "schema": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "example": 50
+      },
+      "skip": {
+        "name": "$skip",
+        "in": "query",
+        "description": "Skip the first n items, see [Paging - Skip](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionskip)",
+        "schema": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "search": {
+        "name": "$search",
+        "in": "query",
+        "description": "Search items by search phrases, see [Searching](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionsearch)",
+        "schema": {
+          "type": "string"
+        }
+      },
+      "count": {
+        "name": "$count",
+        "in": "query",
+        "description": "Include count of items, see [Count](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptioncount)",
+        "schema": {
+          "type": "boolean"
+        }
+      }
+    },
+    "schemas": {
+      "count": {
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "type": "string"
+          }
+        ],
+        "description": "The number of entities in the collection. Available when using the [$count](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptioncount) query option."
+      },
+      "EngineeringReview.ReviewCases": {
+        "title": "ReviewCases",
+        "type": "object",
+        "properties": {
+          "ID": {
+            "type": "string",
+            "format": "uuid",
+            "example": "01234567-89ab-cdef-0123-456789abcdef"
+          },
+          "caseNumber": {
+            "type": "string",
+            "maxLength": 20
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 160
+          },
+          "assemblyCode": {
+            "type": "string",
+            "maxLength": 40,
+            "nullable": true
+          },
+          "plant": {
+            "type": "string",
+            "maxLength": 4
+          },
+          "fromRevision": {
+            "type": "string",
+            "maxLength": 10,
+            "nullable": true
+          },
+          "toRevision": {
+            "type": "string",
+            "maxLength": 10,
+            "nullable": true
+          },
+          "productionQuantity": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "status": {
+            "type": "string",
+            "maxLength": 12,
+            "enum": [
+              "OPEN",
+              "IN_REVIEW",
+              "APPROVED",
+              "REJECTED"
+            ],
+            "default": "OPEN"
+          },
+          "owner": {
+            "type": "string",
+            "maxLength": 80,
+            "nullable": true
+          },
+          "sourceType": {
+            "type": "string",
+            "maxLength": 20,
+            "enum": [
+              "SYNTHETIC_FIXTURE",
+              "MANUAL",
+              "GENAI_PROPOSAL",
+              "S4_IMPORT"
+            ]
+          },
+          "evidenceRef": {
+            "type": "string",
+            "maxLength": 200,
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2017-04-13T15:51:04.0000000Z",
+            "nullable": true
+          },
+          "modifiedAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2017-04-13T15:51:04.0000000Z",
+            "nullable": true
+          },
+          "latestRun": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/EngineeringReview.ImpactRuns"
+              }
+            ],
+            "nullable": true
+          },
+          "latestRun_ID": {
+            "type": "string",
+            "format": "uuid",
+            "example": "01234567-89ab-cdef-0123-456789abcdef",
+            "nullable": true
+          },
+          "runs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EngineeringReview.ImpactRuns"
+            }
+          },
+          "runs@count": {
+            "$ref": "#/components/schemas/count"
+          }
+        }
+      },
+      "EngineeringReview.ImpactRuns": {
+        "title": "ImpactRuns",
+        "type": "object",
+        "properties": {
+          "ID": {
+            "type": "string",
+            "format": "uuid",
+            "example": "01234567-89ab-cdef-0123-456789abcdef"
+          },
+          "reviewCase": {
+            "$ref": "#/components/schemas/EngineeringReview.ReviewCases"
+          },
+          "reviewCase_ID": {
+            "type": "string",
+            "format": "uuid",
+            "example": "01234567-89ab-cdef-0123-456789abcdef"
+          },
+          "ruleset": {
+            "type": "string",
+            "maxLength": 10
+          },
+          "asOfDate": {
+            "type": "string",
+            "format": "date",
+            "example": "2017-04-13"
+          },
+          "inputFingerprint": {
+            "type": "string",
+            "maxLength": 71
+          },
+          "status": {
+            "type": "string",
+            "maxLength": 24
+          },
+          "flags": {
+            "type": "string",
+            "maxLength": 200,
+            "nullable": true
+          },
+          "currency": {
+            "type": "string",
+            "maxLength": 3
+          },
+          "productionQuantity": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "fromRevision": {
+            "type": "string",
+            "maxLength": 10
+          },
+          "toRevision": {
+            "type": "string",
+            "maxLength": 10
+          },
+          "fromCostPerAssembly": {
+            "anyOf": [
+              {
+                "type": "number",
+                "format": "decimal",
+                "multipleOf": 0.01,
+                "maximum": 9999999999999.99,
+                "minimum": -9999999999999.99
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "example": 0,
+            "x-sap-precision": 15,
+            "x-sap-scale": 2,
+            "nullable": true
+          },
+          "toCostPerAssembly": {
+            "anyOf": [
+              {
+                "type": "number",
+                "format": "decimal",
+                "multipleOf": 0.01,
+                "maximum": 9999999999999.99,
+                "minimum": -9999999999999.99
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "example": 0,
+            "x-sap-precision": 15,
+            "x-sap-scale": 2,
+            "nullable": true
+          },
+          "deltaPerAssembly": {
+            "anyOf": [
+              {
+                "type": "number",
+                "format": "decimal",
+                "multipleOf": 0.01,
+                "maximum": 9999999999999.99,
+                "minimum": -9999999999999.99
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "example": 0,
+            "x-sap-precision": 15,
+            "x-sap-scale": 2,
+            "nullable": true
+          },
+          "fromCostTotal": {
+            "anyOf": [
+              {
+                "type": "number",
+                "format": "decimal",
+                "multipleOf": 0.01
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "example": 0,
+            "x-sap-precision": 17,
+            "x-sap-scale": 2,
+            "nullable": true
+          },
+          "toCostTotal": {
+            "anyOf": [
+              {
+                "type": "number",
+                "format": "decimal",
+                "multipleOf": 0.01
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "example": 0,
+            "x-sap-precision": 17,
+            "x-sap-scale": 2,
+            "nullable": true
+          },
+          "costDeltaTotal": {
+            "anyOf": [
+              {
+                "type": "number",
+                "format": "decimal",
+                "multipleOf": 0.01
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "example": 0,
+            "x-sap-precision": 17,
+            "x-sap-scale": 2,
+            "nullable": true
+          },
+          "costDeltaPercent": {
+            "anyOf": [
+              {
+                "type": "number",
+                "format": "decimal",
+                "multipleOf": 0.01,
+                "maximum": 9999999.99,
+                "minimum": -9999999.99
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "example": 0,
+            "x-sap-precision": 9,
+            "x-sap-scale": 2,
+            "nullable": true
+          },
+          "instructionFindings": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "instructionsToUpdate": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "materialsShort": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "materialsUnknown": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "computedAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2017-04-13T15:51:04.0000000Z"
+          },
+          "computedBy": {
+            "type": "string",
+            "maxLength": 255
+          },
+          "comparisonLines": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EngineeringReview.ImpactComparisonLines"
+            }
+          },
+          "comparisonLines@count": {
+            "$ref": "#/components/schemas/count"
+          },
+          "materialLines": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EngineeringReview.ImpactMaterialLines"
+            }
+          },
+          "materialLines@count": {
+            "$ref": "#/components/schemas/count"
+          },
+          "findings": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EngineeringReview.Findings"
+            }
+          },
+          "findings@count": {
+            "$ref": "#/components/schemas/count"
+          }
+        }
+      },
+      "EngineeringReview.ImpactComparisonLines": {
+        "title": "ImpactComparisonLines",
+        "type": "object",
+        "properties": {
+          "ID": {
+            "type": "string",
+            "format": "uuid",
+            "example": "01234567-89ab-cdef-0123-456789abcdef"
+          },
+          "run": {
+            "$ref": "#/components/schemas/EngineeringReview.ImpactRuns"
+          },
+          "run_ID": {
+            "type": "string",
+            "format": "uuid",
+            "example": "01234567-89ab-cdef-0123-456789abcdef"
+          },
+          "itemNo": {
+            "type": "string",
+            "maxLength": 4
+          },
+          "fromMaterial": {
+            "type": "string",
+            "maxLength": 40,
+            "nullable": true
+          },
+          "fromQuantity": {
+            "anyOf": [
+              {
+                "type": "number",
+                "format": "decimal",
+                "multipleOf": 0.001,
+                "maximum": 9999999999.999,
+                "minimum": -9999999999.999
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "example": 0,
+            "x-sap-precision": 13,
+            "x-sap-scale": 3,
+            "nullable": true
+          },
+          "toMaterial": {
+            "type": "string",
+            "maxLength": 40,
+            "nullable": true
+          },
+          "toQuantity": {
+            "anyOf": [
+              {
+                "type": "number",
+                "format": "decimal",
+                "multipleOf": 0.001,
+                "maximum": 9999999999.999,
+                "minimum": -9999999999.999
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "example": 0,
+            "x-sap-precision": 13,
+            "x-sap-scale": 3,
+            "nullable": true
+          },
+          "unit": {
+            "type": "string",
+            "maxLength": 3,
+            "nullable": true
+          },
+          "change": {
+            "type": "string",
+            "maxLength": 20
+          }
+        }
+      },
+      "EngineeringReview.ImpactMaterialLines": {
+        "title": "ImpactMaterialLines",
+        "type": "object",
+        "properties": {
+          "ID": {
+            "type": "string",
+            "format": "uuid",
+            "example": "01234567-89ab-cdef-0123-456789abcdef"
+          },
+          "run": {
+            "$ref": "#/components/schemas/EngineeringReview.ImpactRuns"
+          },
+          "run_ID": {
+            "type": "string",
+            "format": "uuid",
+            "example": "01234567-89ab-cdef-0123-456789abcdef"
+          },
+          "material": {
+            "type": "string",
+            "maxLength": 40
+          },
+          "unit": {
+            "type": "string",
+            "maxLength": 3
+          },
+          "required": {
+            "anyOf": [
+              {
+                "type": "number",
+                "format": "decimal",
+                "multipleOf": 0.001,
+                "maximum": 9999999999.999,
+                "minimum": -9999999999.999
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "example": 0,
+            "x-sap-precision": 13,
+            "x-sap-scale": 3
+          },
+          "available": {
+            "anyOf": [
+              {
+                "type": "number",
+                "format": "decimal",
+                "multipleOf": 0.001,
+                "maximum": 9999999999.999,
+                "minimum": -9999999999.999
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "example": 0,
+            "x-sap-precision": 13,
+            "x-sap-scale": 3,
+            "nullable": true
+          },
+          "gap": {
+            "anyOf": [
+              {
+                "type": "number",
+                "format": "decimal",
+                "multipleOf": 0.001,
+                "maximum": 9999999999.999,
+                "minimum": -9999999999.999
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "example": 0,
+            "x-sap-precision": 13,
+            "x-sap-scale": 3,
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "maxLength": 16
+          },
+          "stale": {
+            "type": "boolean"
+          },
+          "snapshotAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2017-04-13T15:51:04.0000000Z",
+            "nullable": true
+          },
+          "unitPrice": {
+            "anyOf": [
+              {
+                "type": "number",
+                "format": "decimal",
+                "multipleOf": 1e-9
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "example": 0,
+            "x-sap-precision": 21,
+            "x-sap-scale": 9,
+            "nullable": true
+          },
+          "priceEvidenceRef": {
+            "type": "string",
+            "maxLength": 200,
+            "nullable": true
+          },
+          "stockEvidenceRef": {
+            "type": "string",
+            "maxLength": 200,
+            "nullable": true
+          }
+        }
+      },
+      "EngineeringReview.Findings": {
+        "title": "Findings",
+        "type": "object",
+        "properties": {
+          "ID": {
+            "type": "string",
+            "format": "uuid",
+            "example": "01234567-89ab-cdef-0123-456789abcdef"
+          },
+          "run": {
+            "$ref": "#/components/schemas/EngineeringReview.ImpactRuns"
+          },
+          "run_ID": {
+            "type": "string",
+            "format": "uuid",
+            "example": "01234567-89ab-cdef-0123-456789abcdef"
+          },
+          "type": {
+            "type": "string",
+            "maxLength": 40
+          },
+          "severity": {
+            "type": "string",
+            "maxLength": 8
+          },
+          "material": {
+            "type": "string",
+            "maxLength": 40,
+            "nullable": true
+          },
+          "details": {
+            "type": "string",
+            "maxLength": 500
+          },
+          "evidenceRefs": {
+            "type": "string",
+            "maxLength": 1000
+          }
+        }
+      },
+      "error": {
+        "type": "object",
+        "required": [
+          "error"
+        ],
+        "properties": {
+          "error": {
+            "type": "object",
+            "required": [
+              "code",
+              "message"
+            ],
+            "properties": {
+              "code": {
+                "type": "string"
+              },
+              "message": {
+                "type": "string"
+              },
+              "target": {
+                "type": "string"
+              },
+              "details": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "target": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "innererror": {
+                "type": "object",
+                "description": "The structure of this object is service-specific"
+              }
+            }
+          }
+        }
+      }
+    },
+    "responses": {
+      "error": {
+        "description": "Error",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/error"
+            }
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "oauth2": {
+        "type": "oauth2",
+        "description": "XSUAA client credentials / user token via an SAP BTP destination (production). Development preview uses mocked basic auth and is not reachable from SAP Build.",
+        "flows": {
+          "clientCredentials": {
+            "tokenUrl": "https://<subaccount>.authentication.<region>.hana.ondemand.com/oauth/token",
+            "scopes": {}
+          }
+        }
+      }
+    }
+  }
+}
