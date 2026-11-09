@@ -104,6 +104,18 @@
                   "tableSettings": {
                     "type": "ResponsiveTable",
                     "selectionMode": "Single"
+                  },
+                  "columns": {
+                    "AssemblyImage": {
+                      "header": "Image",
+                      "template": "assemblyimpact.caseworklist.ext.fragment.AssemblyThumbnail",
+                      "position": {
+                        "anchor": "DataField::assemblyCode",
+                        "placement": "Before"
+                      },
+                      "width": "4rem",
+                      "horizontalAlign": "Center"
+                    }
                   }
                 }
               }
@@ -122,6 +134,20 @@
                 "runs": {
                   "detail": {
                     "route": "ImpactRunsObjectPage"
+                  }
+                }
+              },
+              "content": {
+                "body": {
+                  "sections": {
+                    "AssemblyIllustration": {
+                      "template": "assemblyimpact.caseworklist.ext.fragment.AssemblyIllustration",
+                      "title": "Assembly Illustration",
+                      "position": {
+                        "anchor": "General",
+                        "placement": "After"
+                      }
+                    }
                   }
                 }
               }
@@ -158,6 +184,13 @@
           }
         }
       }
+    },
+    "resources": {
+      "css": [
+        {
+          "uri": "css/style.css"
+        }
+      ]
     }
   },
   "sap.fiori": {
