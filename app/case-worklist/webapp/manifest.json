@@ -140,19 +140,11 @@
               "content": {
                 "body": {
                   "sections": {
-                    "InvestigationStudio": {
-                      "template": "assemblyimpact.caseworklist.ext.fragment.OpenInStudio",
-                      "title": "Investigation",
-                      "position": {
-                        "anchor": "General",
-                        "placement": "After"
-                      }
-                    },
                     "AssemblyIllustration": {
                       "template": "assemblyimpact.caseworklist.ext.fragment.AssemblyIllustration",
                       "title": "Assembly Illustration",
                       "position": {
-                        "anchor": "InvestigationStudio",
+                        "anchor": "General",
                         "placement": "After"
                       }
                     }
