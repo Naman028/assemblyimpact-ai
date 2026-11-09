@@ -100,10 +100,11 @@ entity ReviewCases : cuid, managed {
     owner              : String(80);
     sourceType         : SourceType not null;
     evidenceRef        : EvidenceRef;
-    // Compare-and-set token: every accepted impact run replaces it.
+    // Compare-and-set token: every accepted impact run or review decision replaces it.
     version            : UUID;
     latestRun          : Association to ImpactRuns;
     runs               : Association to many ImpactRuns on runs.reviewCase = $self;
+    decisions          : Association to many DecisionEvents on decisions.reviewCase = $self;
 }
 
 entity ImpactRuns : cuid {
@@ -168,6 +169,18 @@ entity Findings : cuid {
     material     : MaterialId;
     details      : String(500) not null;
     evidenceRefs : String(1000) not null;
+}
+
+// M04 Slice 2a: review decision history. Insert-only; rows are written only by the
+// EngineeringReview submitForReview/approve/reject actions together with the status change.
+entity DecisionEvents : cuid {
+    reviewCase : Association to ReviewCases not null;
+    action     : String(16) not null;      // SUBMIT | APPROVE | REJECT
+    fromStatus : CaseStatus not null;
+    toStatus   : CaseStatus not null;
+    actor      : String(255) not null;
+    comment    : String(1000);
+    at         : Timestamp not null;
 }
 
 annotate BOMItems with @assert.unique.itemPerState: [bomState, itemNo];
