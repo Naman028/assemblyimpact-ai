@@ -17,8 +17,29 @@ export default class EngineeringReview extends cds.ApplicationService {
     this.on('extractFromErp', req => this.#extractFromErp(req));
     this.after('READ', 'ReviewCases', (rows, req) => annotateAvailability(rows, req));
     this.on('myCapabilities', req => capabilitiesOf(req.user));
+    this.on('lookupCases', req => this.#lookupCases(req));
     for (const action of Object.keys(TRANSITIONS)) this.on(action, 'ReviewCases', req => this.#decide(req, TRANSITIONS[action]));
     return super.init();
+  }
+
+  // P1: read-only case lookup with named parameters (Joule contract, ported from PR #11). Plant-filtered, max 50 rows.
+  async #lookupCases(req) {
+    const { caseNumber, status, assemblyCode } = req.data;
+    if (caseNumber && !/^EC-\d{6}$/.test(caseNumber)) return req.reject(400, 'caseNumber must look like EC-000123.');
+    if (status && !['OPEN', 'IN_REVIEW', 'APPROVED', 'REJECTED'].includes(status)) return req.reject(400, 'status must be OPEN, IN_REVIEW, APPROVED or REJECTED.');
+    if (assemblyCode && !/^[A-Z][A-Z0-9-]{1,39}$/.test(assemblyCode)) return req.reject(400, 'assemblyCode has an invalid format.');
+    const plants = userPlants(req.user);
+    if (!plants) return []; // missing or malformed plant attribute = no access
+    const where = { plant: { in: plants } };
+    if (caseNumber) where.caseNumber = caseNumber;
+    if (status) where.status = status;
+    if (assemblyCode) where.assemblyCode = assemblyCode;
+    const rows = await SELECT.from(this.entities.ReviewCases).columns(c => {
+      c.caseNumber, c.title, c.assemblyCode, c.plant, c.fromRevision, c.toRevision, c.status, c.statusText, c.sourceType,
+      c.latestRun(r => { r.status, r.asOfDate, r.costDeltaTotal, r.currency, r.materialsShort, r.instructionFindings; });
+    }).where(where).orderBy('caseNumber').limit(50);
+    return rows.map(({ latestRun: r, ...c }) => ({ ...c, latestRunStatus: r?.status ?? null, latestRunAsOf: r?.asOfDate ?? null,
+      costDeltaTotal: r?.costDeltaTotal ?? null, currency: r?.currency ?? null, materialsShort: r?.materialsShort ?? null, instructionFindings: r?.instructionFindings ?? null }));
   }
 
   // M04 Slice 2a: submitForReview / approve / reject (rules in lib/review-decisions.js).

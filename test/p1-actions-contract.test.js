@@ -61,10 +61,13 @@ after(async () => {
   await cds.db?.disconnect();
 });
 
-test('the spec exposes exactly the three operations the SAP Build project was created with', () => {
+test('the spec exposes the three original operations plus two read-only ones from PR #11', () => {
   const ops = Object.entries(spec.paths).flatMap(([p, m]) => Object.entries(m).map(([verb, o]) => `${verb.toUpperCase()} ${p} ${o.operationId}`));
   assert.deepEqual(ops.sort(), ['GET /ImpactRuns({ID}) GetEngineeringImpact', 'GET /ReviewCases FindEngineeringCases',
+    'GET /ReviewCases({ID})/decisions GetDecisionHistory', 'GET /lookupCases LookupEngineeringCases',
     'POST /ReviewCases({ID})/EngineeringReview.runImpact RunEngineeringImpact']);
+  const writes = Object.values(spec.paths).flatMap(m => Object.keys(m)).filter(v => v !== 'get');
+  assert.deepEqual(writes, ['post'], 'RunEngineeringImpact is the only write');
 });
 
 test('RunEngineeringImpact -> GetEngineeringImpact -> FindEngineeringCases: responses conform to the spec', async () => {
@@ -91,16 +94,23 @@ test('documented error statuses: 403 for a viewer running impact, 404 across pla
 
 test('Joule skill design maps every skill to an existing operation and keeps decisions out of the agent', () => {
   const operationIds = Object.values(spec.paths).flatMap(m => Object.values(m).map(o => o.operationId));
-  assert.deepEqual(skills.skills.map(s => s.name), ['find_engineering_cases', 'explain_case_impact', 'run_engineering_impact']);
+  assert.deepEqual(skills.skills.map(s => s.name), ['find_engineering_cases', 'explain_case_impact', 'run_engineering_impact', 'review_decision_history']);
   for (const s of skills.skills) {
     for (const step of s.steps) if (step.action) assert(operationIds.includes(step.action), `${s.name}: ${step.action}`);
     for (const code of [401, 403, 404]) assert(s.errorHandling[String(code)], `${s.name} handles ${code}`);
   }
   assert.equal(skills.skills.find(s => s.name === 'run_engineering_impact').confirmationRequired, true);
   assert(!JSON.stringify(skills.skills.map(s => s.steps)).match(/approve|reject|submitForReview/i), 'no review decision is delegated to Joule');
-  assert.deepEqual(skills.technicalIdentity.roles, ['ChangeViewer', 'ImpactRunner']);
+  assert.deepEqual(skills.identities.reader.roles, ['ChangeViewer']);
+  assert.deepEqual(skills.identities.impactRunner.roles, ['ChangeViewer', 'ImpactRunner']);
+  for (const s of skills.skills) {
+    const writes = JSON.stringify(s.steps).includes('RunEngineeringImpact');
+    assert.equal(s.requiredRoleCollection, writes ? 'AssemblyImpact_JouleImpactRunner' : 'AssemblyImpact_JouleReader', `${s.name} role`);
+    if (writes) assert(s.steps.some(st => st.confirm), `${s.name} asks for confirmation`);
+  }
   for (const s of skills.skills) assert.match(JSON.stringify(s.steps), /value is empty/, `${s.name} handles an empty result`);
-  for (const name of ['find_engineering_cases', 'explain_case_impact']) assert.match(JSON.stringify(skills.skills.find(s => s.name === name).steps[0]), /sourceType/);
+  assert.equal(skills.skills.find(s => s.name === 'find_engineering_cases').steps[0].action, 'LookupEngineeringCases', 'named parameters, no $filter string');
+  assert.match(JSON.stringify(skills.skills.find(s => s.name === 'explain_case_impact').steps[0]), /sourceType/);
 });
 
 test('Joule identity (ChangeViewer + ImpactRunner): reads and runs impact in its plant; everything else is refused by the server', async () => {
@@ -115,4 +125,32 @@ test('Joule identity (ChangeViewer + ImpactRunner): reads and runs impact in its
   assert.equal((await call('POST', '/importScenario', { user: 'joule', body: { format: 'json', content: '{}', dryRun: true } })).status, 403);
   const other = seed.ReviewCases.find(c => c.caseNumber === 'EC-200473').ID;
   assert.equal((await call('POST', `/ReviewCases(${other})/EngineeringReview.runImpact`, { user: 'joule', body: {} })).status, 404, 'foreign plant');
+});
+
+test('LookupEngineeringCases: named filters, caller plants only, validated input, conforms to the spec', async () => {
+  const path = '/lookupCases', schema = responseSchema(path, 'get');
+  const all = await call('GET', path, { user: 'cviewer' });
+  assert.equal(all.status, 200, JSON.stringify(all.data));
+  check(all.data, schema, 'LookupEngineeringCases');
+  assert(all.data.value.length > 0 && all.data.value.every(c => c.plant === '1000'), 'only plant 1000');
+  const one = await call('GET', `${path}(caseNumber='EC-000485')`, { user: 'joulereader' });
+  assert.equal(one.status, 200, JSON.stringify(one.data));
+  assert.deepEqual(one.data.value.map(c => c.caseNumber), ['EC-000485']);
+  assert.equal((await call('GET', `${path}(caseNumber='EC-200473')`, { user: 'cviewer' })).data.value.length, 0, 'foreign plant is invisible');
+  assert.equal((await call('GET', `${path}(caseNumber='EC-200473')`, { user: 'analyst2' })).data.value.length, 1, 'visible in its own plant');
+  assert.equal((await call('GET', `${path}(caseNumber='x'' or 1=1')`, { user: 'cviewer' })).status, 400, 'malformed input refused');
+  assert.equal((await call('GET', `${path}(status='DONE')`, { user: 'cviewer' })).status, 400);
+});
+
+test('GetDecisionHistory conforms to the spec and is plant-restricted', async () => {
+  const history = await call('GET', `/ReviewCases(${CASE})/decisions?$orderby=at`, { user: 'joulereader' });
+  assert.equal(history.status, 200, JSON.stringify(history.data));
+  check(history.data, responseSchema('/ReviewCases({ID})/decisions', 'get'), 'GetDecisionHistory');
+  assert.equal((await call('GET', `/ReviewCases(${CASE})/decisions`, { user: 'analyst2' })).status, 404);
+});
+
+test('Joule reader identity (ChangeViewer only) cannot run impact or decide', async () => {
+  assert.equal((await call('POST', `/ReviewCases(${CASE})/EngineeringReview.runImpact`, { user: 'joulereader', body: {} })).status, 403);
+  for (const action of ['submitForReview', 'approve', 'reject'])
+    assert.equal((await call('POST', `/ReviewCases(${CASE})/EngineeringReview.${action}`, { user: 'joulereader', body: { comment: 'x' } })).status, 403, action);
 });

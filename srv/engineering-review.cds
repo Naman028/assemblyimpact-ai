@@ -89,6 +89,29 @@ service EngineeringReview {
     type Capabilities { canImport : Boolean; }
     function myCapabilities() returns Capabilities;
 
+    // ---- P1: read-only case lookup for Joule (ported from PR #11, without its technical identity) ----
+    // Named parameters, so a skill maps its inputs directly instead of building an OData $filter string.
+    // Runs as the signed-in user (principal propagation): business read roles only, caller's plants only.
+    type CaseSummary {
+        caseNumber          : String(20);
+        title               : String(160);
+        assemblyCode        : String(40);
+        plant               : String(4);
+        fromRevision        : String(10);
+        toRevision          : String(10);
+        status              : String(12);
+        statusText          : String(20);
+        sourceType          : String(20);
+        latestRunStatus     : String(24);
+        latestRunAsOf       : Date;
+        costDeltaTotal      : Decimal(17, 2);
+        currency            : String(3);
+        materialsShort      : Integer;
+        instructionFindings : Integer;
+    }
+    @restrict: [{ to: ['ChangeViewer', 'ChangeAnalyst', 'ChangeApprover'] }]
+    function lookupCases(caseNumber : String(20), status : String(12), assemblyCode : String(40)) returns many CaseSummary;
+
     // Decision history: read-only to every client, written only by the three review actions.
     @readonly
     @restrict: [{ grant: 'READ', to: ['ChangeViewer', 'ChangeAnalyst', 'ChangeApprover'], where: 'reviewCase.plant = $user.plants' }]
