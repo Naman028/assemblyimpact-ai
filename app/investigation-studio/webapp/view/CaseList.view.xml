@@ -5,7 +5,7 @@
 			<f:DynamicPageTitle>
 				<f:heading><Title text="Engineering Change Cases" level="H1" wrapping="true"/></f:heading>
 				<f:actions>
-					<Button id="importButton" text="Import Scenario" icon="sap-icon://upload" type="Transparent" press=".onOpenImport"
+					<Button id="importButton" text="Import Scenario" icon="sap-icon://upload" type="Transparent" press=".onOpenImport" visible="{caps>/canImport}"
 						tooltip="Validate and import synthetic demonstration data (development only)"/>
 					<Button text="Worklist" icon="sap-icon://list" type="Transparent" press=".onOpenWorklist"
 						tooltip="Open the Fiori elements Case Worklist"/>
@@ -29,7 +29,7 @@
 			</f:DynamicPageHeader>
 		</f:header>
 		<f:content>
-			<List id="caseList" mode="SingleSelectMaster" selectionChange=".onSelect" growing="true" growingThreshold="30"
+			<List id="caseList" mode="SingleSelectMaster" itemPress=".onSelect" updateFinished=".onUpdateFinished" growing="true" growingThreshold="30"
 				noDataText="No review cases for your plants." busyIndicatorDelay="0"
 				items="{ path: '/ReviewCases', parameters: { $select: 'ID,caseNumber,title,assemblyCode,assemblyDescription,plant,fromRevision,toRevision,status,sourceType,sourceTypeText', $expand: 'latestRun($select=ID,status,costDeltaTotal,materialsShort,instructionFindings,currency)' }, sorter: { path: 'caseNumber' } }">
 				<items>

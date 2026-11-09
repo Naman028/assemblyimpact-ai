@@ -147,3 +147,27 @@ test('server: the Studio is served, its case request works, and the worklist lin
   const annotations = readFileSync(join(ROOT, 'app', 'case-worklist', 'annotations.cds'), 'utf8');
   assert.match(annotations, /'\.\.\/\.\.\/investigation-studio\/webapp\/index\.html#\/cases\/'/);
 });
+
+test('Fiori elements contract: review actions are availability-driven, default to the displayed run, refresh history', async () => {
+  const model = await cds.load([join(ROOT, 'srv'), join(ROOT, 'app', 'case-worklist')]);
+  const edmx = cds.compile.to.edmx(model, { service: 'EngineeringReview' });
+  for (const [action, path] of [['runImpact', 'in/canRunImpact'], ['submitForReview', 'in/canSubmit'], ['approve', 'in/canDecide'], ['reject', 'in/canDecide']]) {
+    const block = new RegExp(`<Annotations Target="EngineeringReview\\.${action}\\(EngineeringReview\\.ReviewCases\\)">[\\s\\S]*?</Annotations>`).exec(edmx)?.[0] ?? '';
+    assert.match(block, new RegExp(`Core.OperationAvailable" Path="${path}"`), action);
+    assert.match(block, /Common.SideEffects/, `${action} side effects`);
+  }
+  for (const action of ['approve', 'reject']) {
+    const block = new RegExp(`<Annotations Target="EngineeringReview\\.${action}\\(EngineeringReview\\.ReviewCases\\)/basedOnRun">[\\s\\S]*?</Annotations>`).exec(edmx)?.[0] ?? '';
+    assert.match(block, /UI.ParameterDefaultValue" Path="in\/latestRun_ID"/, action);
+  }
+  assert.match(edmx, /decisions\/@UI.PresentationVariant/);
+});
+
+test('instruction-step contract: the Studio parser matches the calculator text for outdated references', () => {
+  const data = loadDataset('DS-SCENARIOS-01');
+  const result = calculateImpact(toCalculatorInput(data, 'EC-000485'));
+  const body = /_outdatedKey: function \(details\) \{([\s\S]*?)\n {4}\},/.exec(read('controller', 'Workspace.controller.js'))[1];
+  const parse = new Function('details', body);
+  const keys = result.findings.filter(f => f.type === 'OUTDATED_INSTRUCTION_REFERENCE').map(f => parse(f.details)).sort();
+  assert.deepEqual(keys, ['WI-HYD-700-ASM/5/0020', 'WI-HYD-700-ASM/5/0030', 'WI-HYD-700-PRS/2/0010']);
+});

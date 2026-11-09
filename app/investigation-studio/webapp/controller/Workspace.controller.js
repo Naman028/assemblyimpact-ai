@@ -41,10 +41,14 @@ sap.ui.define([
     /** Reads the case with its latest run and history in one request; instructions in a second one. */
     _load: function (keepSelection) {
       var ws = this.getView().getModel("ws"), model = this.getView().getModel(), that = this;
+      // Each load gets a token; results of an earlier load (another case, or superseded) are discarded.
+      var token = this._loadToken = (this._loadToken || 0) + 1;
+      var current = function () { return token === that._loadToken; };
       if (this._binding) { this._binding.destroy(); }
       this._binding = model.bindContext("/ReviewCases(" + this._caseId + ")", null, { $expand: CASE_EXPAND });
       ws.setProperty("/busy", true);
       return this._binding.requestObject().then(function (data) {
+        if (!current()) { return null; }
         if (!data) { throw new Error("not found"); }
         var run = data.latestRun || null;
         var lines = run ? run.comparisonLines.slice() : that._linesWithoutRun(data);
@@ -54,12 +58,13 @@ sap.ui.define([
         ws.setProperty("/run", run);
         ws.setProperty("/lines", lines);
         ws.setProperty("/allMaterials", materials);
-        ws.setProperty("/materials", that.byId("shortOnly") && that.byId("shortOnly").getState() ? materials.filter(function (m) { return m.status === "SHORT"; }) : materials);
+        ws.setProperty("/materials", that.byId("shortOnly") && that.byId("shortOnly").getPressed() ? materials.filter(function (m) { return m.status === "SHORT"; }) : materials);
         ws.setProperty("/findings", run ? run.findings : []);
         ws.setProperty("/decisions", data.decisions || []);
         ws.setProperty("/runs", data.runs || []);
-        return that._loadInstructions(data, lines);
+        return that._loadInstructions(data, current);
       }).then(function () {
+        if (!current()) { return null; }
         var selected = keepSelection ? ws.getProperty("/selected") : null;
         if (!selected) {
           var first = ws.getProperty("/lines").filter(function (l) { return l.change && l.change !== "UNCHANGED"; })[0] || ws.getProperty("/lines")[0];
@@ -68,10 +73,11 @@ sap.ui.define([
         that._select(selected);
         return that._renderVisual();
       }).catch(function (error) {
+        if (!current() || error.canceled) { return; }
         ws.setProperty("/case", {});
         MessageBox.error(error.status === 404 || error.message === "not found"
           ? "This review case does not exist or is not in one of your plants." : (error.message || "The case could not be loaded."));
-      }).finally(function () { ws.setProperty("/busy", false); });
+      }).finally(function () { if (current()) { ws.setProperty("/busy", false); } });
     },
 
     /** Before the first run: show the BOM items of both revisions without change states (none computed yet). */
@@ -85,17 +91,18 @@ sap.ui.define([
       return Object.keys(byItem).map(function (k) { return byItem[k]; });
     },
 
-    _loadInstructions: function (data, lines) {
+    _loadInstructions: function (data, current) {
       var ws = this.getView().getModel("ws"), model = this.getView().getModel();
       var list = model.bindList("/Instructions", null, null, [new Filter("assemblyCode", FilterOperator.EQ, data.assemblyCode), new Filter("plant", FilterOperator.EQ, data.plant)],
         { $expand: "references($orderby=step)", $orderby: "instructionId,version desc" });
       var outdated = {};
       (ws.getProperty("/findings") || []).filter(function (f) { return f.type === "OUTDATED_INSTRUCTION_REFERENCE"; }).forEach(function (f) {
-        var m = /^(\S+) v(\d+) step (\d+)/.exec(f.details);
-        if (m) { outdated[m[1] + "/" + m[2] + "/" + m[3]] = true; }
-      });
+        var key = this._outdatedKey(f.details);
+        if (key) { outdated[key] = true; }
+      }, this);
       var toRevision = data.toRevision;
       return list.requestContexts(0, 200).then(function (contexts) {
+        if (!current()) { list.destroy(); return; }
         var instructions = contexts.map(function (c) {
           var i = c.getObject();
           var refs = (i.references || []).map(function (r) { return Object.assign({}, r, { instructionId: i.instructionId, version: i.version, outdated: !!outdated[i.instructionId + "/" + i.version + "/" + r.step] }); });
@@ -161,6 +168,12 @@ sap.ui.define([
       return this._svgCache[url];
     },
 
+    /** Parses "<instructionId> v<version> step <step> ..." from OUTDATED_INSTRUCTION_REFERENCE details (contract tested). */
+    _outdatedKey: function (details) {
+      var m = /^(\S+) v(\d+) step (\d+)/.exec(details || "");
+      return m ? m[1] + "/" + m[2] + "/" + m[3] : null;
+    },
+
     /** Wires click/keyboard on component groups and applies run states to the curated diagram. */
     onVisualRendered: function () {
       var dom = this.byId("visual").getDomRef(), that = this, ws = this.getView().getModel("ws");
@@ -174,10 +187,18 @@ sap.ui.define([
           var inRevision = view === "A" ? g.getAttribute("data-material-rev-a") : g.getAttribute("data-material-rev-b");
           g.classList.toggle("ai-absent", !inRevision);
           ["ADDED", "REMOVED", "REPLACED", "QUANTITY_CHANGED", "UNCHANGED", "NON_COMPARABLE"].forEach(function (s) { g.classList.remove(schematic.STATE_CLASS[s]); });
+          var state = null;
           if (line && line.change) {
             var unitAdded = g.getAttribute("data-unit") && !g.getAttribute("data-material-rev-a");
-            g.classList.add(schematic.STATE_CLASS[unitAdded ? "ADDED" : line.change]);
+            state = unitAdded ? "ADDED" : line.change;
+            g.classList.add(schematic.STATE_CLASS[state]);
           }
+          // State is announced in text, not only by the coloured halo (WCAG 1.4.1 / 4.1.2).
+          var base = g.getAttribute("data-base-label") || g.getAttribute("aria-label") || "";
+          g.setAttribute("data-base-label", base);
+          g.setAttribute("aria-label", base + (state ? ", " + schematic.STATE_LABEL[state] : ""));
+          var title = g.querySelector("title") || g.insertBefore(document.createElementNS("http://www.w3.org/2000/svg", "title"), g.firstChild);
+          title.textContent = state ? schematic.STATE_LABEL[state].toUpperCase() : "";
         });
       }
       if (!root.__aiWired) {
@@ -224,7 +245,7 @@ sap.ui.define([
 
     onShortOnly: function (event) {
       var ws = this.getView().getModel("ws"), all = ws.getProperty("/allMaterials");
-      ws.setProperty("/materials", event.getParameter("state") ? all.filter(function (m) { return m.status === "SHORT"; }) : all);
+      ws.setProperty("/materials", event.getParameter("pressed") ? all.filter(function (m) { return m.status === "SHORT"; }) : all);
     },
 
     onToggleFullScreen: function () {
@@ -248,12 +269,12 @@ sap.ui.define([
         ws.setProperty("/busy", false);
         MessageBox.error(error.message || "The action failed.", { title: "Not saved" });
         return that._load(true);
-      });
+      }).finally(function () { operation.destroy(); });
     },
 
-    /** Refreshes the case list (shared OData model) so status and figures match the server. */
+    /** Refreshes only the case list so status and figures match the server (the workspace reloads itself). */
     _refreshList: function () {
-      this.getView().getModel().refresh();
+      this.getOwnerComponent().getEventBus().publish("studio", "casesChanged");
     },
 
     _dialog: function (title, content, buttonText, buttonType, onOk) {

@@ -10,6 +10,9 @@ using { assemblyimpact as db } from '../db/engineering';
 @requires: 'authenticated-user'
 service EngineeringReview {
 
+    // Virtual availability flags are computed per user after READ: they cannot be filtered or sorted.
+    @Capabilities.FilterRestrictions.NonFilterableProperties: [canRunImpact, canSubmit, canDecide, submittedBy]
+    @Capabilities.SortRestrictions.NonSortableProperties: [canRunImpact, canSubmit, canDecide, submittedBy]
     @readonly
     @restrict: [
         { grant: 'READ', to: ['ChangeViewer', 'ChangeAnalyst', 'ChangeApprover'], where: 'plant = $user.plants' },
@@ -79,6 +82,10 @@ service EngineeringReview {
         bomUsage : String(1), alternative : String(2), fromDate : Date @mandatory, toDate : Date @mandatory,
         changeNumber : String(20), caseNumber : String(20) @mandatory, title : String(160) @mandatory,
         productionQuantity : Integer @mandatory, dryRun : Boolean) returns ImportResult;
+
+    // M05: global UI capabilities of the signed-in user (no data access).
+    type Capabilities { canImport : Boolean; }
+    function myCapabilities() returns Capabilities;
 
     // Decision history: read-only to every client, written only by the three review actions.
     @readonly

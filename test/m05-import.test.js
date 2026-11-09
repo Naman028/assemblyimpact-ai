@@ -107,7 +107,9 @@ test('format errors: malformed JSON, unsupported format, oversize, bad CSV heade
   const r = await importFile({ format: 'csv', content: `${header}\nassemblies,ONLY,TWO\n`, dryRun: true });
   assert.equal(r.data.errors[0].code, 'CSV_COLUMN_COUNT');
   // quoted CSV fields with commas, quotes and line breaks survive parsing
-  assert.deepEqual(parseCsv('a,b\n"x, ""y""","multi\nline"\n'), [['a', 'b'], ['x, "y"', 'multi\nline']]);
+  const parsed = parseCsv('a,b\n"x, ""y""","multi\nline"\nc,d\n');
+  assert.deepEqual(parsed.map(r => [...r]), [['a', 'b'], ['x, "y"', 'multi\nline'], ['c', 'd']]);
+  assert.deepEqual(parsed.map(r => r.line), [1, 2, 4], 'physical line numbers survive multi-line quoted fields');
 });
 
 test('authorization: role required, plants enforced per record, viewers and analysts without the role refused', async () => {
@@ -155,6 +157,9 @@ test('commit: records persisted with provenance; the case appears in the worklis
 });
 
 test('re-import of the same file is refused (no overwrite) and leaves the database unchanged', async () => {
+  // Self-contained: make sure the sample has been committed once (independent of test order).
+  const once = await importFile({ format: 'json', content: SAMPLE_JSON, dryRun: true });
+  if (once.data.accepted) assert.equal((await importFile({ format: 'json', content: SAMPLE_JSON, dryRun: false })).status, 200);
   const before = await counts();
   const dry = await importFile({ format: 'csv', content: SAMPLE_CSV, dryRun: true });
   assert.equal(dry.data.accepted, false);
@@ -195,7 +200,9 @@ test('transactional commit: a failure after the first inserts rolls back every r
   // Simulate a conflict that appears after validation (e.g. a concurrent import): the case number now exists.
   validated.plan.reviewCases[0].caseNumber = 'EC-000473';
   const before = await counts();
-  await assert.rejects(cds.tx(() => commitBundle(validated, { importId: cds.utils.uuid(), user: 'importer', format: 'json', content, meta: {} })));
+  // The failure happens after the assembly, BOM, price and stock inserts (at the review case insert).
+  await assert.rejects(cds.tx(() => commitBundle(validated, { importId: cds.utils.uuid(), user: 'importer', format: 'json', content, meta: {} })),
+    /UNIQUE|unique/);
   assert.deepEqual(await counts(), before);
   assert.equal(await SELECT.one.from(E().Assemblies).where({ assemblyCode: 'ROLL-1' }), undefined);
 });
@@ -206,5 +213,30 @@ test('disabled outside development/test: the feature flag gates the action', asy
   try {
     const r = await importFile({ format: 'json', content: SAMPLE_JSON, dryRun: true });
     assert.equal(r.status, 403);
+    assert.equal(r.data.error.code, 'IMPORT_DISABLED');
+    assert.equal((await request('/myCapabilities()')).data.canImport, false);
   } finally { cds.env.features.demo_import = saved; }
+  assert.equal((await request('/myCapabilities()')).data.canImport, true, 'importer with the flag on');
+  assert.equal((await request('/myCapabilities()', { user: 'analyst' })).data.canImport, false, 'role required');
+});
+
+test('identifiers of other plants are reported neutrally; a plant-2000 importer learns nothing about plant 1000', async () => {
+  const content = mutate(d => {
+    for (const k of Object.keys(d)) if (Array.isArray(d[k])) d[k].forEach(r => { if ('plant' in r) r.plant = '2000'; });
+    d.reviewCases[0].caseNumber = 'EC-000473'; // exists in plant 1000 only
+  });
+  const r = await importFile({ format: 'json', content, dryRun: true }, 'importer2000');
+  const hit = r.data.errors.find(e => e.field === 'caseNumber');
+  assert.equal(hit.code, 'IDENTIFIER_NOT_AVAILABLE');
+  assert.doesNotMatch(JSON.stringify(r.data.errors), /already exists/);
+  // BOM state keys are per plant: the same key as a plant-1000 state is fine in plant 2000.
+  assert(!r.data.errors.some(e => e.field === 'stateKey'), JSON.stringify(r.data.errors));
+});
+
+test('database backstops: duplicate BOM state key per plant and duplicate stock snapshot are rejected by constraints', async () => {
+  const { BOMStates, StockSnapshots } = E();
+  const state = await SELECT.one.from(BOMStates).where({ stateKey: 'BOM-COOL-100-A', plant: '1000' });
+  await assert.rejects(cds.tx(() => INSERT.into(BOMStates).entries({ ...state, ID: cds.utils.uuid() })), /UNIQUE|unique/);
+  const stock = await SELECT.one.from(StockSnapshots).where({ material: 'FAN-B', plant: '1000' });
+  await assert.rejects(cds.tx(() => INSERT.into(StockSnapshots).entries({ ...stock, ID: cds.utils.uuid() })), /UNIQUE|unique/);
 });
