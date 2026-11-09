@@ -22,3 +22,6 @@ jobs:
       - run: npm run lint
       - run: npm test
       - run: npm audit --package-lock-only --audit-level=high
+      # BTP preparation: the production build must succeed and must not contain demo data.
+      - run: npx --yes -p @sap/cds-dk@10.2.1 cds build --production
+      - run: test -d gen/srv && test -d gen/db && ! ls gen/db/src/gen/data 2>/dev/null | grep -q hdbtabledata

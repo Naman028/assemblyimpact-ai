@@ -1,0 +1,145 @@
+{
+  "xsappname": "assemblyimpact-ai",
+  "tenant-mode": "dedicated",
+  "description": "AssemblyImpact AI - engineering change impact (synthetic demo data)",
+  "scopes": [
+    {
+      "name": "$XSAPPNAME.AssemblyViewer",
+      "description": "M03 assembly catalog: read"
+    },
+    {
+      "name": "$XSAPPNAME.AssemblyMaintainer",
+      "description": "M03 assembly catalog: maintain"
+    },
+    {
+      "name": "$XSAPPNAME.ChangeViewer",
+      "description": "Engineering changes: read cases, runs, decisions"
+    },
+    {
+      "name": "$XSAPPNAME.ChangeAnalyst",
+      "description": "Engineering changes: run impact, submit for review"
+    },
+    {
+      "name": "$XSAPPNAME.ChangeApprover",
+      "description": "Engineering changes: approve or reject (independent reviewer)"
+    },
+    {
+      "name": "$XSAPPNAME.ErpExtractor",
+      "description": "Engineering changes: extract cases from an authorized ERP source"
+    },
+    {
+      "name": "$XSAPPNAME.DemoDataImporter",
+      "description": "Development only: import synthetic demo scenarios (feature flag off in production)"
+    },
+    {
+      "name": "$XSAPPNAME.ImpactRunner",
+      "description": "Engineering changes: run the impact calculation only (Joule assistant)"
+    }
+  ],
+  "attributes": [
+    {
+      "name": "plants",
+      "description": "Plants the user may access",
+      "valueType": "string",
+      "valueRequired": true
+    }
+  ],
+  "role-templates": [
+    {
+      "name": "AssemblyViewer",
+      "description": "M03 assembly catalog: read",
+      "scope-references": [
+        "$XSAPPNAME.AssemblyViewer"
+      ],
+      "attribute-references": [
+        {
+          "name": "plants"
+        }
+      ]
+    },
+    {
+      "name": "AssemblyMaintainer",
+      "description": "M03 assembly catalog: maintain",
+      "scope-references": [
+        "$XSAPPNAME.AssemblyMaintainer"
+      ],
+      "attribute-references": [
+        {
+          "name": "plants"
+        }
+      ]
+    },
+    {
+      "name": "ChangeViewer",
+      "description": "Engineering changes: read cases, runs, decisions",
+      "scope-references": [
+        "$XSAPPNAME.ChangeViewer"
+      ],
+      "attribute-references": [
+        {
+          "name": "plants"
+        }
+      ]
+    },
+    {
+      "name": "ChangeAnalyst",
+      "description": "Engineering changes: run impact, submit for review",
+      "scope-references": [
+        "$XSAPPNAME.ChangeAnalyst"
+      ],
+      "attribute-references": [
+        {
+          "name": "plants"
+        }
+      ]
+    },
+    {
+      "name": "ChangeApprover",
+      "description": "Engineering changes: approve or reject (independent reviewer)",
+      "scope-references": [
+        "$XSAPPNAME.ChangeApprover"
+      ],
+      "attribute-references": [
+        {
+          "name": "plants"
+        }
+      ]
+    },
+    {
+      "name": "ErpExtractor",
+      "description": "Engineering changes: extract cases from an authorized ERP source",
+      "scope-references": [
+        "$XSAPPNAME.ErpExtractor"
+      ],
+      "attribute-references": [
+        {
+          "name": "plants"
+        }
+      ]
+    },
+    {
+      "name": "DemoDataImporter",
+      "description": "Development only: import synthetic demo scenarios (feature flag off in production)",
+      "scope-references": [
+        "$XSAPPNAME.DemoDataImporter"
+      ],
+      "attribute-references": [
+        {
+          "name": "plants"
+        }
+      ]
+    },
+    {
+      "name": "ImpactRunner",
+      "description": "Engineering changes: run the impact calculation only (Joule assistant)",
+      "scope-references": [
+        "$XSAPPNAME.ImpactRunner"
+      ],
+      "attribute-references": [
+        {
+          "name": "plants"
+        }
+      ]
+    }
+  ]
+}

@@ -1,6 +1,7 @@
 // Derives the SAP Build Actions input spec from the CAP-generated OpenAPI document of EngineeringReview.
 // Usage: node make-actions-spec.mjs engineering-review.openapi.full.json > assemblyimpact-engineering-actions.openapi.json
-// Only three operations are exposed; all calculations stay in the CAP backend (runImpact).
+// Five operations are exposed, four read-only; the one write (RunEngineeringImpact) runs the deterministic
+// calculation in the CAP backend. LookupEngineeringCases and GetDecisionHistory are ported from PR #11.
 import { readFileSync } from 'node:fs';
 const full = JSON.parse(readFileSync(process.argv[2], 'utf8'));
 const pick = (path, method, operationId, summary, description) => {
@@ -13,8 +14,12 @@ const ops = [
     'Lists the review cases visible to the calling user. The service restricts results to the user\'s plants (plant attribute). Use $filter (e.g. status eq \'IN_REVIEW\'), $select and $expand=latestRun to include the latest impact figures.'),
   pick('/ImpactRuns({ID})', 'get', 'GetEngineeringImpact', 'Get an engineering impact run',
     'Returns one immutable impact run. Use $expand=findings,materialLines,comparisonLines to include findings, stock shortages and BOM changes. The run ID is ReviewCases.latestRun_ID or the result of RunEngineeringImpact. Cross-plant IDs return 404.'),
+  pick('/lookupCases', 'get', 'LookupEngineeringCases', 'Look up engineering review cases',
+    'Read-only. Optional named filters caseNumber (EC-000123), status (OPEN, IN_REVIEW, APPROVED, REJECTED) and assemblyCode. Returns at most 50 cases of the calling user\'s plants with the latest impact figures. 400 for malformed filters.'),
+  pick('/ReviewCases({ID})/decisions', 'get', 'GetDecisionHistory', 'Get the review decision history of a case',
+    'Read-only. Submit, approve and reject events with actor, comment, the evaluated impact run and the evidence status at decision time. Joule never approves or rejects. Cross-plant IDs return 404.'),
   pick('/ReviewCases({ID})/EngineeringReview.runImpact', 'post', 'RunEngineeringImpact', 'Run the engineering impact calculation',
-    'Invokes the existing bound OData V4 action runImpact for one review case. Allowed for role ChangeAnalyst within the user\'s plants only (403 otherwise, 404 for other plants). Returns the new immutable impact run. Body: {"asOfDate": "YYYY-MM-DD"}.'),
+    'Invokes the existing bound OData V4 action runImpact for one review case. Allowed for roles ChangeAnalyst and ImpactRunner (Joule) within the user\'s plants only (403 otherwise, 404 for other plants). Returns the new immutable impact run. Body: {"asOfDate": "YYYY-MM-DD"}.'),
 ];
 const paths = {};
 for (const [p, m, op] of ops) (paths[p] ??= {})[m] = op;

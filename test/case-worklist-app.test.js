@@ -144,3 +144,41 @@ test('Object Page navigation paths: case -> runs -> findings / material lines, p
   assert.equal((await request(`${SVC}/ReviewCases(${CASE_2000})`, { user: 'analyst2' })).status, 200);
   assert.equal((await request(`${SVC}/ReviewCases`, { user: null })).status, 401);
 });
+
+test('P3 <-> P4 navigation keeps the case context in both directions', () => {
+  const root = join(import.meta.dirname, '..', 'app');
+  const wl = JSON.parse(readFileSync(join(root, 'case-worklist', 'webapp', 'manifest.json'), 'utf8'));
+  const st = JSON.parse(readFileSync(join(root, 'investigation-studio', 'webapp', 'manifest.json'), 'utf8'));
+  // Worklist -> Studio: the existing DataFieldWithUrl in the General field group (no second link is added).
+  const annotations = readFileSync(join(root, 'case-worklist', 'annotations.cds'), 'utf8');
+  assert.match(annotations, /'\.\.\/\.\.\/investigation-studio\/webapp\/index\.html#\/cases\/',\s*\{\$Path: 'ID'\}/);
+  assert.equal((annotations.match(/investigation-studio\/webapp/g) || []).length, 1, 'exactly one worklist -> Studio link');
+  assert(st['sap.ui5'].routing.routes.some(r => r.name === 'workspace' && r.pattern.startsWith('cases/{caseId}')), 'Studio route matches the link');
+  // Studio -> worklist: the same case's object page.
+  const ctrl = readFileSync(join(root, 'investigation-studio', 'webapp', 'controller', 'Workspace.controller.js'), 'utf8');
+  assert.match(ctrl, /"\.\.\/\.\.\/case-worklist\/webapp\/index\.html#\/ReviewCases\(" \+ encodeURIComponent\(this\._caseId\) \+ "\)"/);
+  assert(wl['sap.ui5'].routing.routes.some(r => r.name === 'ReviewCasesObjectPage' && r.pattern.startsWith('ReviewCases({key})')), 'worklist route matches the button');
+  const view = readFileSync(join(root, 'investigation-studio', 'webapp', 'view', 'Workspace.view.xml'), 'utf8');
+  assert.match(view, /id="btnOpenInWorklist"[^>]*press="\.onOpenInWorklist"[^>]*tooltip="[^"]+"/, 'button has an accessible tooltip');
+  const xsApp = JSON.parse(readFileSync(join(root, 'router', 'xs-app.json'), 'utf8'));
+  for (const app of ['case-worklist', 'investigation-studio']) assert(xsApp.routes.some(r => r.source === `^/${app}/webapp/(.*)$`), `${app} served under the same relative layout`);
+});
+
+test('Studio start-up: CaseList reads the OData model from the component in onInit (found in the BAS browser check)', async () => {
+  const vm = await import('node:vm');
+  const src = readFileSync(join(import.meta.dirname, '..', 'app', 'investigation-studio', 'webapp', 'controller', 'CaseList.controller.js'), 'utf8');
+  let factory, deps;
+  vm.runInNewContext(src, { sap: { ui: { define: (d, f) => { deps = d; factory = f; } } } });
+  const ctrl = factory(...deps.map(d => (d === 'sap/ui/core/mvc/Controller' ? { extend: (n, def) => def } : {})));
+  let requested = null;
+  const caps = { setProperty: (k, v) => { caps[k] = v; } };
+  const self = Object.assign(Object.create(ctrl), {
+    // In onInit the view has no default model yet (it is not attached to the component).
+    getView: () => ({ getModel: name => (name === 'caps' ? caps : undefined) }),
+    getOwnerComponent: () => ({ getModel: () => ({ bindContext: path => { requested = path; return { requestObject: () => Promise.resolve({ canImport: true }), destroy() {} }; } }) }),
+  });
+  self._loadCapabilities();
+  await new Promise(r => setTimeout(r, 0));
+  assert.equal(requested, '/myCapabilities()');
+  assert.equal(caps['/canImport'], true);
+});

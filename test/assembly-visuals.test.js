@@ -136,3 +136,20 @@ test('P4 component map agrees with the fixture BOM, comparison and the SVG', () 
   }
   assert.ok(svg.includes(`.${map.stateClasses.REMOVED}`), 'REMOVED style available');
 });
+
+test('M05 scenario illustrations match the DS-SCENARIOS-01 BOMs item by item and are up to date', async () => {
+  const { SCENARIOS, svgFor } = await import('../design/assets-src/m05/build-assembly-svgs.mjs');
+  assert.equal(SCENARIOS.length, 6);
+  for (const s of SCENARIOS) {
+    assert.ok(available[s.assemblyCode]?.includes('B'), `${s.assemblyCode}-B enabled in the fragments`);
+    for (const [rev, items] of [['A', s.a], ['B', s.b]]) {
+      const file = `${s.assemblyCode}-${rev}.svg`;
+      const svg = readFileSync(join(ASSETS, file), 'utf8');
+      assert.equal(svg, svgFor(s, rev), `${file} regenerated from the fixture (run build-assembly-svgs.mjs)`);
+      const drawn = [...svg.matchAll(/<g id="ai-item-(\d+)"[^>]*data-item-no="\1" data-material="([^"]+)" data-quantity="([\d.]+)"/g)]
+        .map(m => [m[1], m[2], Number(m[3])]);
+      assert.deepEqual(drawn, items, `${file}: item numbers, materials and quantities equal BOM-${s.assemblyCode}-${rev}`);
+    }
+    assert.equal(readFileSync(join(ASSETS, `${s.assemblyCode}-B-thumb.svg`), 'utf8'), svgFor(s, 'B', { thumb: true }));
+  }
+});
