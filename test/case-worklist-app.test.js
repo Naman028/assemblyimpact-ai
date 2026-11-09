@@ -110,8 +110,9 @@ test('CAP serves the app statically', async () => {
 test('List Report request returns only the user\'s plant; runImpact fills the columns', async () => {
   const before = await request(`${SVC}${LIST}`);
   assert.equal(before.status, 200, JSON.stringify(before.data));
-  assert.equal(before.data['@odata.count'], 1);
-  assert.deepEqual(before.data.value.map(c => [c.caseNumber, c.assemblyCode, c.status, c.latestRun]), [['EC-000473', 'COOL-100', 'OPEN', null]]);
+  // M05: plant 1000 holds the oracle case plus the six DS-SCENARIOS-01 cases.
+  assert.equal(before.data['@odata.count'], 7);
+  assert.deepEqual(before.data.value.filter(c => c.caseNumber === 'EC-000473').map(c => [c.caseNumber, c.assemblyCode, c.status, c.latestRun]), [['EC-000473', 'COOL-100', 'OPEN', null]]);
   const other = await request(`${SVC}${LIST}`, { user: 'analyst2' });
   assert.deepEqual(other.data.value.map(c => c.caseNumber), ['EC-200473']);
   // The action button is shown to everyone; the server decides.
@@ -120,7 +121,7 @@ test('List Report request returns only the user\'s plant; runImpact fills the co
   assert.equal((await request(`${SVC}/ReviewCases(${CASE_1000})/EngineeringReview.runImpact`, { user: 'cviewer', method: 'POST', body: { asOfDate: '2026-11-08' } })).status, 403);
   assert.equal((await request(`${SVC}/ReviewCases(${CASE_1000})/EngineeringReview.runImpact`, { user: 'analyst2', method: 'POST', body: { asOfDate: '2026-11-08' } })).status, 404);
   const after = await request(`${SVC}${LIST}`);
-  const row = after.data.value[0];
+  const row = after.data.value.find(c => c.caseNumber === 'EC-000473');
   assert.deepEqual([row.latestRun.instructionFindings, row.latestRun.materialsShort, Number(row.latestRun.costDeltaTotal)], [1, 2, 1200]);
 });
 

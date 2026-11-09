@@ -1,0 +1,62 @@
+<core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core" xmlns:u="sap.ui.unified">
+	<Dialog id="importDialog" title="Import Scenario (synthetic demonstration data)" contentWidth="760px" resizable="true" draggable="true"
+		afterClose=".onImportClosed" class="sapUiContentPadding">
+		<content>
+			<VBox>
+				<MessageStrip type="Warning" showIcon="true" class="sapUiSmallMarginBottom"
+					text="Development workflow only. Imports add new synthetic cases with provenance; they never overwrite existing records and are not SAP S/4HANA data."/>
+				<Label text="File (JSON or CSV, max. 512 KB)" labelFor="importFile"/>
+				<u:FileUploader id="importFile" width="100%" fileType="json,csv" maximumFileSize="0.5" sendXHR="false" useMultipart="false"
+					change=".onImportFileChange" typeMissmatch=".onImportTypeMismatch" fileSizeExceed=".onImportTooLarge" placeholder="Choose a .json or .csv file"/>
+				<HBox class="sapUiTinyMarginTop">
+					<Link text="Sample JSON" href="samples/scenario-import-sample.json" target="_blank" class="sapUiSmallMarginEnd"/>
+					<Link text="Sample CSV" href="samples/scenario-import-sample.csv" target="_blank"/>
+				</HBox>
+				<MessageStrip visible="{import>/validated}" type="{= ${import>/accepted} ? 'Success' : 'Error' }" showIcon="true" class="sapUiSmallMarginTop"
+					text="{= ${import>/accepted} ? 'Validation passed: ' + ${import>/summary} + '. Review the preview and confirm the import.' : 'Validation failed: ' + ${import>/errors}.length + ' problem(s). Nothing was imported.' }"/>
+				<Table visible="{= ${import>/preview}.length > 0 }" items="{import>/preview}" class="sapUiSmallMarginTop" headerText="Cases in this file">
+					<columns>
+						<Column><Text text="Case"/></Column>
+						<Column minScreenWidth="Tablet" demandPopin="true"><Text text="Title"/></Column>
+						<Column><Text text="Assembly"/></Column>
+						<Column hAlign="Center"><Text text="Revisions"/></Column>
+						<Column hAlign="End"><Text text="BOM items"/></Column>
+					</columns>
+					<items>
+						<ColumnListItem>
+							<cells>
+								<Text text="{import>caseNumber}"/>
+								<Text text="{import>title}"/>
+								<Text text="{import>assemblyCode} (Plant {import>plant})"/>
+								<Text text="{import>fromRevision} → {import>toRevision}"/>
+								<Text text="{import>fromItems} → {import>toItems}"/>
+							</cells>
+						</ColumnListItem>
+					</items>
+				</Table>
+				<Table visible="{= ${import>/errors}.length > 0 }" items="{import>/errors}" class="sapUiSmallMarginTop" headerText="Validation errors" growing="true" growingThreshold="15">
+					<columns>
+						<Column width="9rem"><Text text="Record"/></Column>
+						<Column width="9rem"><Text text="Field"/></Column>
+						<Column><Text text="Problem"/></Column>
+					</columns>
+					<items>
+						<ColumnListItem>
+							<cells>
+								<Text text="{import>line}"/>
+								<Text text="{import>field}"/>
+								<ObjectStatus text="{import>message}" state="Error" tooltip="{import>code}"/>
+							</cells>
+						</ColumnListItem>
+					</items>
+				</Table>
+			</VBox>
+		</content>
+		<beginButton>
+			<Button id="importConfirm" text="Confirm Import" type="Emphasized" enabled="{import>/accepted}" press=".onImportConfirm"/>
+		</beginButton>
+		<endButton>
+			<Button text="Cancel" press=".onImportCancel"/>
+		</endButton>
+	</Dialog>
+</core:FragmentDefinition>

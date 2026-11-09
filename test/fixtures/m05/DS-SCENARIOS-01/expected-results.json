@@ -1,0 +1,25 @@
+{
+  "datasetId": "DS-SCENARIOS-01",
+  "asOfDate": "2026-11-08",
+  "note": "Hand-calculated before running the engine (cost = sum(quantity x price / priceUnit); totals x productionQuantity; required stock = Rev B quantity x productionQuantity).",
+  "cases": {
+    "EC-000481": { "status": "COMPLETE", "flags": [], "fromPerAssembly": "161.92", "toPerAssembly": "174.86", "deltaPerAssembly": "12.94", "deltaTotal": "2588.00", "deltaPercent": "7.99",
+      "materialsShort": 2, "materialsUnknown": 0, "instructionFindings": 1, "instructionsToUpdate": 1, "short": ["BRG-300B", "GSKT-300"],
+      "changes": { "0010": "UNCHANGED", "0020": "REPLACED", "0030": "QUANTITY_CHANGED", "0040": "UNCHANGED", "0050": "ADDED" } },
+    "EC-000482": { "status": "COMPLETE", "flags": [], "fromPerAssembly": "154.70", "toPerAssembly": "148.70", "deltaPerAssembly": "-6.00", "deltaTotal": "-900.00", "deltaPercent": "-3.88",
+      "materialsShort": 0, "materialsUnknown": 0, "instructionFindings": 2, "instructionsToUpdate": 1, "short": [],
+      "changes": { "0010": "UNCHANGED", "0020": "REPLACED", "0030": "REMOVED", "0040": "UNCHANGED" } },
+    "EC-000483": { "status": "COMPLETE_WITH_WARNINGS", "flags": ["STOCK_STALE"], "fromPerAssembly": "88.20", "toPerAssembly": "93.20", "deltaPerAssembly": "5.00", "deltaTotal": "600.00", "deltaPercent": "5.67",
+      "materialsShort": 0, "materialsUnknown": 0, "instructionFindings": 0, "instructionsToUpdate": 0, "short": [],
+      "changes": { "0010": "UNCHANGED", "0020": "REPLACED", "0030": "UNCHANGED" } },
+    "EC-000484": { "status": "INCOMPLETE", "flags": ["COST_INCOMPLETE", "STOCK_UNKNOWN"], "fromPerAssembly": "390.00", "toPerAssembly": null, "deltaPerAssembly": null, "deltaTotal": null, "deltaPercent": null,
+      "materialsShort": 1, "materialsUnknown": 1, "instructionFindings": 1, "instructionsToUpdate": 1, "short": ["MOTOR-600H"],
+      "changes": { "0010": "REPLACED", "0020": "QUANTITY_CHANGED", "0030": "UNCHANGED", "0040": "ADDED" } },
+    "EC-000485": { "status": "COMPLETE", "flags": [], "fromPerAssembly": "317.28", "toPerAssembly": "429.88", "deltaPerAssembly": "112.60", "deltaTotal": "6756.00", "deltaPercent": "35.49",
+      "materialsShort": 2, "materialsUnknown": 0, "instructionFindings": 3, "instructionsToUpdate": 2, "short": ["FIT-700", "VALVE-CV7B"],
+      "changes": { "0010": "UNCHANGED", "0020": "REPLACED", "0030": "REMOVED", "0040": "QUANTITY_CHANGED", "0050": "UNCHANGED", "0060": "ADDED" } },
+    "EC-000486": { "status": "COMPLETE", "flags": [], "fromPerAssembly": "260.00", "toPerAssembly": "260.70", "deltaPerAssembly": "0.70", "deltaTotal": "210.00", "deltaPercent": "0.27",
+      "materialsShort": 0, "materialsUnknown": 0, "instructionFindings": 2, "instructionsToUpdate": 2, "short": [],
+      "changes": { "0010": "UNCHANGED", "0020": "UNCHANGED", "0030": "REPLACED", "0040": "UNCHANGED" } }
+  }
+}

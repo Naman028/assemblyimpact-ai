@@ -13,7 +13,7 @@ type UnitCode    : String(3);
 type Quantity    : Decimal(13, 3);
 type EvidenceRef : String(200);
 
-type SourceType  : String(20) enum { SYNTHETIC_FIXTURE; MANUAL; GENAI_PROPOSAL; S4_IMPORT; };
+type SourceType  : String(20) enum { SYNTHETIC_FIXTURE; MANUAL; GENAI_PROPOSAL; S4_IMPORT; DEMO_IMPORT; SANDBOX_IMPORT; };
 type CaseStatus  : String(12) enum { OPEN; IN_REVIEW; APPROVED; REJECTED; };
 
 entity BOMStates : cuid {
@@ -105,6 +105,22 @@ entity ReviewCases : cuid, managed {
     latestRun          : Association to ImpactRuns;
     runs               : Association to many ImpactRuns on runs.reviewCase = $self;
     decisions          : Association to many DecisionEvents on decisions.reviewCase = $self;
+    // M05: provenance of imported cases (null for seeded fixtures).
+    sourceImport       : Association to DataImports;
+}
+
+// M05: one row per committed import (demo file or mapped ERP extract). Insert-only.
+entity DataImports : cuid {
+    plant      : Plant not null;
+    datasetId  : String(40);
+    fileName   : String(120);
+    format     : String(8) not null;   // json | csv | odata
+    checksum   : String(71) not null;  // sha256 of the uploaded content
+    sourceType : SourceType not null;  // DEMO_IMPORT | SANDBOX_IMPORT | S4_IMPORT
+    source     : String(200);          // e.g. adapter mode and system, for ERP extracts
+    importedBy : String(255) not null;
+    importedAt : Timestamp not null;
+    counts     : String(500) not null; // JSON object: records per type
 }
 
 entity ImpactRuns : cuid {
@@ -183,8 +199,15 @@ entity DecisionEvents : cuid {
     at         : Timestamp not null;
     // M04 Slice 2a.1: the impact run the decision was based on (required for APPROVE).
     basedOnRun : Association to ImpactRuns;
+    // M05: audit of the evidence policy — status of basedOnRun at decision time and, for
+    // COMPLETE_WITH_WARNINGS, the reviewer's explicit acknowledgement.
+    evidenceStatus       : String(24);
+    warningsAcknowledged : Boolean;
 }
 
 annotate BOMItems with @assert.unique.itemPerState: [bomState, itemNo];
+// M05: database backstops for imports (validation checks these first and reports them per record).
+annotate BOMStates with @assert.unique.stateKeyPerPlant: [stateKey, plant]; // the plant-2000 mirror reuses keys
+annotate StockSnapshots with @assert.unique.snapshot: [material, plant, snapshotAt];
 annotate ReviewCases with @assert.unique.caseNumber: [caseNumber];
 annotate Instructions with @assert.unique.instructionVersion: [instructionId, version, plant];

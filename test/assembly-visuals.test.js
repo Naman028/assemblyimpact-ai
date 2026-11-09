@@ -63,7 +63,9 @@ test('manifest wires the illustration section and thumbnail column to existing f
 
 test('every seeded review case has an illustration for its proposed revision', () => {
   const seed = buildSeed();
-  for (const c of seed.ReviewCases) {
+  // M05: DS-SCENARIOS-01 cases are visualised by the Investigation Studio's generated component
+  // schematic (test/m05-investigation-studio.test.js); curated illustrations cover DS-ORACLE-01.
+  for (const c of seed.ReviewCases.filter(rc => !rc.evidenceRef.startsWith('DS-SCENARIOS-01/'))) {
     const code = seed.Assemblies.find(a => a.ID === c.assembly_ID).assemblyCode;
     const rev = seed.BOMStates.find(s => s.ID === c.toState_ID).revision;
     assert.ok(available[code]?.includes(rev), `${c.caseNumber} ${code}-${rev}`);

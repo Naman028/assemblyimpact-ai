@@ -1,0 +1,44 @@
+/* Investigation Studio — layout and component-state styling (theme parameters via CSS variables). */
+.aiCaseMain { min-width: 0; flex: 1 1 auto; padding-right: 1rem; }
+.aiCaseSide { flex: 0 0 auto; text-align: right; }
+.aiCaseTitle { margin: 0.125rem 0 0.25rem; }
+.aiKpis { margin-top: 0.5rem; }
+.aiKpi { min-width: 11rem; margin: 0 2rem 0.5rem 0; }
+.aiKpiNumber .sapMObjectNumberText { font-size: 1.5rem; }
+.aiBigNumber .sapMObjectNumberText { font-size: 1.75rem; }
+.aiVisualPanel, .aiDetailPanel { padding: 0.25rem 0.5rem; }
+.aiVisualNote { color: var(--sapContent_LabelColor); margin: 0.25rem 0; max-width: 32rem; }
+.aiVisual { margin-top: 0.75rem; border: 1px solid var(--sapGroup_ContentBorderColor); border-radius: 0.75rem; background: #fff; padding: 0.5rem; }
+.aiVisual svg { display: block; width: 100%; height: auto; max-height: 34rem; }
+.aiLegend { margin-top: 0.5rem; gap: 0.25rem; align-items: center; }
+.aiEvidence { font-family: "72Mono", monospace; font-size: 0.75rem; color: var(--sapContent_LabelColor); word-break: break-all; }
+
+/* Component states (shared by curated diagram and generated schematic). Colour is never the only cue:
+   badges/labels carry the state text and removed parts are dashed. */
+.aiVisual .ai-component { cursor: pointer; outline: none; }
+.aiVisual .ai-component .ai-tile { transition: stroke 0.15s, fill 0.15s; }
+.aiVisual .ai-component:hover .ai-tile { fill: #f2f7fd; }
+.aiVisual .ai-component:focus-visible > *, .aiVisual .ai-selected > * { filter: drop-shadow(0 0 3px #0070f2); }
+.aiVisual .ai-selected .ai-tile { stroke: #0070f2 !important; stroke-width: 3 !important; fill: #ebf5ff; }
+.aiVisual .ai-state-replaced .ai-tile, .aiCurated .ai-state-replaced > * { stroke: #aa0808; stroke-width: 3; }
+.aiVisual .ai-state-quantity-changed .ai-tile, .aiCurated .ai-state-quantity-changed > * { stroke: #e76500; stroke-width: 3; }
+.aiVisual .ai-state-added .ai-tile, .aiCurated .ai-state-added > * { stroke: #256f3a; stroke-width: 3; }
+.aiVisual .ai-state-removed .ai-tile, .aiCurated .ai-state-removed > * { stroke-dasharray: 6 4; }
+.aiVisual .ai-state-non-comparable .ai-tile { stroke: #aa0808; stroke-dasharray: 2 3; stroke-width: 3; }
+.aiVisual .ai-absent { opacity: 0.32; }
+.aiCurated .ai-absent { display: none; }
+.aiVisual .ai-badge { fill: #eaecee; }
+.aiVisual .ai-badge-text { fill: #32363a; font-weight: bold; }
+.aiVisual .ai-state-replaced .ai-badge { fill: #ffeaf4; } .aiVisual .ai-state-replaced .ai-badge-text { fill: #aa0808; }
+.aiVisual .ai-state-quantity-changed .ai-badge { fill: #fff3b8; } .aiVisual .ai-state-quantity-changed .ai-badge-text { fill: #a93e00; }
+.aiVisual .ai-state-added .ai-badge { fill: #f5fae5; } .aiVisual .ai-state-added .ai-badge-text { fill: #256f3a; }
+.aiVisual .ai-state-removed .ai-badge { fill: #eaecee; } .aiVisual .ai-state-removed .ai-badge-text { fill: #32363a; }
+@media (max-width: 600px) { .aiKpi { min-width: 8.5rem; margin-right: 1rem; } }
+/* Curated diagram: its parts carry their own stroke attributes in nested groups, so the state is shown
+   as a coloured halo around the whole component (plus the legend / detail panel text). */
+.aiCurated .ai-state-replaced { filter: drop-shadow(0 0 2px #aa0808) drop-shadow(0 0 5px #aa0808); }
+.aiCurated .ai-state-quantity-changed { filter: drop-shadow(0 0 2px #e76500) drop-shadow(0 0 5px #e76500); }
+.aiCurated .ai-state-added { filter: drop-shadow(0 0 2px #256f3a) drop-shadow(0 0 5px #256f3a); }
+.aiCurated .ai-state-removed { opacity: 0.4; }
+.aiCurated .ai-selected { filter: drop-shadow(0 0 3px #0070f2) drop-shadow(0 0 8px #0070f2); }
+.aiCurated .ai-selected > * { filter: none; }

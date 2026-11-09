@@ -22,6 +22,9 @@ export const SEED_INITIAL_CASE_STATUS = 'OPEN';
 export const SEED_SCENARIOS = [
   { dataset: 'DS-ORACLE-01', caseNumber: 'EC-000473' },
   { dataset: 'DS-ORACLE-01', caseNumber: 'EC-000473', mirrorToPlant: '2000', mirrorCaseNumber: 'EC-200473' },
+  // M05 scenario expansion (DS-SCENARIOS-01): six independent engineering changes, plant 1000.
+  ...['EC-000481', 'EC-000482', 'EC-000483', 'EC-000484', 'EC-000485', 'EC-000486']
+    .map(caseNumber => ({ dataset: 'DS-SCENARIOS-01', caseNumber })),
 ];
 
 /** CSV column order per entity (CAP element names; associations as <name>_ID). */
@@ -52,7 +55,15 @@ export function buildRows({ dataset, caseNumber, mirrorToPlant, mirrorCaseNumber
   const source = data.review_cases.find(c => c.caseNumber === caseNumber);
   if (!source) throw new Error(`${dataset} has no case ${caseNumber}`);
   const casePlant = source.plant;
-  const inScope = row => !mirrorToPlant || row.plant === undefined || row.plant === casePlant;
+  // M05: datasets with several assemblies contribute only the rows of the case's assembly
+  // (its BOM states, items, instructions, and prices/stock of materials used in those BOMs).
+  const code = source.assemblyCode;
+  const stateKeys = new Set(data.bom_states.filter(s => s.assemblyCode === code).map(s => s.bomStateId));
+  const materials = new Set(data.bom_items.filter(i => stateKeys.has(i.bomStateId)).map(i => i.material));
+  const ofCase = row => (row.assemblyCode !== undefined ? row.assemblyCode === code
+    : row.bomStateId !== undefined ? stateKeys.has(row.bomStateId)
+      : row.material !== undefined ? materials.has(row.material) : true);
+  const inScope = row => ofCase(row) && (!mirrorToPlant || row.plant === undefined || row.plant === casePlant);
   const plantOf = row => (mirrorToPlant ? mirrorToPlant : row.plant);
   const ref = r => (mirrorToPlant ? `PLANT-${mirrorToPlant}-MIRROR:${r}` : r);
   const id = name => stableId(`${keyPrefix}:${dataset}:${mirrorToPlant ?? 'primary'}:${name}`);
@@ -76,7 +87,7 @@ export function buildRows({ dataset, caseNumber, mirrorToPlant, mirrorCaseNumber
       validTo: s.validTo, status: s.status, changeNumber: orNull(s.changeNumber), sourceType: s.sourceType,
       evidenceRef: ref(s.evidenceRef) });
   }
-  for (const i of data.bom_items.filter(i => stateAssembly[i.bomStateId])) {
+  for (const i of data.bom_items.filter(i => stateAssembly[i.bomStateId] && ofCase(i))) {
     rows.BOMItems.push({ ID: id(`bom-item:${i.bomStateId}/${i.itemNo}`), bomState_ID: stateId(i.bomStateId),
       itemNo: i.itemNo, material: i.material, quantity: i.quantity, unit: i.unit, evidenceRef: ref(i.evidenceRef) });
   }
@@ -115,12 +126,19 @@ export function buildRows({ dataset, caseNumber, mirrorToPlant, mirrorCaseNumber
   return rows;
 }
 
-/** All seeded rows, merged across SEED_SCENARIOS, in a stable order. */
+/** All seeded rows, merged across SEED_SCENARIOS, in a stable order (first occurrence of a key wins). */
 export function buildSeed() {
   const merged = Object.fromEntries(ENTITIES.map(e => [e, []]));
+  const seen = new Set();
   for (const scenario of SEED_SCENARIOS) {
     const rows = buildRows(scenario);
-    for (const e of ENTITIES) merged[e].push(...rows[e]);
+    for (const e of ENTITIES) {
+      for (const row of rows[e]) {
+        if (seen.has(row.ID)) continue;
+        seen.add(row.ID);
+        merged[e].push(row);
+      }
+    }
   }
   return merged;
 }

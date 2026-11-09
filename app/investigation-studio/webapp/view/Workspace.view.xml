@@ -1,0 +1,348 @@
+<mvc:View controllerName="assemblyimpact.investigationstudio.controller.Workspace"
+	xmlns:mvc="sap.ui.core.mvc" xmlns="sap.m" xmlns:f="sap.f" xmlns:core="sap.ui.core" xmlns:l="sap.ui.layout" xmlns:card="sap.f.cards">
+	<f:DynamicPage id="wsPage" busy="{ws>/busy}" busyIndicatorDelay="0" headerExpanded="true" showFooter="false" class="aiWorkspace">
+		<f:title>
+			<f:DynamicPageTitle>
+				<f:heading>
+					<HBox alignItems="Center" wrap="Wrap">
+						<Title id="wsTitle" text="{ws>/case/caseNumber} — {ws>/case/title}" level="H1" wrapping="true" class="sapUiSmallMarginEnd"/>
+						<ObjectStatus text="{ path: 'ws>/case/status', formatter: '.fmt.caseStatus' }" state="{ path: 'ws>/case/status', formatter: '.fmt.caseState' }" inverted="true"/>
+					</HBox>
+				</f:heading>
+				<f:expandedContent>
+					<Label text="{ws>/case/assemblyCode} · {ws>/case/assemblyDescription} · Plant {ws>/case/plant} · {ws>/case/productionQuantity} assemblies · Source: {ws>/case/sourceTypeText}" wrapping="true"/>
+				</f:expandedContent>
+				<f:snappedContent>
+					<Label text="{ws>/case/assemblyCode} · { parts: ['ws>/case/fromRevision', 'ws>/case/toRevision'], formatter: '.fmt.revisionPath' }"/>
+				</f:snappedContent>
+				<f:actions>
+					<Button id="btnRun" text="Run Impact" icon="sap-icon://simulate" type="Emphasized" press=".onRunImpact" visible="{= !!${ws>/case/canRunImpact} }"/>
+					<Button id="btnSubmit" text="Submit for Review" icon="sap-icon://paper-plane" press=".onSubmit" visible="{= !!${ws>/case/canSubmit} }"/>
+					<Button id="btnApprove" text="Approve" icon="sap-icon://accept" type="Accept" press=".onApprove" visible="{= !!${ws>/case/canDecide} }"/>
+					<Button id="btnReject" text="Reject" icon="sap-icon://decline" type="Reject" press=".onReject" visible="{= !!${ws>/case/canDecide} }"/>
+				</f:actions>
+				<f:navigationActions>
+					<Button icon="sap-icon://full-screen" type="Transparent" press=".onToggleFullScreen" tooltip="Toggle full screen"/>
+					<Button icon="sap-icon://decline" type="Transparent" press=".onClose" tooltip="Close workspace"/>
+				</f:navigationActions>
+			</f:DynamicPageTitle>
+		</f:title>
+		<f:header>
+			<f:DynamicPageHeader pinnable="true">
+				<VBox>
+					<MessageStrip visible="{= ${ws>/case/status} === 'APPROVED' || ${ws>/case/status} === 'REJECTED' }" type="Information" showIcon="true" class="sapUiTinyMarginBottom"
+						text="This case is decided ({ path: 'ws>/case/status', formatter: '.fmt.caseStatus' }). Its evidence is frozen: no new impact runs or decisions are possible."/>
+					<MessageStrip visible="{= !${ws>/run} }" type="Warning" showIcon="true" class="sapUiTinyMarginBottom"
+						text="No impact run yet. Run the impact calculation to compare the revisions, check stock, cost and work instructions."/>
+					<MessageStrip visible="{= ${ws>/run/status} === 'INCOMPLETE' }" type="Error" showIcon="true" class="sapUiTinyMarginBottom"
+						text="Latest run is incomplete ({ path: 'ws>/run/flags', formatter: '.fmt.flags' }). Values that depend on missing inputs are shown as 'Not calculable'; this run cannot be approved."/>
+					<MessageStrip visible="{= ${ws>/run/status} === 'COMPLETE_WITH_WARNINGS' &amp;&amp; ${ws>/case/status} !== 'APPROVED' &amp;&amp; ${ws>/case/status} !== 'REJECTED' }" type="Warning" showIcon="true" class="sapUiTinyMarginBottom"
+						text="Latest run has warnings ({ path: 'ws>/run/flags', formatter: '.fmt.flags' }). Approval requires an explicit acknowledgement."/>
+					<HBox wrap="Wrap" class="aiKpis">
+						<VBox class="aiKpi">
+							<Label text="Revisions"/>
+							<Title text="{ parts: ['ws>/case/fromRevision', 'ws>/case/toRevision'], formatter: '.fmt.revisionPath' }" level="H3"/>
+						</VBox>
+						<VBox class="aiKpi">
+							<Label text="Estimated cost delta"/>
+							<ObjectNumber number="{ parts: ['ws>/run/costDeltaTotal', 'ws>/run/currency'], formatter: '.fmt.money' }" state="{ path: 'ws>/run/costDeltaTotal', formatter: '.fmt.deltaState' }" emphasized="true" class="aiKpiNumber"/>
+							<Label text="{ path: 'ws>/run/costDeltaPercent', formatter: '.fmt.percent' }"/>
+						</VBox>
+						<VBox class="aiKpi">
+							<Label text="Materials short"/>
+							<ObjectNumber number="{= ${ws>/run} ? ${ws>/run/materialsShort} : '—' }" state="{ path: 'ws>/run/materialsShort', formatter: '.fmt.countState' }" emphasized="true" class="aiKpiNumber"/>
+							<Label text="{= ${ws>/run/materialsUnknown} > 0 ? ${ws>/run/materialsUnknown} + ' unknown' : '' }"/>
+						</VBox>
+						<VBox class="aiKpi">
+							<Label text="Instruction findings"/>
+							<ObjectNumber number="{= ${ws>/run} ? ${ws>/run/instructionFindings} : '—' }" state="{ path: 'ws>/run/instructionFindings', formatter: '.fmt.countState' }" emphasized="true" class="aiKpiNumber"/>
+							<Label text="{= ${ws>/run} ? ${ws>/run/instructionsToUpdate} + ' instruction(s) to update' : '' }"/>
+						</VBox>
+						<VBox class="aiKpi">
+							<Label text="Impact run"/>
+							<ObjectStatus text="{ path: 'ws>/run/status', formatter: '.fmt.runStatus' }" state="{ path: 'ws>/run/status', formatter: '.fmt.runState' }" icon="sap-icon://measure" class="aiKpiStatus"/>
+							<Label text="{= ${ws>/run} ? 'as of ' + ${ws>/run/asOfDate} : '' }"/>
+						</VBox>
+					</HBox>
+				</VBox>
+			</f:DynamicPageHeader>
+		</f:header>
+		<f:content>
+			<IconTabBar id="wsTabs" selectedKey="{ws>/tab}" headerMode="Inline" expandable="false" stretchContentHeight="false" applyContentPadding="true" class="aiTabs">
+				<items>
+					<IconTabFilter key="assembly" text="Assembly" icon="sap-icon://machine">
+						<l:Grid defaultSpan="XL7 L7 M12 S12" class="aiAssemblyGrid" containerQuery="true">
+							<VBox class="aiVisualPanel">
+								<HBox justifyContent="SpaceBetween" alignItems="Center" wrap="Wrap">
+									<SegmentedButton id="revisionToggle" selectedKey="{ws>/view}" selectionChange=".onRevisionToggle" width="20rem">
+										<items>
+											<SegmentedButtonItem key="A" text="Current ({ws>/case/fromRevision})"/>
+											<SegmentedButtonItem key="B" text="Proposed ({ws>/case/toRevision})"/>
+										</items>
+									</SegmentedButton>
+									<Label text="{ws>/visualNote}" wrapping="true" class="aiVisualNote"/>
+								</HBox>
+								<core:HTML id="visual" preferDOM="false" sanitizeContent="false" afterRendering=".onVisualRendered"/>
+								<HBox wrap="Wrap" class="aiLegend" renderType="Bare">
+									<ObjectStatus text="Replaced" state="Error" icon="sap-icon://synchronize" class="sapUiSmallMarginEnd"/>
+									<ObjectStatus text="Quantity changed" state="Warning" icon="sap-icon://add-product" class="sapUiSmallMarginEnd"/>
+									<ObjectStatus text="Added" state="Success" icon="sap-icon://add" class="sapUiSmallMarginEnd"/>
+									<ObjectStatus text="Removed" state="None" icon="sap-icon://less" class="sapUiSmallMarginEnd"/>
+									<Label text="Select a component (click or Enter) to see its evidence."/>
+								</HBox>
+							</VBox>
+							<VBox class="aiDetailPanel">
+								<layoutData><l:GridData span="XL5 L5 M12 S12"/></layoutData>
+								<IllustratedMessage visible="{= !${ws>/detail} }" illustrationType="sapIllus-NoActivities" illustrationSize="Spot"
+									title="No component selected" description="Select a component in the illustration or in the BOM comparison."/>
+								<VBox visible="{= !!${ws>/detail} }">
+									<HBox alignItems="Center" justifyContent="SpaceBetween">
+										<Title text="Item {ws>/detail/line/itemNo}: {ws>/detail/title}" level="H2" wrapping="true"/>
+										<ObjectStatus text="{ path: 'ws>/detail/line/change', formatter: '.fmt.change' }" state="{ path: 'ws>/detail/line/change', formatter: '.fmt.changeState' }" inverted="true"
+											visible="{= !!${ws>/detail/line/change} }"/>
+									</HBox>
+									<f:Card class="sapUiSmallMarginTop">
+										<f:header><card:Header title="BOM change" iconSrc="sap-icon://tree"/></f:header>
+										<f:content>
+											<l:Grid defaultSpan="L6 M6 S6" class="sapUiSmallMargin">
+												<VBox><Label text="Current ({ws>/case/fromRevision})"/><Text text="{= ${ws>/detail/line/fromMaterial} ? ${ws>/detail/line/fromMaterial} + ' × ' + ${ws>/detail/fromQty} + ' ' + ${ws>/detail/line/unit} : 'not present' }"/></VBox>
+												<VBox><Label text="Proposed ({ws>/case/toRevision})"/><Text text="{= ${ws>/detail/line/toMaterial} ? ${ws>/detail/line/toMaterial} + ' × ' + ${ws>/detail/toQty} + ' ' + ${ws>/detail/line/unit} : 'removed' }"/></VBox>
+											</l:Grid>
+										</f:content>
+									</f:Card>
+									<f:Card class="sapUiSmallMarginTop" visible="{= !!${ws>/detail/stock} }">
+										<f:header><card:Header title="Stock and price — {ws>/detail/stock/material}" subtitle="for {ws>/case/productionQuantity} assemblies" iconSrc="sap-icon://inventory"/></f:header>
+										<f:content>
+											<l:Grid defaultSpan="L4 M4 S6" class="sapUiSmallMargin">
+												<VBox><Label text="Required"/><Text text="{ path: 'ws>/detail/stock/required', formatter: '.fmt.quantity' } {ws>/detail/stock/unit}"/></VBox>
+												<VBox><Label text="Available"/><Text text="{ path: 'ws>/detail/stock/available', formatter: '.fmt.quantity' }"/></VBox>
+												<VBox><Label text="Gap"/><ObjectStatus text="{ path: 'ws>/detail/stock/gap', formatter: '.fmt.quantity' }" state="{ path: 'ws>/detail/stock/status', formatter: '.fmt.stockState' }"/></VBox>
+												<VBox><Label text="Stock status"/><ObjectStatus text="{ path: 'ws>/detail/stock/status', formatter: '.fmt.stock' }{= ${ws>/detail/stock/stale} ? ' (stale)' : '' }" state="{ path: 'ws>/detail/stock/status', formatter: '.fmt.stockState' }"/></VBox>
+												<VBox><Label text="Unit price"/><Text text="{ path: 'ws>/detail/stock/unitPrice', formatter: '.fmt.unitPrice' }"/></VBox>
+												<VBox><Label text="Snapshot"/><Text text="{ path: 'ws>/detail/stock/snapshotAt', formatter: '.fmt.dateTime' }"/></VBox>
+											</l:Grid>
+										</f:content>
+									</f:Card>
+									<MessageStrip visible="{= !!${ws>/detail} &amp;&amp; !${ws>/detail/stock} &amp;&amp; !!${ws>/run} }" type="Information" showIcon="true" class="sapUiSmallMarginTop"
+										text="No stock requirement: this material is not part of the proposed revision."/>
+									<List headerText="Findings for this component" items="{ws>/detail/findings}" noDataText="No findings for this component." class="sapUiSmallMarginTop">
+										<items>
+											<StandardListItem title="{ path: 'ws>type', formatter: '.fmt.findingType' }" description="{ws>details}" info="{ path: 'ws>severity', formatter: '.fmt.severity' }"
+												infoState="{ path: 'ws>severity', formatter: '.fmt.severityState' }" wrapping="true"/>
+										</items>
+									</List>
+									<List headerText="Work-instruction steps referencing this component" items="{ws>/detail/steps}" noDataText="No work-instruction step references this component." class="sapUiSmallMarginTop">
+										<items>
+											<StandardListItem title="{ws>instructionId} v{ws>version} · step {ws>step}" description="{ws>text}" info="{= ${ws>outdated} ? 'Outdated' : 'Consistent' }"
+												infoState="{= ${ws>outdated} ? 'Error' : 'Success' }" icon="sap-icon://document-text" wrapping="true"/>
+										</items>
+									</List>
+									<Label text="Evidence: {ws>/detail/evidence}" wrapping="true" class="sapUiSmallMarginTop aiEvidence"/>
+								</VBox>
+							</VBox>
+						</l:Grid>
+					</IconTabFilter>
+					<IconTabFilter key="bom" text="BOM Comparison" icon="sap-icon://compare" count="{= ${ws>/lines}.length }">
+						<Table id="bomTable" items="{ws>/lines}" mode="SingleSelectMaster" selectionChange=".onBomSelect" noDataText="Run the impact calculation to compare the revisions." sticky="ColumnHeaders" fixedLayout="false">
+							<columns>
+								<Column width="5rem"><Text text="Item"/></Column>
+								<Column><Text text="Current material"/></Column>
+								<Column hAlign="End" minScreenWidth="Tablet" demandPopin="true"><Text text="Current qty"/></Column>
+								<Column><Text text="Proposed material"/></Column>
+								<Column hAlign="End" minScreenWidth="Tablet" demandPopin="true"><Text text="Proposed qty"/></Column>
+								<Column width="4rem" minScreenWidth="Tablet" demandPopin="true"><Text text="Unit"/></Column>
+								<Column><Text text="Change"/></Column>
+							</columns>
+							<items>
+								<ColumnListItem selected="{= ${ws>itemNo} === ${ws>/selected} }">
+									<cells>
+										<ObjectIdentifier title="{ws>itemNo}"/>
+										<Text text="{= ${ws>fromMaterial} || '—' }"/>
+										<Text text="{ path: 'ws>fromQuantity', formatter: '.fmt.quantity' }"/>
+										<Text text="{= ${ws>toMaterial} || '—' }"/>
+										<Text text="{ path: 'ws>toQuantity', formatter: '.fmt.quantity' }"/>
+										<Text text="{ws>unit}"/>
+										<ObjectStatus text="{ path: 'ws>change', formatter: '.fmt.change' }" state="{ path: 'ws>change', formatter: '.fmt.changeState' }"/>
+									</cells>
+								</ColumnListItem>
+							</items>
+						</Table>
+					</IconTabFilter>
+					<IconTabFilter key="materials" text="Materials &amp; Stock" icon="sap-icon://inventory" count="{= ${ws>/run/materialsShort} > 0 ? ${ws>/run/materialsShort} + ' short' : '' }">
+						<Toolbar style="Clear">
+							<Title text="Proposed revision requirements for {ws>/case/productionQuantity} assemblies" level="H3"/>
+							<ToolbarSpacer/>
+							<ToggleButton id="shortOnly" text="Shortages only" icon="sap-icon://filter" pressed="false" press=".onShortOnly"/>
+						</Toolbar>
+						<Table id="materialTable" items="{ws>/materials}" noDataText="Run the impact calculation to check stock." fixedLayout="false">
+							<columns>
+								<Column><Text text="Material"/></Column>
+								<Column hAlign="End"><Text text="Required"/></Column>
+								<Column hAlign="End"><Text text="Available"/></Column>
+								<Column hAlign="End"><Text text="Gap"/></Column>
+								<Column><Text text="Status"/></Column>
+								<Column hAlign="End" minScreenWidth="Tablet" demandPopin="true"><Text text="Unit price"/></Column>
+								<Column minScreenWidth="Desktop" demandPopin="true"><Text text="Stock snapshot"/></Column>
+							</columns>
+							<items>
+								<ColumnListItem type="Active" press=".onMaterialPress">
+									<cells>
+										<ObjectIdentifier title="{ws>material}" text="{ws>unit}"/>
+										<Text text="{ path: 'ws>required', formatter: '.fmt.quantity' }"/>
+										<Text text="{ path: 'ws>available', formatter: '.fmt.quantity' }"/>
+										<ObjectNumber number="{ path: 'ws>gap', formatter: '.fmt.quantity' }" state="{ path: 'ws>status', formatter: '.fmt.stockState' }"/>
+										<ObjectStatus text="{ path: 'ws>status', formatter: '.fmt.stock' }{= ${ws>stale} ? ' · stale' : '' }" state="{ path: 'ws>status', formatter: '.fmt.stockState' }"/>
+										<Text text="{ path: 'ws>unitPrice', formatter: '.fmt.unitPrice' }"/>
+										<Text text="{ path: 'ws>snapshotAt', formatter: '.fmt.dateTime' }"/>
+									</cells>
+								</ColumnListItem>
+							</items>
+						</Table>
+					</IconTabFilter>
+					<IconTabFilter key="cost" text="Cost" icon="sap-icon://lead">
+						<l:Grid defaultSpan="XL3 L3 M6 S12" class="sapUiSmallMarginTop">
+							<f:Card><f:header><card:Header title="Per assembly, current" subtitle="Revision {ws>/case/fromRevision}"/></f:header>
+								<f:content><ObjectNumber class="sapUiSmallMargin aiBigNumber" number="{ parts: ['ws>/run/fromCostPerAssembly', 'ws>/run/currency'], formatter: '.fmt.plainMoney' }"/></f:content></f:Card>
+							<f:Card><f:header><card:Header title="Per assembly, proposed" subtitle="Revision {ws>/case/toRevision}"/></f:header>
+								<f:content><ObjectNumber class="sapUiSmallMargin aiBigNumber" number="{ parts: ['ws>/run/toCostPerAssembly', 'ws>/run/currency'], formatter: '.fmt.plainMoney' }"/></f:content></f:Card>
+							<f:Card><f:header><card:Header title="Delta per assembly" subtitle="Proposed minus current"/></f:header>
+								<f:content><ObjectNumber class="sapUiSmallMargin aiBigNumber" number="{ parts: ['ws>/run/deltaPerAssembly', 'ws>/run/currency'], formatter: '.fmt.money' }" state="{ path: 'ws>/run/deltaPerAssembly', formatter: '.fmt.deltaState' }"/></f:content></f:Card>
+							<f:Card><f:header><card:Header title="Total for {ws>/case/productionQuantity} assemblies" subtitle="{ path: 'ws>/run/costDeltaPercent', formatter: '.fmt.percent' }"/></f:header>
+								<f:content><ObjectNumber class="sapUiSmallMargin aiBigNumber" number="{ parts: ['ws>/run/costDeltaTotal', 'ws>/run/currency'], formatter: '.fmt.money' }" state="{ path: 'ws>/run/costDeltaTotal', formatter: '.fmt.deltaState' }"/></f:content></f:Card>
+						</l:Grid>
+						<MessageStrip class="sapUiSmallMarginTop" type="Information" showIcon="true"
+							text="Material cost from synthetic standard prices valid on the as-of date ({ws>/run/asOfDate}), calculated by the CAP ruleset {ws>/run/ruleset}. Labour and overhead are not included."/>
+					</IconTabFilter>
+					<IconTabFilter key="instructions" text="Work Instructions" icon="sap-icon://document-text" count="{= ${ws>/run/instructionFindings} > 0 ? ${ws>/run/instructionFindings} : '' }">
+						<List items="{ws>/instructions}" noDataText="No work instructions for this assembly.">
+							<items>
+								<CustomListItem>
+									<VBox class="sapUiSmallMargin">
+										<HBox justifyContent="SpaceBetween" alignItems="Center" wrap="Wrap">
+											<Title text="{ws>instructionId} v{ws>version} — {ws>title}" level="H3" wrapping="true"/>
+											<HBox>
+												<ObjectStatus text="{ws>status}" state="{= ${ws>status} === 'RELEASED' ? 'Success' : 'None' }" class="sapUiSmallMarginEnd"/>
+												<ObjectStatus text="{= ${ws>outdatedCount} > 0 ? ${ws>outdatedCount} + ' outdated step(s)' : (${ws>applies} ? 'Consistent with proposed BOM' : 'Not applicable to revision ' + ${ws>/case/toRevision}) }"
+													state="{= ${ws>outdatedCount} > 0 ? 'Error' : (${ws>applies} ? 'Success' : 'None') }" inverted="true"/>
+											</HBox>
+										</HBox>
+										<Label text="Applies to {= ${ws>appliesToRevision} ? 'revision ' + ${ws>appliesToRevision} : 'all revisions' } · valid from {ws>validFrom} · {ws>evidenceRef}" wrapping="true"/>
+										<Table items="{ path: 'ws>references', templateShareable: false }" class="sapUiTinyMarginTop" fixedLayout="false">
+											<columns>
+												<Column width="5rem"><Text text="Step"/></Column>
+												<Column><Text text="Material"/></Column>
+												<Column><Text text="Instruction text"/></Column>
+												<Column><Text text="Check"/></Column>
+											</columns>
+											<items>
+												<ColumnListItem highlight="{= ${ws>outdated} ? 'Error' : 'None' }">
+													<cells>
+														<Text text="{ws>step}"/>
+														<Text text="{ws>material}"/>
+														<Text text="{ws>text}"/>
+														<ObjectStatus text="{= ${ws>outdated} ? 'Not in revision ' + ${ws>/case/toRevision} : '' }" state="Error"/>
+													</cells>
+												</ColumnListItem>
+											</items>
+										</Table>
+									</VBox>
+								</CustomListItem>
+							</items>
+						</List>
+					</IconTabFilter>
+					<IconTabFilter key="findings" text="Findings" icon="sap-icon://alert" count="{= ${ws>/findings}.length }">
+						<Table items="{ws>/findings}" noDataText="No findings. Run the impact calculation first." fixedLayout="false">
+							<columns>
+								<Column><Text text="Type"/></Column>
+								<Column><Text text="Severity"/></Column>
+								<Column><Text text="Material"/></Column>
+								<Column minScreenWidth="Tablet" demandPopin="true"><Text text="Description"/></Column>
+								<Column minScreenWidth="Desktop" demandPopin="true"><Text text="Source references"/></Column>
+							</columns>
+							<items>
+								<ColumnListItem type="Active" press=".onFindingPress">
+									<cells>
+										<Text text="{ path: 'ws>type', formatter: '.fmt.findingType' }"/>
+										<ObjectStatus text="{ path: 'ws>severity', formatter: '.fmt.severity' }" state="{ path: 'ws>severity', formatter: '.fmt.severityState' }"/>
+										<Text text="{= ${ws>material} || '—' }"/>
+										<Text text="{ws>details}"/>
+										<Text text="{ws>evidenceRefs}" class="aiEvidence"/>
+									</cells>
+								</ColumnListItem>
+							</items>
+						</Table>
+					</IconTabFilter>
+					<IconTabFilter key="evidence" text="Evidence" icon="sap-icon://shield">
+						<f:Card class="sapUiSmallMarginTop">
+							<f:header><card:Header title="Evaluated impact run" subtitle="Immutable snapshot written by the CAP action runImpact" iconSrc="sap-icon://measure"/></f:header>
+							<f:content>
+								<l:Grid defaultSpan="L4 M6 S12" class="sapUiSmallMargin">
+									<VBox><Label text="Run ID"/><Text text="{= ${ws>/run/ID} || '—' }"/></VBox>
+									<VBox><Label text="Status"/><ObjectStatus text="{ path: 'ws>/run/status', formatter: '.fmt.runStatus' }" state="{ path: 'ws>/run/status', formatter: '.fmt.runState' }"/></VBox>
+									<VBox><Label text="Flags"/><Text text="{= ${ws>/run/flags} || 'none' }"/></VBox>
+									<VBox><Label text="Ruleset"/><Text text="{ws>/run/ruleset}"/></VBox>
+									<VBox><Label text="As-of date"/><Text text="{ws>/run/asOfDate}"/></VBox>
+									<VBox><Label text="Computed"/><Text text="{ path: 'ws>/run/computedAt', formatter: '.fmt.dateTime' } by {ws>/run/computedBy}"/></VBox>
+									<VBox><Label text="Input fingerprint"/><Text text="{ws>/run/inputFingerprint}" class="aiEvidence" wrapping="true"/></VBox>
+								</l:Grid>
+							</f:content>
+						</f:Card>
+						<f:Card class="sapUiSmallMarginTop">
+							<f:header><card:Header title="Data provenance" subtitle="{ws>/case/sourceTypeText}" iconSrc="{ path: 'ws>/case/sourceType', formatter: '.fmt.sourceIcon' }"/></f:header>
+							<f:content>
+								<l:Grid defaultSpan="L4 M6 S12" class="sapUiSmallMargin">
+									<VBox><Label text="Case evidence reference"/><Text text="{ws>/case/evidenceRef}" class="aiEvidence" wrapping="true"/></VBox>
+									<VBox visible="{= !!${ws>/case/sourceImport} }"><Label text="Imported"/><Text text="{ws>/case/sourceImport/fileName} by {ws>/case/sourceImport/importedBy}, { path: 'ws>/case/sourceImport/importedAt', formatter: '.fmt.dateTime' }"/></VBox>
+									<VBox visible="{= !!${ws>/case/sourceImport} }"><Label text="Import checksum"/><Text text="{ws>/case/sourceImport/checksum}" class="aiEvidence" wrapping="true"/></VBox>
+									<VBox><Label text="Data label"/><Text text="Synthetic demo data — fictional NovaMotion Manufacturing; not SAP S/4HANA records" wrapping="true"/></VBox>
+									<VBox><Label text="AI explanation"/><Text text="None — deterministic findings only (no LLM involved in calculation or decisions)." wrapping="true"/></VBox>
+								</l:Grid>
+							</f:content>
+						</f:Card>
+						<Table headerText="Impact run history" items="{ws>/runs}" class="sapUiSmallMarginTop" noDataText="No runs yet." fixedLayout="false">
+							<columns>
+								<Column><Text text="Computed"/></Column>
+								<Column><Text text="As-of"/></Column>
+								<Column><Text text="Status"/></Column>
+								<Column hAlign="End"><Text text="Cost delta"/></Column>
+								<Column minScreenWidth="Tablet" demandPopin="true"><Text text="By"/></Column>
+							</columns>
+							<items>
+								<ColumnListItem highlight="{= ${ws>ID} === ${ws>/run/ID} ? 'Information' : 'None' }">
+									<cells>
+										<Text text="{ path: 'ws>computedAt', formatter: '.fmt.dateTime' }{= ${ws>ID} === ${ws>/run/ID} ? ' (latest)' : '' }"/>
+										<Text text="{ws>asOfDate}"/>
+										<ObjectStatus text="{ path: 'ws>status', formatter: '.fmt.runStatus' }" state="{ path: 'ws>status', formatter: '.fmt.runState' }"/>
+										<Text text="{ parts: ['ws>costDeltaTotal', 'ws>currency'], formatter: '.fmt.money' }"/>
+										<Text text="{ws>computedBy}"/>
+									</cells>
+								</ColumnListItem>
+							</items>
+						</Table>
+					</IconTabFilter>
+					<IconTabFilter key="review" text="Review" icon="sap-icon://approvals" count="{= ${ws>/decisions}.length }">
+						<MessageStrip type="Information" showIcon="true" class="sapUiSmallMarginBottom"
+							text="Separation of duties: the person who submits a case cannot approve or reject it. Approval always names the evaluated impact run; the server refuses stale, incomplete or unacknowledged evidence."/>
+						<HBox class="sapUiSmallMarginBottom" wrap="Wrap">
+							<Button text="Run Impact" icon="sap-icon://simulate" press=".onRunImpact" visible="{= !!${ws>/case/canRunImpact} }" class="sapUiTinyMarginEnd"/>
+							<Button text="Submit for Review" icon="sap-icon://paper-plane" press=".onSubmit" visible="{= !!${ws>/case/canSubmit} }" class="sapUiTinyMarginEnd"/>
+							<Button text="Approve" type="Accept" icon="sap-icon://accept" press=".onApprove" visible="{= !!${ws>/case/canDecide} }" class="sapUiTinyMarginEnd"/>
+							<Button text="Reject" type="Reject" icon="sap-icon://decline" press=".onReject" visible="{= !!${ws>/case/canDecide} }"/>
+							<Label visible="{= !${ws>/case/canRunImpact} &amp;&amp; !${ws>/case/canSubmit} &amp;&amp; !${ws>/case/canDecide} }" wrapping="true"
+								text="{= ${ws>/case/status} === 'IN_REVIEW' &amp;&amp; ${ws>/case/submittedBy} ? 'Waiting for an independent approver (submitted by ' + ${ws>/case/submittedBy} + ').' : 'No review action is available to you for this case.' }"/>
+						</HBox>
+						<List headerText="Decision history" items="{ws>/decisions}" noDataText="No decisions yet. Decisions are recorded only by the review actions.">
+							<items>
+								<FeedListItem sender="{ws>actor}" icon="{= ${ws>action} === 'APPROVE' ? 'sap-icon://accept' : ${ws>action} === 'REJECT' ? 'sap-icon://decline' : 'sap-icon://paper-plane' }"
+									info="{ path: 'ws>action', formatter: '.fmt.decision' }: { path: 'ws>fromStatus', formatter: '.fmt.caseStatus' } → { path: 'ws>toStatus', formatter: '.fmt.caseStatus' }"
+									timestamp="{ path: 'ws>at', formatter: '.fmt.dateTime' }"
+									text="{= (${ws>comment} || '(no comment)') + (${ws>basedOnRun} ? ' — evidence: run as of ' + ${ws>basedOnRun/asOfDate} + ' (' + ${ws>evidenceStatus} + ')' + (${ws>warningsAcknowledged} ? ', warnings acknowledged' : '') : '') }"
+									showIcon="true" iconDensityAware="false"/>
+							</items>
+						</List>
+					</IconTabFilter>
+				</items>
+			</IconTabBar>
+		</f:content>
+	</f:DynamicPage>
+</mvc:View>

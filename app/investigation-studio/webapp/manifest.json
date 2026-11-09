@@ -1,0 +1,58 @@
+{
+  "_version": "1.65.0",
+  "sap.app": {
+    "id": "assemblyimpact.investigationstudio",
+    "type": "application",
+    "i18n": "i18n/i18n.properties",
+    "applicationVersion": { "version": "0.1.0" },
+    "title": "{{appTitle}}",
+    "description": "{{appDescription}}",
+    "dataSources": {
+      "mainService": {
+        "uri": "/odata/v4/engineering-review/",
+        "type": "OData",
+        "settings": { "odataVersion": "4.0" }
+      }
+    }
+  },
+  "sap.ui": {
+    "technology": "UI5",
+    "deviceTypes": { "desktop": true, "tablet": true, "phone": true }
+  },
+  "sap.ui5": {
+    "flexEnabled": false,
+    "rootView": { "viewName": "assemblyimpact.investigationstudio.view.App", "type": "XML", "id": "app" },
+    "dependencies": {
+      "minUI5Version": "1.136.0",
+      "libs": { "sap.m": {}, "sap.f": {}, "sap.ui.core": {}, "sap.ui.layout": {}, "sap.ui.unified": {} }
+    },
+    "contentDensities": { "compact": true, "cozy": true },
+    "models": {
+      "i18n": { "type": "sap.ui.model.resource.ResourceModel", "settings": { "bundleName": "assemblyimpact.investigationstudio.i18n.i18n", "supportedLocales": [""], "fallbackLocale": "" } },
+      "": {
+        "dataSource": "mainService",
+        "preload": true,
+        "settings": { "operationMode": "Server", "autoExpandSelect": true, "earlyRequests": true }
+      }
+    },
+    "routing": {
+      "config": {
+        "routerClass": "sap.f.routing.Router",
+        "type": "View",
+        "viewType": "XML",
+        "path": "assemblyimpact.investigationstudio.view",
+        "controlId": "fcl",
+        "transition": "slide"
+      },
+      "routes": [
+        { "pattern": ":?query:", "name": "cases", "target": ["cases"] },
+        { "pattern": "cases/{caseId}:?query:", "name": "workspace", "target": ["cases", "workspace"] }
+      ],
+      "targets": {
+        "cases": { "name": "CaseList", "controlAggregation": "beginColumnPages", "id": "caseList" },
+        "workspace": { "name": "Workspace", "controlAggregation": "midColumnPages", "id": "workspace" }
+      }
+    },
+    "resources": { "css": [{ "uri": "css/style.css" }] }
+  }
+}

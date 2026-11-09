@@ -1,0 +1,29 @@
+{
+  "schema": "assemblyimpact.p4.component-map/1",
+  "synthetic": true,
+  "notice": "Synthetic engineering visualization of the fictional NovaMotion COOL-100 (dataset DS-ORACLE-01). Not CAD or engineering documentation.",
+  "assemblyCode": "COOL-100",
+  "dataset": "DS-ORACLE-01",
+  "svg": "COOL-100.components.svg",
+  "bomStates": { "A": "BOM-COOL-100-A", "B": "BOM-COOL-100-B" },
+  "components": [
+    { "itemNo": "0010", "elementIds": ["ai-item-0010"], "materials": { "A": "FAN-A", "B": "FAN-B" }, "description": "Cooling fan" },
+    { "itemNo": "0020", "elementIds": ["ai-item-0020-u1", "ai-item-0020-u2", "ai-item-0020-u3"], "materials": { "A": "BRKT-01", "B": "BRKT-01" }, "quantities": { "A": 2, "B": 3 }, "unitElements": { "A": ["ai-item-0020-u1", "ai-item-0020-u2"], "B": ["ai-item-0020-u1", "ai-item-0020-u2", "ai-item-0020-u3"] }, "description": "Mounting bracket" },
+    { "itemNo": "0030", "elementIds": ["ai-item-0030"], "materials": { "A": "SENS-01", "B": "SENS-01" }, "description": "Temperature sensor" },
+    { "itemNo": "0040", "elementIds": ["ai-item-0040"], "materials": { "A": null, "B": "SEAL-01" }, "description": "Housing seal" }
+  ],
+  "stateClasses": {
+    "ADDED": "ai-state-added",
+    "REMOVED": "ai-state-removed",
+    "REPLACED": "ai-state-replaced",
+    "QUANTITY_CHANGED": "ai-state-quantity-changed",
+    "UNCHANGED": "ai-state-unchanged"
+  },
+  "stateSource": "EngineeringReview.ImpactComparisonLines.change, joined on itemNo",
+  "selectionLinks": {
+    "findings": "EngineeringReview.Findings where material in (materials.A, materials.B)",
+    "stock": "EngineeringReview.ImpactMaterialLines where material = materials.B (required/available/gap/status)",
+    "prices": "EngineeringReview.CostPrices where material in (materials.A, materials.B)",
+    "workInstructions": "EngineeringReview.InstructionReferences where material in (materials.A, materials.B)"
+  }
+}

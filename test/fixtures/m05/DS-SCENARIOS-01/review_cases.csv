@@ -1,0 +1,7 @@
+caseNumber,title,assemblyCode,plant,fromBomStateId,toBomStateId,productionQuantity,status,sourceType,owner,evidenceRef
+EC-000481,Upgrade bearing set and add shims on GEAR-300,GEAR-300,1000,BOM-GEAR-300-A,BOM-GEAR-300-B,200,OPEN,SYNTHETIC_FIXTURE,Engineering Reviewer 2,DS-SCENARIOS-01/review_cases/EC-000481
+EC-000482,Remove obsolete relay board from CTRL-400,CTRL-400,1000,BOM-CTRL-400-A,BOM-CTRL-400-B,150,OPEN,SYNTHETIC_FIXTURE,Engineering Reviewer 1,DS-SCENARIOS-01/review_cases/EC-000482
+EC-000483,Switch VALVE-500 seals to FKM material,VALVE-500,1000,BOM-VALVE-500-A,BOM-VALVE-500-B,120,OPEN,SYNTHETIC_FIXTURE,Engineering Reviewer 2,DS-SCENARIOS-01/review_cases/EC-000483
+EC-000484,Uprate conveyor motor and add safety guard on CONV-600,CONV-600,1000,BOM-CONV-600-A,BOM-CONV-600-B,80,OPEN,SYNTHETIC_FIXTURE,Engineering Reviewer 1,DS-SCENARIOS-01/review_cases/EC-000484
+EC-000485,Multi-component revision of the HYD-700 manifold,HYD-700,1000,BOM-HYD-700-A,BOM-HYD-700-B,60,OPEN,SYNTHETIC_FIXTURE,Engineering Reviewer 2,DS-SCENARIOS-01/review_cases/EC-000485
+EC-000486,Change winding insulation kit on MOTOR-800,MOTOR-800,1000,BOM-MOTOR-800-A,BOM-MOTOR-800-B,300,OPEN,SYNTHETIC_FIXTURE,Engineering Reviewer 1,DS-SCENARIOS-01/review_cases/EC-000486
