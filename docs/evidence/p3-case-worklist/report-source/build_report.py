@@ -72,6 +72,14 @@ SCREENSHOTS = [
      'Material Impact sorted by material (BRKT-01, FAN-B, SEAL-01, SENS-01) and BOM Comparison by item (0010-0040); sort indicators shown in the column headers.'),
     ('P3-20', 'P3-20_run-findings-sorted.jpg', 'After fix 377e46a: findings sorted by type and material',
      'Findings sorted by finding type, then material; severity is shown with criticality icons.'),
+    ('P3-21', 'P3-21_deeplink-stale-dialog-reproduced.jpg', 'Deep-link "Not Found" reproduced: dialog left over from the previous user',
+     'Controlled trial T5: the app was loaded as analyst2000 on the plant-1000 case (correct 404 dialog), the browser credentials were switched to analyst and the route changed without reloading or closing the dialog. The run page loads correctly for analyst (all requests 200) behind the earlier dialog.'),
+    ('P3-22', 'P3-22_deeplink-control-no-error.jpg', 'Control: same switch with the earlier dialog closed — no error',
+     'Trial T6: identical steps, but the earlier 404 dialog was closed first. The run page loads for analyst with no new error. This confirms the dialog in P3-21 and in the original observation was the previous user\'s correct 404 message.'),
+    ('P3-23', 'P3-23_github-pr5-checks-passed.jpg', 'GitHub PR #5: all checks passed',
+     'Draft PR #5 into main: 4 commits, head 18cacdb with a green check; "All checks have passed — 1 successful check"; no conflicts with the base branch; draft, so it cannot be merged yet.'),
+    ('P3-24', 'P3-24_pa-artifact-preservation-check.jpg', 'Project Accelerator artifacts preserved; EngineeringReview is the only review service',
+     'BAS: the sandbox is still at 9910c02 and its tree hash equals the tree hash of docs/evidence/p3-case-worklist/generated in the repository (e6c3a4fa…); the original archive differs in 0 files; the repository model serves AssemblyCatalog and EngineeringReview only, with no draft annotations. The two .vscode files were changed by BAS itself.'),
 ]
 for eid, f, title, desc in GH.get('extra_shots', []):
     SCREENSHOTS.append((eid, f, title, desc))
@@ -100,6 +108,8 @@ bullets(
     'The implemented app <font face="Mono">app/case-worklist</font> shows Review Cases -> Review Case -> Impact Run -> Finding from EngineeringReview, with the Run Impact action.',
     'Browser checks: plant isolation, 403 for viewers on Run Impact, analyst run reproducing the oracle (+1,200.00 EUR, 2 short, 7 findings), cross-plant deep link 404.',
     'Three defects found only in the browser were fixed: UI5 1.120 startup error, zero-height app container, unsorted section tables.',
+    'The intermittent deep-link "Not Found" was reproduced under controlled user switching: it is the previous user\'s correct 404 message still open after an in-app identity switch, not an application defect (section 7).',
+    'Original Project Accelerator files verified unchanged (identical git tree hash); EngineeringReview remains the only review service; no draft-enabled service in the application model.',
     'npm test 40/40 and lint pass locally and in BAS; no new dependencies.')
 p('<b>Not claimed.</b> The Project Accelerator Page Map (P3-05) is a design-time view, not a working UI; the working UI is the browser-rendered '
   'application in P3-08 to P3-20. No BTP deployment, no S/4HANA data, no Joule, no P4 work. All records are synthetic.')
@@ -125,7 +135,7 @@ table([
     ['Service', 'assemblyImpactCaseWorklistSrv at /odata/v4/assembly-impact-case-worklist-srv/, @odata.draft.enabled', 'No'],
     ['Sample data', 'CSV rows invented by the generator (10 cases, findings, materials)', 'No'],
     ['Fiori app', 'List Report -> Object Page -> Findings Object Page; minUI5Version 1.149.0', 'Page structure only'],
-    ['Metadata', '.fiori-ai: log.txt, model.json, user-input.txt, userImage.png', 'Evidence only'],
+    ['Metadata', '.fiori-ai (7 files): ai-integrity.json, flowImage.jpeg, generator-config.json, log.txt, model.json, user-input.txt, userImage.png', 'Evidence only'],
 ], [30*mm, 110*mm, 30*mm])
 
 h1('4. Generated UI preview and design comparison')
@@ -169,15 +179,34 @@ p('<b>Note on defect 3.</b> The browser had cached the older $metadata, so scree
   'unsorted state as well. After forcing a metadata reload, the table bindings were checked in the page: findings sorted by '
   '[type, material], material lines by [material], comparison lines by [itemNo]. Commit af43aaf\'s message overstated its effect '
   'on sorting; 377e46a is the effective fix.')
-p('<b>Other observation.</b> One cold deep-link load right after switching development users showed a transient "Not Found" '
-  'dialog; it did not recur on reload or in-app navigation. Logged as an open observation.')
 
-h1('7. Testing and verification')
+h1('7. Deep-link "Not Found" investigation')
+p('<b>Original observation.</b> While capturing evidence, a "Not Found" dialog appeared over a correctly loaded impact-run page '
+  'for user analyst. The tab had just shown the cross-plant check P3-17 (analyst2000 opening the plant-1000 case, correct 404). '
+  'The next step changed only the URL fragment, so the browser did not reload the app, and the identity was switched with a scripted '
+  'XHR. <b>Method.</b> Controlled trials in the BAS preview against run 058c8c87; the active identity was confirmed each time '
+  'by reading ReviewCases (analyst/cviewer see EC-000473, analyst2000 sees EC-200473).')
+table([
+    ['Trial', 'Steps', 'Expected', 'Observed'],
+    ['T1-T5 identity switching', 'Switch analyst2000 / analyst / cviewer in 10 directions; read ReviewCases after each switch (fetch and XHR)', 'Each request runs as the new user', 'All 30 reads returned the new user\'s plant only; no stale credentials'],
+    ['T1', 'analyst2000, full page load of the plant-1000 run deep link', 'Not Found', 'Not Found (correct)'],
+    ['T2', 'analyst after analyst2000, full page load of the same link', 'Run page, no error', 'Run page, +1,200.00 EUR, no dialog'],
+    ['T3 / T5', 'analyst2000 loads the case link (404 dialog); switch to analyst; change route in the running app without closing the dialog', '-', 'Run page loads (all 5 batch parts 200) with the old dialog still on top (P3-21)'],
+    ['T6', 'As T5, but close the dialog before the switch', 'Run page, no error', 'Run page, no dialog (P3-22)'],
+], [24*mm, 70*mm, 30*mm, 46*mm])
+p('<b>Conclusion.</b> Reproduced and explained: the dialog is the previous user\'s correct 404 message, left open because the identity '
+  'was changed inside a running app. Every request made after the switch succeeded, and full page loads never showed the error. '
+  'Real users cannot change identity without signing out and reloading, so this is <b>not an application defect</b> and no code was changed. '
+  'Plant isolation behaved correctly in every trial.')
+
+h1('8. Testing and verification')
 table([
     ['Command', 'Local', 'BAS'],
     ['npm test', 'tests 40, pass 40, fail 0', 'tests 40, pass 40, fail 0 (after 377e46a)'],
     ['npm run lint (eslint srv test --max-warnings=0)', 'exit 0', 'exit 0'],
     ['Dependencies', 'package-lock.json unchanged', '-'],
+    ['npm audit --package-lock-only --audit-level=high', 'found 0 vulnerabilities', '-'],
+    ['GitHub Actions (npm ci, lint, test, audit)', ci_line, '-'],
 ], [70*mm, 50*mm, 50*mm])
 table([
     ['New test (test/case-worklist-app.test.js)', 'Checks', 'Result'],
@@ -198,13 +227,38 @@ table([
     ['Section sorting', 'material / item / type order', 'unsorted before, sorted after 377e46a', 'P3-18 to P3-20'],
 ], [52*mm, 42*mm, 46*mm, 30*mm])
 
-h1('8. Screenshot evidence')
+h1('9. Screenshot evidence')
 p('Original, unedited captures of the browser in the BAS session, taken with Claude in Chrome. Times are UTC. '
   'No secrets are visible; development passwords are public mock values and are not shown.')
 for eid, f, title, desc in SCREENSHOTS:
     S.append(('shot', (eid, f, title, desc)))
 
-h1('9. Security review')
+h1('10. Final design review against the approved mockup')
+p('Reference: approved layout image (concept mockup, illustrative values) and AssemblyImpact_Case_Worklist_requirements.md. '
+  'Status: <b>Implemented</b> in PR #5; <b>Deferred (P3 follow-up)</b> needs backend work in a later P3/M04 slice; '
+  '<b>P4</b> belongs to the separate custom investigation UI; <b>Platform</b> needs BTP deployment approval.')
+table([
+    ['Mockup / requirement element', 'Status', 'Notes'],
+    ['Filters Assembly, Plant, Revision, Status, Source; Go; Adapt Filters', 'Implemented', 'Fiori elements filter bar; Revision = proposed revision (toRevision) as in the requirements'],
+    ['Columns Assembly, Change ID, Current Rev., Instruction Findings, Stock Exposure, Estimated Cost Delta, Source Type, Review Status', 'Implemented', 'Plus Proposed Rev. from the requirements; Stock Exposure = materials short; figures from the latest immutable impact run'],
+    ['Review status colours (Open neutral, In Review warning, Approved positive, Rejected negative)', 'Implemented', 'criticality 0 / 2 / 3 / 1'],
+    ['Table settings, sort, column personalization', 'Implemented', 'standard Fiori elements toolbar'],
+    ['Row navigation -> case details', 'Implemented', 'Review Case Object Page'],
+    ['General Information tab (all 10 fields)', 'Implemented', 'plus evidence reference and Latest Impact section'],
+    ['Findings tab, severity colours High/Medium/Low', 'Implemented (adapted)', 'on the Impact Run page, because findings belong to a run; finding detail page shows all fields; source reference = evidenceRefs'],
+    ['Material Impact tab (material, required, available, gap, unit)', 'Implemented (adapted)', 'on the Impact Run page; plus stock status, stale flag, unit price; BOM comparison added'],
+    ['Run impact (not in the mockup)', 'Implemented', 'analyst only, enforced by the service'],
+    ['Decision History tab', 'Deferred (P3 follow-up)', 'no decision-history entity in EngineeringReview yet; approval-workflow slice'],
+    ['Create Change, Export buttons; row checkboxes for bulk actions', 'Deferred (P3 follow-up)', 'service is read-only by design; creation belongs to the approval workflow'],
+    ['Readable labels for codes (e.g. "In Review" instead of IN_REVIEW, "Synthetic Fixture")', 'Deferred (P3 follow-up)', 'needs code lists or text annotations in the service'],
+    ['Shell bar "AssemblyImpact AI", launchpad tile, search, notifications', 'Platform', 'needs approuter / Work Zone deployment (separate approval)'],
+    ['Interactive assembly visualization and free investigation of impacts', 'P4', 'not part of P3; not started'],
+    ['GenAI proposals as a case source', 'P1/P2', 'source type value exists; no GenAI or S/4HANA integration'],
+], [62*mm, 32*mm, 76*mm])
+p('<b>Result.</b> All list-page elements of the mockup that the read-only service supports are implemented. Departures are deliberate '
+  'and recorded in decisions D-P3-3 to D-P3-5; nothing from P4 was implemented.')
+
+h1('11. Security review')
 table([
     ['Area', 'Result', 'Evidence'],
     ['Authorization stays in the service', 'The UI adds no access logic; runImpact 403 for viewers and 404 across plants come from the backend', 'P3-11, P3-17, tests'],
@@ -220,28 +274,31 @@ p('<b>Unresolved risks.</b> No xs-security.json or role templates (blocks BTP de
 p('<b>Review disclosure.</b> Code review, security review and quality assessment were performed by one AI system (Claude, Anthropic). '
   'No human or SAP reviewer took part.')
 
-h1('10. Limitations')
+h1('12. Limitations')
 bullets(
     'Unit price shows 9 decimals (backend Decimal scale); cosmetic, not fixed.',
+    'Status, source type, finding type and severity are shown as technical codes (IN_REVIEW, SYNTHETIC_FIXTURE, HIGH); readable labels need code lists.',
     'Decision History, Create Change and Export from the mockup are not implemented (no backend support yet).',
     'Findings are not ordered by severity rank (string field); criticality icons mark severity.',
     'Run Impact uses a free date parameter dialog; no value help.',
     'Preview only in BAS with mocked authentication; no BTP deployment, approuter or launchpad tile.',
     'All data synthetic (NovaMotion Manufacturing); no S/4HANA connection; no Joule.')
 
-h1('11. GitHub traceability')
+h1('13. GitHub traceability')
 table([
     ['Item', 'Value', 'Status'],
     ['Branch', f'feat/p3-case-worklist (from main {BASE[:7]})', 'verified'],
-    ['Code commits', '; '.join(c[0] for c in COMMITS) + f' (head {HEAD[:12]})', 'verified in BAS (same hashes)'],
-    ['Changed files (code)', '10 files: app/case-worklist (6), test/case-worklist-app.test.js, package.json, readme.md', 'verified'],
-    ['Evidence commit', GH.get('evidence_commit') or 'docs(p3): add Case Worklist evidence (this folder); a file cannot contain its own commit hash', 'see PR'],
+    ['Code commits', '; '.join(c[0] for c in COMMITS) + f' (head {HEAD[:12]})', 'verified (BAS and GitHub)'],
+    ['Changed files (code)', '9 files: app/case-worklist (6), test/case-worklist-app.test.js, package.json, readme.md', 'verified (git diff)'],
+    ['Evidence commit', (GH.get('evidence_commit') or 'see PR') + ' — docs(p3): add Case Worklist evidence archive and report (77 files)', 'verified (GitHub API)'],
+    ['Final evidence commit', 'docs(p3): finalize evidence with PR #5, CI and review results — replaces this PDF and the Markdown report, adds P3-21 to P3-24, updates github.json, the summary and the manifest. A file cannot contain its own commit hash or the CI result of its own commit; see PR #5.', 'see PR #5'],
+    ['Attribution', 'All commits authored and committed by Naman Patel <108478447+Naman028@users.noreply.github.com>; no co-author trailers', 'verified'],
     ['Pull request', GH.get('pr_url') or 'not created', GH.get('pr_status', 'pending')],
     ['CI', ci_line, 'verified' if GH.get('ci_conclusion') == 'success' else 'pending'],
     ['main', f'unchanged at {BASE[:12]}', GH.get('main_status', 'verified before push')],
 ], [34*mm, 106*mm, 30*mm])
 
-h1('12. Four-project relevance and next steps')
+h1('14. Four-project relevance and next steps')
 table([
     ['Project', 'Contribution', 'Not claimed'],
     ['P1 Joule', 'Same authorized service a skill could call.', 'No Joule skill.'],
@@ -260,7 +317,7 @@ rows = [['ID', 'File', 'Captured (UTC)', 'SHA-256']]
 for eid, f, *_ in SCREENSHOTS:
     rows.append([eid, f, TIMES.get(eid, ''), sha(os.path.join(SHOTS, f))])
 table(rows, [12*mm, 62*mm, 34*mm, 62*mm])
-p('All files in this folder, including generated/ and logs/, are hashed in evidence-manifest.json, produced in BAS when the evidence was committed.')
+p('All files in this folder, including generated/ and logs/, are hashed in evidence-manifest.json (report-source/make_manifest.py), regenerated for the final evidence commit.')
 h1('Appendix B — References')
 bullets(
     'SAP Fiori elements for OData V4: table sections and presentation variants — https://ui5.sap.com/#/topic/7f844f1021cd4791b8f7408eac7c1cec',

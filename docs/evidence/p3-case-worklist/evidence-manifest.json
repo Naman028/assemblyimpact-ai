@@ -1,21 +1,21 @@
 {
  "milestone": "P3 Case Worklist",
- "head": "377e46aa5b712487fa63777f9c0ebe38e00271bf",
+ "head": "18cacdb26a1ef27dc3f6869e3d18db45e6788bf6",
  "files": [
   {
    "path": "P3_Case_Worklist_Report.pdf",
-   "bytes": 1664646,
-   "sha256": "1d55909170082e68314b557766432dcb18997f31e4b33b526237778467e51694"
+   "bytes": 2090470,
+   "sha256": "8b3999543b13a59e17744c146f5b424150a94b22c33a3a32c8aa4d192a2d1f0b"
   },
   {
    "path": "README.md",
-   "bytes": 1105,
-   "sha256": "0cc3baa54013f7d819d51ab2ddb2e92d5425ec2b6cf127e09595e55e7c436b65"
+   "bytes": 1123,
+   "sha256": "a4817b0027efffccb0ed594b342e33829290b636f5c6e75ebaf960e7a28fb9e8"
   },
   {
    "path": "decisions.md",
-   "bytes": 2923,
-   "sha256": "fb4d667b7fda130f19ad4c30d4e894490524882780de47c238ef65230c3dfa73"
+   "bytes": 3307,
+   "sha256": "11daca78d4f9ab164b32e1cb8dc6cea077f1a57df21f5f0579afdf9de52c1c68"
   },
   {
    "path": "generated/.fiori-ai/ai-integrity.json",
@@ -239,8 +239,8 @@
   },
   {
    "path": "implementation-report.md",
-   "bytes": 22305,
-   "sha256": "55ff4c9a90afbba5abc44c8842ec8c7a0880b5c0c189ecabfee07c68ff25213a"
+   "bytes": 30727,
+   "sha256": "6e3c3debc95e46dfc4f81a98cce5fb460371cd0f00215e6a8ec5afc1ab09612f"
   },
   {
    "path": "logs/generated-origin.log",
@@ -259,13 +259,13 @@
   },
   {
    "path": "report-source/build_report.py",
-   "bytes": 29012,
-   "sha256": "35d5843c6c6dd402d052bd9a0c06064984abd7e416aacb441345a1b0cd75c84b"
+   "bytes": 36750,
+   "sha256": "7f0820a08ede3614a949b04a08fd05ff62c58b227f9382211e9c197fc8dde340"
   },
   {
    "path": "report-source/github.json",
-   "bytes": 238,
-   "sha256": "5e7fd5c113db69ae2bfa91d85c4def31c6bf34c111b1be1f34f7ed24357a3a11"
+   "bytes": 706,
+   "sha256": "d8e7d005f9083a6f4826b049bd9e46ff53ed076014a1fa50b1d815e5436dd9c1"
   },
   {
    "path": "report-source/make_manifest.py",
@@ -274,8 +274,8 @@
   },
   {
    "path": "report-source/times.txt",
-   "bytes": 540,
-   "sha256": "9e97e2619405742417bb47f0b9613e0082f0ce55b91690eab37c65f86d4cb627"
+   "bytes": 648,
+   "sha256": "ea09cc21c22bcb3611b9484475e5ff0141a3dbee1f530a5ce4f305c9b4e39e8d"
   },
   {
    "path": "screenshots/P3-01_bas-synced-main-regression.jpg",
@@ -378,9 +378,29 @@
    "sha256": "48c0d6cd0e75c1cfc540f8a28e248c48c9508e24a85460bb78d92e06c14cd5bd"
   },
   {
+   "path": "screenshots/P3-21_deeplink-stale-dialog-reproduced.jpg",
+   "bytes": 87384,
+   "sha256": "49594aae4e3b90963addbf092e20e753dbc50065aad7735dcdfaf8fd2d13ba51"
+  },
+  {
+   "path": "screenshots/P3-22_deeplink-control-no-error.jpg",
+   "bytes": 92741,
+   "sha256": "b33e58b79f430272a3adc692a7d54bc3b6f67305207a8af72b4414b1f3133b2d"
+  },
+  {
+   "path": "screenshots/P3-23_github-pr5-checks-passed.jpg",
+   "bytes": 54805,
+   "sha256": "58d49eec43eed8905c676595b2b3e00f280304f83871b74e72d20b7044dc4ac5"
+  },
+  {
+   "path": "screenshots/P3-24_pa-artifact-preservation-check.jpg",
+   "bytes": 100821,
+   "sha256": "bb93fff4eccda7302b6e97415c2acc21916a4b0b690c1ecb33c9c41948369034"
+  },
+  {
    "path": "test-results/verification-summary.md",
-   "bytes": 751,
-   "sha256": "b9ac8075ffbb20f3e2c2a4de97c8d63ae65d3fefe39c13d3f79551fa45bb1e7c"
+   "bytes": 1769,
+   "sha256": "4e16cb72b41e4534ba55feec39c9ab66f3a2374e43f850bda4ea1c3ad5f43758"
   }
  ]
 }
