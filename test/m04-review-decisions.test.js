@@ -239,3 +239,115 @@ test('rule unit: rejection comment is required independently of the OData @manda
   assert.throws(() => normaliseComment(TRANSITIONS.approve, 'x'.repeat(1001)), e => e.code === 'COMMENT_TOO_LONG');
   assert.throws(() => normaliseComment(TRANSITIONS.approve, 5), e => e.code === 'INVALID_COMMENT');
 });
+
+// ---- Decision B: decided cases keep their evidence (no runImpact on APPROVED/REJECTED) ----
+const { loadImpactInput, persistImpactRun, CaseDecidedError, fingerprint } = await import('../srv/lib/impact-persistence.js');
+const AS_OF = '2026-11-08';
+const snapshot = async id => {
+  const { ReviewCases, ImpactRuns, Findings, ImpactMaterialLines } = cds.entities('assemblyimpact');
+  const c = await SELECT.one.from(ReviewCases).columns('status', 'version', 'latestRun_ID').where({ ID: id });
+  const runs = await SELECT.from(ImpactRuns).columns('ID').where({ reviewCase_ID: id });
+  const runIds = runs.map(r => r.ID);
+  const count = async E => (runIds.length ? (await SELECT.from(E).columns('ID').where({ run_ID: { in: runIds } })).length : 0);
+  return { ...c, runs: runIds.length, findings: await count(Findings), lines: await count(ImpactMaterialLines), events: (await eventsOf(id)).length };
+};
+const newCase = async (key, status) => {
+  const id = stableId(`m04-2a:b:${key}`);
+  await INSERT.into(cds.entities('assemblyimpact').ReviewCases).entries({ ...SEEDED_1000, ID: id, caseNumber: `EC-T2B-${key}`, status, version: cds.utils.uuid() });
+  return id;
+};
+
+test('runImpact is allowed on OPEN and IN_REVIEW cases', async () => {
+  for (const status of ['OPEN', 'IN_REVIEW']) {
+    const id = await newCase(`allowed-${status}`, status);
+    const r = await act(id, 'runImpact', 'analyst', { asOfDate: AS_OF });
+    assert.equal(r.status, 200, `${status}: ${JSON.stringify(r.data)}`);
+    assert.equal(Number(r.data.costDeltaTotal), 1200);
+    assert.equal(await statusOf(id), status, 'running impact never changes the review status');
+  }
+});
+
+test('runImpact on APPROVED or REJECTED returns 409 and changes nothing', async () => {
+  for (const [id, decision, comment] of [[await newCase('approved', 'OPEN'), 'approve', 'ok'], [await newCase('rejected', 'OPEN'), 'reject', 'no']]) {
+    assert.equal((await act(id, 'runImpact', 'analyst', { asOfDate: AS_OF })).status, 200, 'evidence before the decision');
+    assert.equal((await act(id, 'submitForReview', 'analyst')).status, 200);
+    assert.equal((await act(id, decision, 'approver', { comment })).status, 200);
+    const before = await snapshot(id);
+    const r = await act(id, 'runImpact', 'analyst', { asOfDate: AS_OF });
+    assert.equal(r.status, 409, `${before.status}: ${JSON.stringify(r.data)}`);
+    assert.equal(errorCode(r), 'CASE_ALREADY_DECIDED');
+    assert.match(r.data.error.message, new RegExp(`status ${before.status}`));
+    assert.deepEqual(await snapshot(id), before, 'status, version, latestRun, runs, findings, lines and history unchanged');
+    // Existing role and plant rules still take precedence over the state rule.
+    assert.equal((await act(id, 'runImpact', 'cviewer', { asOfDate: AS_OF })).status, 403);
+    assert.equal((await act(id, 'runImpact', 'analyst2', { asOfDate: AS_OF })).status, 404);
+    assert.deepEqual(await snapshot(id), before);
+  }
+});
+
+test('a decision committed during a calculation: the run is refused and rolled back (CaseDecidedError)', async () => {
+  const id = await newCase('race-run', 'OPEN');
+  assert.equal((await act(id, 'submitForReview', 'analyst')).status, 200);
+  // The calculation reads its inputs before the approval commits ...
+  const loaded = await cds.tx(() => loadImpactInput(id, ['1000'], AS_OF));
+  const { calculateImpact, RULESET } = await import('../srv/lib/impact-calculator.js');
+  const result = calculateImpact(loaded.input);
+  assert.equal((await act(id, 'approve', 'approver', { comment: 'decided on the current evidence' })).status, 200);
+  const before = await snapshot(id);
+  // ... and tries to persist afterwards.
+  await assert.rejects(cds.tx(() => persistImpactRun(loaded.reviewCase, result,
+    { fingerprint: fingerprint(RULESET, loaded.input), user: 'analyst', now: new Date().toISOString() })),
+  e => e instanceof CaseDecidedError && e.caseStatus === 'APPROVED');
+  assert.deepEqual(await snapshot(id), before, 'no run, finding or line from the late calculation; latestRun unchanged');
+});
+
+test('a calculation committed during a decision: the stale decision is refused (CONCURRENT_UPDATE)', async () => {
+  const id = await newCase('race-decision', 'OPEN');
+  assert.equal((await act(id, 'submitForReview', 'analyst')).status, 200);
+  const stale = await SELECT.one.from(cds.entities('assemblyimpact').ReviewCases).columns('ID', 'status', 'version').where({ ID: id });
+  assert.equal((await act(id, 'runImpact', 'analyst', { asOfDate: AS_OF })).status, 200, 'new evidence arrives');
+  const before = await snapshot(id);
+  await assert.rejects(cds.tx(() => applyTransition(stale, TRANSITIONS.approve, { userID: 'approver', comment: null, now: new Date().toISOString() })),
+    e => e instanceof DecisionError && e.code === 'CONCURRENT_UPDATE');
+  assert.deepEqual(await snapshot(id), before, 'an approval based on older evidence is not recorded');
+});
+
+test('parallel runImpact and approve: outcomes are consistent with the persisted rows', async () => {
+  const id = await newCase('parallel', 'OPEN');
+  assert.equal((await act(id, 'submitForReview', 'analyst')).status, 200);
+  const [run, decision] = await Promise.all([act(id, 'runImpact', 'analyst', { asOfDate: AS_OF }), act(id, 'approve', 'approver', { comment: 'parallel' })]);
+  assert([200, 409].includes(run.status) && [200, 409].includes(decision.status), JSON.stringify([run.data, decision.data]));
+  const after = await snapshot(id);
+  assert.equal(after.runs, run.status === 200 ? 1 : 0, 'one persisted run per successful calculation');
+  assert.equal(after.events, decision.status === 200 ? 2 : 1, 'one APPROVE event per successful decision');
+  assert.equal(after.status, decision.status === 200 ? 'APPROVED' : 'IN_REVIEW');
+  if (decision.status === 200 && run.status === 200) {
+    const { ImpactRuns, DecisionEvents } = cds.entities('assemblyimpact');
+    const r = await SELECT.one.from(ImpactRuns).columns('computedAt').where({ reviewCase_ID: id });
+    const e = await SELECT.one.from(DecisionEvents).columns('at').where({ reviewCase_ID: id, action: 'APPROVE' });
+    assert(Date.parse(r.computedAt) <= Date.parse(e.at), 'the run that survived committed before the approval');
+  }
+  // Afterwards the decided case is frozen.
+  if (after.status === 'APPROVED') assert.equal((await act(id, 'runImpact', 'analyst', { asOfDate: AS_OF })).status, 409);
+});
+
+test('guard layers: the state check runs before any calculation, and the database guard checks status itself', async () => {
+  const { ReviewCases } = cds.entities('assemblyimpact');
+  // 1. Handler pre-check: a decided case with invalid inputs answers 409, not the calculator's 422.
+  const decided = await newCase('precheck', 'APPROVED');
+  await UPDATE(ReviewCases).set({ productionQuantity: 0 }).where({ ID: decided });
+  const r = await act(decided, 'runImpact', 'analyst', { asOfDate: AS_OF });
+  assert.equal(r.status, 409);
+  assert.equal(errorCode(r), 'CASE_ALREADY_DECIDED');
+  // 2. Database guard: a status change that did not move the version (out-of-band edit) still blocks the write.
+  const id = await newCase('db-guard', 'IN_REVIEW');
+  const loaded = await cds.tx(() => loadImpactInput(id, ['1000'], AS_OF));
+  const { calculateImpact, RULESET } = await import('../srv/lib/impact-calculator.js');
+  const result = calculateImpact(loaded.input);
+  await UPDATE(ReviewCases).set({ status: 'REJECTED' }).where({ ID: id }); // version deliberately unchanged
+  const before = await snapshot(id);
+  await assert.rejects(cds.tx(() => persistImpactRun(loaded.reviewCase, result,
+    { fingerprint: fingerprint(RULESET, loaded.input), user: 'analyst', now: new Date().toISOString() })),
+  e => e instanceof CaseDecidedError && e.caseStatus === 'REJECTED');
+  assert.deepEqual(await snapshot(id), before);
+});

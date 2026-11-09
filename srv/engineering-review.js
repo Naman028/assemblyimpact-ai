@@ -1,6 +1,6 @@
 import cds from '@sap/cds';
 import { calculateImpact, ImpactRejection, RULESET } from './lib/impact-calculator.js';
-import { loadImpactInput, fingerprint, persistImpactRun, ConcurrentRunError } from './lib/impact-persistence.js';
+import { loadImpactInput, fingerprint, persistImpactRun, ConcurrentRunError, CaseDecidedError, IMPACT_ALLOWED_STATUSES } from './lib/impact-persistence.js';
 import { userPlants } from './lib/plants.js';
 import { decide, DecisionError, TRANSITIONS } from './lib/review-decisions.js';
 
@@ -39,6 +39,8 @@ export default class EngineeringReview extends cds.ApplicationService {
     const loaded = await loadImpactInput(caseID, userPlants(req.user), asOfDate);
     // Missing and foreign-plant cases are indistinguishable to the caller.
     if (!loaded) return req.reject(404);
+    // M04 Slice 2a (Decision B): decided cases keep the evidence they were decided on.
+    if (!IMPACT_ALLOWED_STATUSES.includes(loaded.reviewCase.status)) return req.reject(caseDecided(loaded.reviewCase.status));
 
     let result;
     try {
@@ -61,6 +63,7 @@ export default class EngineeringReview extends cds.ApplicationService {
         `${run.instructionFindings} outdated instruction reference(s).` });
       return run;
     } catch (error) {
+      if (error instanceof CaseDecidedError) return req.reject(caseDecided(error.caseStatus));
       if (error instanceof ConcurrentRunError) {
         return req.reject({ status: 409, code: 'CONCURRENT_IMPACT_RUN', message: 'Another impact run completed first; reload and retry.' });
       }
@@ -68,3 +71,6 @@ export default class EngineeringReview extends cds.ApplicationService {
     }
   }
 }
+
+const caseDecided = status => ({ status: 409, code: 'CASE_ALREADY_DECIDED',
+  message: `Impact cannot be recalculated for a review case in status ${status}; the evidence of the decision is preserved.` });

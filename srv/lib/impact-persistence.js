@@ -11,6 +11,14 @@ const day = v => (v ? String(v).slice(0, 10) : v);
 
 export class ConcurrentRunError extends Error {}
 
+/** M04 Slice 2a (Decision B): impact runs are allowed only before a decision. */
+export const IMPACT_ALLOWED_STATUSES = Object.freeze(['OPEN', 'IN_REVIEW']);
+
+/** The case reached APPROVED/REJECTED: its evidence is frozen and no run may be added. */
+export class CaseDecidedError extends Error {
+  constructor(status) { super(`Impact cannot be recalculated for a review case in status ${status}.`); this.caseStatus = status; }
+}
+
 /** Reads the case (only if in one of `plants`) and every input row the calculator may use. */
 export async function loadImpactInput(caseID, plants, asOfDate) {
   const { ReviewCases, Assemblies, BOMStates, BOMItems, CostPrices, StockSnapshots, Instructions, InstructionReferences } = E();
@@ -69,7 +77,9 @@ export function fingerprint(ruleset, input) {
  * Inserts the run with all snapshot lines and moves ReviewCases.latestRun with a
  * compare-and-set on ReviewCases.version. A stale version means another run
  * committed after this one read the case: throws ConcurrentRunError so the
- * surrounding transaction rolls back every row written here.
+ * surrounding transaction rolls back every row written here. The same statement also
+ * requires an undecided status, so a decision committed during the calculation makes the
+ * run fail with CaseDecidedError (rolled back as well) instead of replacing evidence.
  */
 export async function persistImpactRun(reviewCase, result, { fingerprint: inputFingerprint, user, now }) {
   const { ReviewCases, ImpactRuns, ImpactComparisonLines, ImpactMaterialLines, Findings } = E();
@@ -96,7 +106,11 @@ export async function persistImpactRun(reviewCase, result, { fingerprint: inputF
       material: f.material, details: f.details.slice(0, 500), evidenceRefs: f.evidenceRefs.join(' ').slice(0, 1000) })));
   }
   const affected = await UPDATE(ReviewCases).set({ latestRun_ID: runID, version: cds.utils.uuid() })
-    .where({ ID: reviewCase.ID, version: reviewCase.version ?? null });
-  if (affected !== 1) throw new ConcurrentRunError(`review case ${reviewCase.ID} changed during the run`);
+    .where({ ID: reviewCase.ID, version: reviewCase.version ?? null, status: { in: IMPACT_ALLOWED_STATUSES } });
+  if (affected !== 1) {
+    const current = await SELECT.one.from(ReviewCases).columns('status').where({ ID: reviewCase.ID });
+    if (current && !IMPACT_ALLOWED_STATUSES.includes(current.status)) throw new CaseDecidedError(current.status);
+    throw new ConcurrentRunError(`review case ${reviewCase.ID} changed during the run`);
+  }
   return runID;
 }
