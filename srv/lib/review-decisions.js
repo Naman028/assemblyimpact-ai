@@ -9,12 +9,21 @@ export const COMMENT_MAX = 1000;
  * Allowed transitions per bound action. `independent`: the decider must not be the submitter.
  * `evidence` (Slice 2a.1): 'required' = the request must name the case's latest impact run;
  * 'optional' = a named run is validated and recorded, but may be omitted; 'none' = not applicable.
+ * `runStatusPolicy` (M05): the evaluated run's status must be acceptable for the decision (see EVIDENCE_POLICY).
  */
 export const TRANSITIONS = Object.freeze({
   submitForReview: Object.freeze({ event: 'SUBMIT', from: Object.freeze(['OPEN']), to: 'IN_REVIEW', verb: 'submit', independent: false, commentRequired: false, evidence: 'none' }),
-  approve: Object.freeze({ event: 'APPROVE', from: Object.freeze(['IN_REVIEW']), to: 'APPROVED', verb: 'approve', independent: true, commentRequired: false, evidence: 'required' }),
+  approve: Object.freeze({ event: 'APPROVE', from: Object.freeze(['IN_REVIEW']), to: 'APPROVED', verb: 'approve', independent: true, commentRequired: false, evidence: 'required', runStatusPolicy: true }),
   reject: Object.freeze({ event: 'REJECT', from: Object.freeze(['IN_REVIEW']), to: 'REJECTED', verb: 'reject', independent: true, commentRequired: true, evidence: 'optional' }),
 });
+
+/**
+ * M05 approval evidence policy, by impact-run status (ruleset 1.1.0 statuses):
+ * COMPLETE: eligible. COMPLETE_WITH_WARNINGS (only STOCK_STALE): eligible only with an explicit
+ * acknowledgeWarnings=true, which is recorded on the decision event. INCOMPLETE: never approvable.
+ * Unknown statuses are refused (fail closed).
+ */
+export const EVIDENCE_POLICY = Object.freeze({ COMPLETE: 'eligible', COMPLETE_WITH_WARNINGS: 'acknowledge', INCOMPLETE: 'refuse' });
 
 export class DecisionError extends Error {
   constructor(status, code, message) { super(message); this.status = status; this.code = code; }
@@ -41,7 +50,7 @@ async function submitterOf(reviewCase) {
  * Applies one transition. Returns null when the case is missing or outside the user's plants
  * (callers answer 404 for both). Throws DecisionError for rule violations.
  */
-export async function decide({ caseID, transition, userID, plants, rawComment, basedOnRun: rawRun, now = new Date().toISOString() }) {
+export async function decide({ caseID, transition, userID, plants, rawComment, basedOnRun: rawRun, acknowledgeWarnings, now = new Date().toISOString() }) {
   const comment = normaliseComment(transition, rawComment);
   const { ReviewCases } = cds.entities('assemblyimpact');
   const reviewCase = await SELECT.one.from(ReviewCases).columns('ID', 'status', 'plant', 'version', 'createdBy', 'latestRun_ID')
@@ -55,27 +64,45 @@ export async function decide({ caseID, transition, userID, plants, rawComment, b
     throw new DecisionError(403, 'SELF_DECISION_NOT_ALLOWED', 'A review case must be decided by someone other than its submitter.');
   }
 
-  const basedOnRun = await checkEvidence(reviewCase, transition, rawRun);
-  return applyTransition(reviewCase, transition, { userID, comment, now, basedOnRun });
+  if (acknowledgeWarnings !== undefined && acknowledgeWarnings !== null && typeof acknowledgeWarnings !== 'boolean') {
+    throw new DecisionError(400, 'INVALID_ACKNOWLEDGEMENT', 'acknowledgeWarnings must be true or false.');
+  }
+  const evidence = await checkEvidence(reviewCase, transition, rawRun, acknowledgeWarnings === true);
+  return applyTransition(reviewCase, transition, { userID, comment, now, ...evidence });
 }
 
 /**
  * Slice 2a.1: the run named by the reviewer must belong to this case and be its latest run.
  * Unknown runs and runs of other cases (including other plants) get the same answer.
  */
-async function checkEvidence(reviewCase, transition, rawRun) {
-  if (transition.evidence === 'none') return null;
+async function checkEvidence(reviewCase, transition, rawRun, acknowledged) {
+  if (transition.evidence === 'none') return {};
   const basedOnRun = rawRun || null;
   if (transition.evidence === 'required') {
     if (!reviewCase.latestRun_ID) throw new DecisionError(409, 'NO_EVIDENCE', `Cannot ${transition.verb} a review case without an impact run; run the impact calculation first.`);
     if (!basedOnRun) throw new DecisionError(400, 'EVIDENCE_REFERENCE_REQUIRED', `Name the impact run you evaluated (basedOnRun) to ${transition.verb} the case.`);
   }
-  if (!basedOnRun) return null;
+  if (!basedOnRun) return {};
   const { ImpactRuns } = cds.entities('assemblyimpact');
-  const run = await SELECT.one.from(ImpactRuns).columns('ID').where({ ID: basedOnRun, reviewCase_ID: reviewCase.ID });
+  const run = await SELECT.one.from(ImpactRuns).columns('ID', 'status', 'flags').where({ ID: basedOnRun, reviewCase_ID: reviewCase.ID });
   if (!run) throw new DecisionError(400, 'UNKNOWN_EVIDENCE_RUN', 'The referenced impact run does not belong to this review case.');
   if (basedOnRun !== reviewCase.latestRun_ID) throw staleEvidence();
-  return basedOnRun;
+  const result = { basedOnRun, evidenceStatus: run.status, warningsAcknowledged: null };
+  if (transition.runStatusPolicy) {
+    const policy = EVIDENCE_POLICY[run.status] ?? 'refuse';
+    if (policy === 'refuse') {
+      throw new DecisionError(409, 'EVIDENCE_INCOMPLETE', `Cannot ${transition.verb} on an impact run with status ${run.status}` +
+        `${run.flags ? ` (${run.flags})` : ''}; resolve the missing inputs and run the impact calculation again.`);
+    }
+    if (policy === 'acknowledge') {
+      if (!acknowledged) {
+        throw new DecisionError(409, 'WARNINGS_ACKNOWLEDGEMENT_REQUIRED', `The evaluated impact run has warnings (${run.flags ?? 'unspecified'}); ` +
+          'confirm acknowledgeWarnings to approve on this evidence.');
+      }
+      result.warningsAcknowledged = true;
+    }
+  }
+  return result;
 }
 
 const staleEvidence = () => new DecisionError(409, 'STALE_EVIDENCE', 'The impact evidence changed since you reviewed it; reload the case and review the latest impact run.');
@@ -86,7 +113,7 @@ const staleEvidence = () => new DecisionError(409, 'STALE_EVIDENCE', 'The impact
  * concurrent decision or impact run committed after `reviewCase` was read, nothing is written
  * and DecisionError 409 is thrown (STALE_EVIDENCE when the latest run moved).
  */
-export async function applyTransition(reviewCase, transition, { userID, comment, now, basedOnRun = null }) {
+export async function applyTransition(reviewCase, transition, { userID, comment, now, basedOnRun = null, evidenceStatus = null, warningsAcknowledged = null }) {
   const { ReviewCases, DecisionEvents } = cds.entities('assemblyimpact');
   const guard = { ID: reviewCase.ID, status: reviewCase.status, version: reviewCase.version ?? null };
   if (transition.evidence === 'required' || basedOnRun) guard.latestRun_ID = basedOnRun;
@@ -98,6 +125,7 @@ export async function applyTransition(reviewCase, transition, { userID, comment,
   }
 
   await INSERT.into(DecisionEvents).entries({ reviewCase_ID: reviewCase.ID, action: transition.event,
-    fromStatus: reviewCase.status, toStatus: transition.to, actor: userID, comment, at: now, basedOnRun_ID: basedOnRun });
+    fromStatus: reviewCase.status, toStatus: transition.to, actor: userID, comment, at: now, basedOnRun_ID: basedOnRun,
+    evidenceStatus, warningsAcknowledged });
   return { fromStatus: reviewCase.status, toStatus: transition.to };
 }

@@ -22,6 +22,11 @@ annotate service.ReviewCases with {
     sourceType         @title: 'Source Type'  @Common.Text: sourceTypeText  @Common.TextArrangement: #TextOnly;
     evidenceRef        @title: 'Evidence Reference';
     latestRun          @title: 'Latest Impact Run';
+    assemblyDescription @title: 'Assembly Description';
+    canRunImpact       @UI.Hidden;
+    canSubmit          @UI.Hidden;
+    canDecide          @UI.Hidden;
+    submittedBy        @title: 'Submitted By';
 };
 
 annotate service.ReviewCases with @(
@@ -64,11 +69,32 @@ annotate service.ReviewCases with @(
             Label : 'Run Impact'
         }
     ],
-    UI.Identification     : [{
-        $Type : 'UI.DataFieldForAction',
-        Action: 'EngineeringReview.runImpact',
-        Label : 'Run Impact'
-    }],
+    // M05: review workflow in the Object Page header; availability comes from the server
+    // (role, status, separation of duties) and every action re-checks it.
+    UI.Identification     : [
+        {
+            $Type : 'UI.DataFieldForAction',
+            Action: 'EngineeringReview.runImpact',
+            Label : 'Run Impact'
+        },
+        {
+            $Type : 'UI.DataFieldForAction',
+            Action: 'EngineeringReview.submitForReview',
+            Label : 'Submit for Review'
+        },
+        {
+            $Type      : 'UI.DataFieldForAction',
+            Action     : 'EngineeringReview.approve',
+            Label      : 'Approve',
+            Criticality: #Positive
+        },
+        {
+            $Type      : 'UI.DataFieldForAction',
+            Action     : 'EngineeringReview.reject',
+            Label      : 'Reject',
+            Criticality: #Negative
+        }
+    ],
     UI.FieldGroup #General: {Data: [
         {Value: caseNumber},
         {Value: title},
@@ -80,11 +106,23 @@ annotate service.ReviewCases with @(
         {Value: status},
         {Value: owner},
         {Value: sourceType},
-        {Value: evidenceRef}
+        {Value: evidenceRef},
+        {Value: submittedBy},
+        {
+            $Type : 'UI.DataFieldWithUrl',
+            Label : 'Investigation Studio',
+            Value : 'Open in Investigation Studio',
+            // M05: the unified workspace for this case (same OData service, same key).
+            Url   : {$edmJson: {$Apply: [
+                '../../investigation-studio/webapp/index.html#/cases/',
+                {$Path: 'ID'}
+            ], $Function: 'odata.concat'}}
+        }
     ]},
     UI.FieldGroup #Impact : {Data: [
         {Value: latestRun.asOfDate, Label: 'As-of Date'},
-        {Value: latestRun.status, Label: 'Run Status'},
+        {Value: latestRun.statusText, Label: 'Run Status'},
+        {Value: latestRun.flags, Label: 'Run Flags'},
         {Value: latestRun.fromCostPerAssembly, Label: 'Cost per Assembly, Current (EUR)'},
         {Value: latestRun.toCostPerAssembly, Label: 'Cost per Assembly, Proposed (EUR)'},
         {Value: latestRun.costDeltaTotal, Label: 'Estimated Cost Delta (EUR)'},
@@ -111,6 +149,12 @@ annotate service.ReviewCases with @(
             ID    : 'Runs',
             Label : 'Impact Runs',
             Target: 'runs/@UI.PresentationVariant'
+        },
+        {
+            $Type : 'UI.ReferenceFacet',
+            ID    : 'Decisions',
+            Label : 'Decision History',
+            Target: 'decisions/@UI.PresentationVariant'
         }
     ]
 );
@@ -118,11 +162,69 @@ annotate service.ReviewCases with @(
 annotate service.ReviewCases actions {
     // M05: refresh the latest-impact figures and the run list after the action (it was silent before).
     @Common.SideEffects: {
-        TargetProperties: ['in/latestRun_ID'],
+        TargetProperties: ['in/latestRun_ID', 'in/canSubmit', 'in/canDecide', 'in/canRunImpact'],
         TargetEntities  : ['in/latestRun', 'in/runs']
     }
-    runImpact(asOfDate @title: 'As-of Date' @Common.QuickInfo: 'Leave empty to calculate as of today')
+    @Core.OperationAvailable: {$edmJson: {$Path: 'in/canRunImpact'}}
+    runImpact(asOfDate @title: 'As-of Date' @Common.QuickInfo: 'Leave empty to calculate as of today');
+
+    @Common.SideEffects: {
+        TargetProperties: ['in/status', 'in/statusText', 'in/canSubmit', 'in/canDecide', 'in/canRunImpact', 'in/submittedBy'],
+        TargetEntities  : ['in/decisions']
+    }
+    @Core.OperationAvailable: {$edmJson: {$Path: 'in/canSubmit'}}
+    submitForReview(comment @title: 'Comment' @UI.MultiLineText);
+
+    // basedOnRun defaults to the run shown on the page; the server refuses it if a newer run exists.
+    @Common.SideEffects: {
+        TargetProperties: ['in/status', 'in/statusText', 'in/canSubmit', 'in/canDecide', 'in/canRunImpact'],
+        TargetEntities  : ['in/decisions']
+    }
+    @Core.OperationAvailable: {$edmJson: {$Path: 'in/canDecide'}}
+    approve(comment @title: 'Comment' @UI.MultiLineText,
+            basedOnRun @title: 'Evaluated Impact Run' @UI.ParameterDefaultValue: {$edmJson: {$Path: 'in/latestRun_ID'}},
+            acknowledgeWarnings @title: 'I acknowledge the impact-run warnings (e.g. stale stock)');
+
+    @Common.SideEffects: {
+        TargetProperties: ['in/status', 'in/statusText', 'in/canSubmit', 'in/canDecide', 'in/canRunImpact'],
+        TargetEntities  : ['in/decisions']
+    }
+    @Core.OperationAvailable: {$edmJson: {$Path: 'in/canDecide'}}
+    reject(comment @title: 'Reason for Rejection' @UI.MultiLineText,
+           basedOnRun @title: 'Evaluated Impact Run' @UI.ParameterDefaultValue: {$edmJson: {$Path: 'in/latestRun_ID'}})
 };
+
+// ------------------------------------------------------------ Decision history (M05)
+annotate service.DecisionEvents with {
+    ID                   @UI.Hidden;
+    at                   @title: 'Decided At';
+    action               @title: 'Action';
+    fromStatus           @title: 'From Status';
+    toStatus             @title: 'To Status';
+    actor                @title: 'By';
+    comment              @title: 'Comment';
+    basedOnRun           @title: 'Evaluated Impact Run';
+    evidenceStatus       @title: 'Evidence Status';
+    warningsAcknowledged @title: 'Warnings Acknowledged';
+};
+
+annotate service.DecisionEvents with @(
+    UI.LineItem           : [
+        {Value: at},
+        {Value: action},
+        {Value: fromStatus},
+        {Value: toStatus},
+        {Value: actor},
+        {Value: comment},
+        {Value: basedOnRun.asOfDate, Label: 'Evidence As-of Date'},
+        {Value: evidenceStatus},
+        {Value: warningsAcknowledged}
+    ],
+    UI.PresentationVariant: {
+        SortOrder     : [{Property: at, Descending: true}],
+        Visualizations: ['@UI.LineItem']
+    }
+);
 
 // ------------------------------------------------------------ Impact runs
 annotate service.ImpactRuns with {
@@ -130,7 +232,9 @@ annotate service.ImpactRuns with {
     computedAt          @title: 'Computed At';
     computedBy          @title: 'Computed By';
     asOfDate            @title: 'As-of Date';
-    status              @title: 'Run Status';
+    status              @title: 'Run Status' @Common.Text: statusText @Common.TextArrangement: #TextOnly;
+    statusText          @title: 'Run Status' @UI.Hidden;
+    flags               @title: 'Run Flags';
     ruleset             @title: 'Ruleset';
     fromRevision        @title: 'Current Revision';
     toRevision          @title: 'Proposed Revision';
@@ -150,12 +254,12 @@ annotate service.ImpactRuns with @(
         TypeName      : 'Impact Run',
         TypeNamePlural: 'Impact Runs',
         Title         : {Value: asOfDate},
-        Description   : {Value: status}
+        Description   : {Value: statusText}
     },
     UI.LineItem           : [
         {Value: computedAt},
         {Value: asOfDate},
-        {Value: status},
+        {Value: statusText, Label: 'Run Status'},
         {Value: costDeltaTotal},
         {Value: materialsShort},
         {Value: instructionFindings},

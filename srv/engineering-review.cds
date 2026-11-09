@@ -29,13 +29,22 @@ service EngineeringReview {
             when 'APPROVED' then 'Approved' when 'REJECTED' then 'Rejected' else status end as statusText : String(20),
         case sourceType when 'SYNTHETIC_FIXTURE' then 'Synthetic Fixture' when 'MANUAL' then 'Manual'
             when 'GENAI_PROPOSAL' then 'GenAI Proposal' when 'S4_IMPORT' then 'Imported' else sourceType end as sourceTypeText : String(30),
+        assembly.description as assemblyDescription : String(160),
         createdAt, modifiedAt,
-        latestRun, runs, decisions
+        latestRun, runs, decisions,
+        // M05: per-user action availability for the UI (role + plant + status + separation of duties).
+        // Filled in srv/engineering-review.js after READ. Advisory only: every action re-checks on the server.
+        virtual canRunImpact : Boolean,
+        virtual canSubmit    : Boolean,
+        virtual canDecide    : Boolean,
+        virtual submittedBy  : String(255)
     } actions {
         action runImpact(asOfDate : Date) returns ImpactRuns;
         action submitForReview(comment : String(1000)) returns ReviewCases;
         // basedOnRun: the impact run the reviewer evaluated; must be the case's latest run (else 409 STALE_EVIDENCE).
-        action approve(comment : String(1000), basedOnRun : UUID @mandatory) returns ReviewCases;
+        // acknowledgeWarnings (M05): required true when basedOnRun has status COMPLETE_WITH_WARNINGS; recorded on the event.
+        // Runs with status INCOMPLETE can never be approved (409 EVIDENCE_INCOMPLETE).
+        action approve(comment : String(1000), basedOnRun : UUID @mandatory, acknowledgeWarnings : Boolean) returns ReviewCases;
         action reject(comment : String(1000) @mandatory, basedOnRun : UUID) returns ReviewCases;
     };
 
@@ -46,7 +55,12 @@ service EngineeringReview {
 
     @readonly
     @restrict: [{ grant: 'READ', to: ['ChangeViewer', 'ChangeAnalyst', 'ChangeApprover'], where: 'reviewCase.plant = $user.plants' }]
-    entity ImpactRuns as projection on db.ImpactRuns;
+    entity ImpactRuns as projection on db.ImpactRuns {
+        *,
+        // M05: readable run status (codes stay the contract).
+        case status when 'COMPLETE' then 'Complete' when 'COMPLETE_WITH_WARNINGS' then 'Complete with warnings'
+            when 'INCOMPLETE' then 'Incomplete' else status end as statusText : String(30)
+    };
 
     @readonly
     @restrict: [{ grant: 'READ', to: ['ChangeViewer', 'ChangeAnalyst', 'ChangeApprover'], where: 'run.reviewCase.plant = $user.plants' }]

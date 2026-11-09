@@ -183,6 +183,10 @@ entity DecisionEvents : cuid {
     at         : Timestamp not null;
     // M04 Slice 2a.1: the impact run the decision was based on (required for APPROVE).
     basedOnRun : Association to ImpactRuns;
+    // M05: audit of the evidence policy — status of basedOnRun at decision time and, for
+    // COMPLETE_WITH_WARNINGS, the reviewer's explicit acknowledgement.
+    evidenceStatus       : String(24);
+    warningsAcknowledged : Boolean;
 }
 
 annotate BOMItems with @assert.unique.itemPerState: [bomState, itemNo];
