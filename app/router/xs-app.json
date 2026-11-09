@@ -1,0 +1,10 @@
+{
+  "welcomeFile": "/investigation-studio/webapp/index.html",
+  "authenticationMethod": "route",
+  "logout": { "logoutEndpoint": "/do/logout", "logoutPage": "/investigation-studio/webapp/index.html" },
+  "routes": [
+    { "source": "^/odata/(.*)$", "target": "/odata/$1", "destination": "srv-api", "authenticationType": "xsuaa", "csrfProtection": true },
+    { "source": "^/case-worklist/webapp/(.*)$", "target": "$1", "localDir": "resources/case-worklist", "authenticationType": "xsuaa", "cacheControl": "no-cache, no-store, must-revalidate" },
+    { "source": "^/investigation-studio/webapp/(.*)$", "target": "$1", "localDir": "resources/investigation-studio", "authenticationType": "xsuaa", "cacheControl": "no-cache, no-store, must-revalidate" }
+  ]
+}

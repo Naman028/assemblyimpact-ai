@@ -1,0 +1,47 @@
+{
+  "note": "Role collections are created in the BTP cockpit (or btp CLI) because every role template requires the plants attribute: create one role per template and plant set (attribute source: static value, e.g. 1000, or an IdP attribute), then add the roles to these collections. Defined here and checked by test/btp-deployment-config.test.js.",
+  "collections": [
+    {
+      "name": "AssemblyImpact_Analyst",
+      "description": "Analyst: read, run impact, submit",
+      "roleTemplates": [
+        "ChangeViewer",
+        "ChangeAnalyst",
+        "AssemblyViewer"
+      ]
+    },
+    {
+      "name": "AssemblyImpact_Approver",
+      "description": "Independent reviewer: read, approve, reject",
+      "roleTemplates": [
+        "ChangeViewer",
+        "ChangeApprover",
+        "AssemblyViewer"
+      ]
+    },
+    {
+      "name": "AssemblyImpact_Viewer",
+      "description": "Read-only",
+      "roleTemplates": [
+        "ChangeViewer",
+        "AssemblyViewer"
+      ]
+    },
+    {
+      "name": "AssemblyImpact_JouleAssistant",
+      "description": "Joule assistant users (principal propagation): read and run impact only, no decisions",
+      "roleTemplates": [
+        "ChangeViewer",
+        "ImpactRunner"
+      ]
+    },
+    {
+      "name": "AssemblyImpact_ErpExtractor",
+      "description": "Designated users who may extract cases from the authorized S/4HANA system",
+      "roleTemplates": [
+        "ChangeViewer",
+        "ErpExtractor"
+      ]
+    }
+  ]
+}
