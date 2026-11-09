@@ -1,0 +1,213 @@
+{
+  "datasetId": "DS-IMPORT-SAMPLE-01",
+  "synthetic": true,
+  "description": "SYNTHETIC sample import - fictional NovaMotion blower BLOW-900 (not SAP data)",
+  "assemblies": [
+    {
+      "assemblyCode": "BLOW-900",
+      "plant": "1000",
+      "description": "Ventilation Blower"
+    }
+  ],
+  "bomStates": [
+    {
+      "stateKey": "BOM-BLOW-900-A",
+      "assemblyCode": "BLOW-900",
+      "plant": "1000",
+      "bomUsage": "1",
+      "alternative": "01",
+      "revision": "A",
+      "validFrom": "2026-01-01",
+      "validTo": "2026-12-31",
+      "status": "RELEASED"
+    },
+    {
+      "stateKey": "BOM-BLOW-900-B",
+      "assemblyCode": "BLOW-900",
+      "plant": "1000",
+      "bomUsage": "1",
+      "alternative": "01",
+      "revision": "B",
+      "validFrom": "2027-01-01",
+      "validTo": "9999-12-31",
+      "status": "PROPOSED",
+      "changeNumber": "EC-000490"
+    }
+  ],
+  "bomItems": [
+    {
+      "stateKey": "BOM-BLOW-900-A",
+      "itemNo": "0010",
+      "material": "IMP-900",
+      "quantity": "1",
+      "unit": "PC"
+    },
+    {
+      "stateKey": "BOM-BLOW-900-A",
+      "itemNo": "0020",
+      "material": "MOT-900",
+      "quantity": "1",
+      "unit": "PC"
+    },
+    {
+      "stateKey": "BOM-BLOW-900-A",
+      "itemNo": "0030",
+      "material": "SCR-M6",
+      "quantity": "8",
+      "unit": "PC"
+    },
+    {
+      "stateKey": "BOM-BLOW-900-B",
+      "itemNo": "0010",
+      "material": "IMP-900C",
+      "quantity": "1",
+      "unit": "PC"
+    },
+    {
+      "stateKey": "BOM-BLOW-900-B",
+      "itemNo": "0020",
+      "material": "MOT-900",
+      "quantity": "1",
+      "unit": "PC"
+    },
+    {
+      "stateKey": "BOM-BLOW-900-B",
+      "itemNo": "0030",
+      "material": "SCR-M6",
+      "quantity": "10",
+      "unit": "PC"
+    },
+    {
+      "stateKey": "BOM-BLOW-900-B",
+      "itemNo": "0040",
+      "material": "DAMP-900",
+      "quantity": "4",
+      "unit": "PC"
+    }
+  ],
+  "costPrices": [
+    {
+      "material": "IMP-900",
+      "plant": "1000",
+      "price": "58.00",
+      "currency": "EUR",
+      "priceUnit": 1,
+      "unit": "PC",
+      "validFrom": "2026-01-01",
+      "validTo": "9999-12-31"
+    },
+    {
+      "material": "IMP-900C",
+      "plant": "1000",
+      "price": "71.50",
+      "currency": "EUR",
+      "priceUnit": 1,
+      "unit": "PC",
+      "validFrom": "2026-01-01",
+      "validTo": "9999-12-31"
+    },
+    {
+      "material": "MOT-900",
+      "plant": "1000",
+      "price": "185.00",
+      "currency": "EUR",
+      "priceUnit": 1,
+      "unit": "PC",
+      "validFrom": "2026-01-01",
+      "validTo": "9999-12-31"
+    },
+    {
+      "material": "SCR-M6",
+      "plant": "1000",
+      "price": "5.00",
+      "currency": "EUR",
+      "priceUnit": 100,
+      "unit": "PC",
+      "validFrom": "2026-01-01",
+      "validTo": "9999-12-31"
+    },
+    {
+      "material": "DAMP-900",
+      "plant": "1000",
+      "price": "1.90",
+      "currency": "EUR",
+      "priceUnit": 1,
+      "unit": "PC",
+      "validFrom": "2026-01-01",
+      "validTo": "9999-12-31"
+    }
+  ],
+  "stockSnapshots": [
+    {
+      "material": "IMP-900C",
+      "plant": "1000",
+      "availableQuantity": "30",
+      "unit": "PC",
+      "snapshotAt": "2026-11-08T08:00:00Z"
+    },
+    {
+      "material": "MOT-900",
+      "plant": "1000",
+      "availableQuantity": "90",
+      "unit": "PC",
+      "snapshotAt": "2026-11-08T08:00:00Z"
+    },
+    {
+      "material": "SCR-M6",
+      "plant": "1000",
+      "availableQuantity": "2000",
+      "unit": "PC",
+      "snapshotAt": "2026-11-08T08:00:00Z"
+    },
+    {
+      "material": "DAMP-900",
+      "plant": "1000",
+      "availableQuantity": "400",
+      "unit": "PC",
+      "snapshotAt": "2026-11-08T08:00:00Z"
+    }
+  ],
+  "instructions": [
+    {
+      "instructionId": "WI-BLOW-900-ASM",
+      "version": 2,
+      "assemblyCode": "BLOW-900",
+      "plant": "1000",
+      "title": "Assemble ventilation blower",
+      "status": "RELEASED",
+      "validFrom": "2026-01-01"
+    }
+  ],
+  "instructionReferences": [
+    {
+      "instructionId": "WI-BLOW-900-ASM",
+      "version": 2,
+      "step": "0010",
+      "material": "IMP-900",
+      "quantity": "1",
+      "unit": "PC",
+      "text": "Balance impeller IMP-900"
+    },
+    {
+      "instructionId": "WI-BLOW-900-ASM",
+      "version": 2,
+      "step": "0020",
+      "material": "MOT-900",
+      "quantity": "1",
+      "unit": "PC",
+      "text": "Couple motor MOT-900"
+    }
+  ],
+  "reviewCases": [
+    {
+      "caseNumber": "EC-000490",
+      "title": "Composite impeller and vibration dampers on BLOW-900",
+      "assemblyCode": "BLOW-900",
+      "plant": "1000",
+      "fromStateKey": "BOM-BLOW-900-A",
+      "toStateKey": "BOM-BLOW-900-B",
+      "productionQuantity": 75,
+      "owner": "Engineering Reviewer 2"
+    }
+  ]
+}

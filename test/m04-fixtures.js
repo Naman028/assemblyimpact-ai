@@ -1,9 +1,12 @@
 // Loads the versioned M04 synthetic fixtures (test/fixtures/m04) for tests only.
-import { readFileSync } from 'node:fs';
+import { readFileSync, existsSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { join } from 'node:path';
 
 export const FIXTURES = join(import.meta.dirname, 'fixtures', 'm04');
+// M05: scenario datasets live in fixtures/m05 and use the same file layout.
+export const FIXTURES_M05 = join(import.meta.dirname, 'fixtures', 'm05');
+export const datasetDir = id => (existsSync(join(FIXTURES, id)) ? join(FIXTURES, id) : join(FIXTURES_M05, id));
 const FILES = ['assemblies', 'materials', 'bom_states', 'bom_items', 'cost_prices', 'stock_snapshots',
   'instructions', 'instruction_references', 'review_cases'];
 
@@ -14,8 +17,9 @@ const parseCsv = text => {
 };
 
 export const loadDataset = id => {
-  const data = Object.fromEntries(FILES.map(f => [f, parseCsv(readFileSync(join(FIXTURES, id, `${f}.csv`), 'utf8'))]));
-  data.manifest = JSON.parse(readFileSync(join(FIXTURES, id, 'manifest.json'), 'utf8'));
+  const dir = datasetDir(id);
+  const data = Object.fromEntries(FILES.map(f => [f, parseCsv(readFileSync(join(dir, `${f}.csv`), 'utf8'))]));
+  data.manifest = JSON.parse(readFileSync(join(dir, 'manifest.json'), 'utf8'));
   return data;
 };
 

@@ -5,6 +5,8 @@ using { assemblyimpact as db } from '../db/engineering';
 // Every exposed entity carries its own plant rule: CAP does not propagate a
 // root entity's restriction to entities reached directly or via navigation.
 @path: 'engineering-review'
+// M05: room for a 512 KB import file (validated by the handler) plus JSON escaping.
+@cds.server.body_parser.limit: '1mb'
 @requires: 'authenticated-user'
 service EngineeringReview {
 
@@ -28,10 +30,11 @@ service EngineeringReview {
         case status when 'OPEN' then 'Open' when 'IN_REVIEW' then 'In Review'
             when 'APPROVED' then 'Approved' when 'REJECTED' then 'Rejected' else status end as statusText : String(20),
         case sourceType when 'SYNTHETIC_FIXTURE' then 'Synthetic Fixture' when 'MANUAL' then 'Manual'
-            when 'GENAI_PROPOSAL' then 'GenAI Proposal' when 'S4_IMPORT' then 'Imported' else sourceType end as sourceTypeText : String(30),
+            when 'GENAI_PROPOSAL' then 'GenAI Proposal' when 'S4_IMPORT' then 'S/4HANA Import'
+            when 'DEMO_IMPORT' then 'Demo Import' when 'SANDBOX_IMPORT' then 'API Sandbox Import' else sourceType end as sourceTypeText : String(30),
         assembly.description as assemblyDescription : String(160),
         createdAt, modifiedAt,
-        latestRun, runs, decisions,
+        latestRun, runs, decisions, sourceImport,
         // M05: per-user action availability for the UI (role + plant + status + separation of duties).
         // Filled in srv/engineering-review.js after READ. Advisory only: every action re-checks on the server.
         virtual canRunImpact : Boolean,
@@ -47,6 +50,24 @@ service EngineeringReview {
         action approve(comment : String(1000), basedOnRun : UUID @mandatory, acknowledgeWarnings : Boolean) returns ReviewCases;
         action reject(comment : String(1000) @mandatory, basedOnRun : UUID) returns ReviewCases;
     };
+
+    // M05: imports are visible to everyone in the plant (provenance); written only by importScenario.
+    @readonly
+    @restrict: [{ grant: 'READ', to: ['ChangeViewer', 'ChangeAnalyst', 'ChangeApprover', 'DemoDataImporter'], where: 'plant = $user.plants' }]
+    entity DataImports as projection on db.DataImports;
+
+    type ImportMessage { line : String(40); field : String(40); code : String(60); message : String(300); }
+    type ImportPreviewCase { caseNumber : String(20); title : String(160); assemblyCode : String(40); plant : String(4);
+        fromRevision : String(10); toRevision : String(10); productionQuantity : Integer; fromItems : Integer; toItems : Integer; }
+    type ImportResult {
+        importId : UUID; dryRun : Boolean; accepted : Boolean; plant : String(4); checksum : String(71);
+        counts : String(500); errors : many ImportMessage; preview : many ImportPreviewCase; caseIds : many UUID;
+    }
+    // M05: controlled demo-data import. dryRun=true validates and previews without writing; dryRun=false
+    // re-validates and commits all records in one transaction (all or nothing). Development/test only:
+    // disabled unless cds.env.features.demo_import is set (never in production). Plant-checked per record.
+    @(requires: 'DemoDataImporter')
+    action importScenario(fileName : String(120), format : String(8) @mandatory, content : LargeString @mandatory, dryRun : Boolean) returns ImportResult;
 
     // Decision history: read-only to every client, written only by the three review actions.
     @readonly

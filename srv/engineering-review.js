@@ -3,6 +3,7 @@ import { calculateImpact, ImpactRejection, RULESET } from './lib/impact-calculat
 import { loadImpactInput, fingerprint, persistImpactRun, ConcurrentRunError, CaseDecidedError, IMPACT_ALLOWED_STATUSES } from './lib/impact-persistence.js';
 import { userPlants } from './lib/plants.js';
 import { decide, DecisionError, TRANSITIONS } from './lib/review-decisions.js';
+import { parseImport, validateBundle, commitBundle, checksum, ImportFormatError } from './lib/scenario-import.js';
 
 // Calculations are deterministic server-side (lib/impact-calculator.js); no LLM is involved.
 export default class EngineeringReview extends cds.ApplicationService {
@@ -10,6 +11,7 @@ export default class EngineeringReview extends cds.ApplicationService {
     // Malformed or missing plant memberships never grant access (same rule as M03).
     this.before('*', req => { if (!userPlants(req.user)) req.reject(403); });
     this.on('runImpact', 'ReviewCases', req => this.#runImpact(req));
+    this.on('importScenario', req => this.#importScenario(req));
     this.after('READ', 'ReviewCases', (rows, req) => annotateAvailability(rows, req.user));
     for (const action of Object.keys(TRANSITIONS)) this.on(action, 'ReviewCases', req => this.#decide(req, TRANSITIONS[action]));
     return super.init();
@@ -30,6 +32,35 @@ export default class EngineeringReview extends cds.ApplicationService {
     if (!result) return req.reject(404);
     req.info({ message: `Review case status changed from ${result.fromStatus} to ${result.toStatus}.` });
     return SELECT.one.from(this.entities.ReviewCases, caseID);
+  }
+
+  // M05: demo-data import (see lib/scenario-import.js). Errors are returned as data in a dry run and as
+  // 400 with the same list on commit, so a failed commit never leaves partial rows (transaction rollback).
+  async #importScenario(req) {
+    if (!cds.env.features?.demo_import) return req.reject(403, 'IMPORT_DISABLED', 'Demo-data import is disabled in this environment.');
+    const { fileName = null, format, content, dryRun = true } = req.data;
+    let parsed;
+    try {
+      parsed = parseImport(content, format);
+    } catch (error) {
+      if (!(error instanceof ImportFormatError)) throw error;
+      const result = { dryRun: dryRun !== false, accepted: false, errors: [{ line: null, field: null, code: error.code, message: error.message }], preview: [], caseIds: [] };
+      if (dryRun !== false) return result;
+      return req.reject({ status: 400, code: error.code, message: error.message });
+    }
+    const validated = await validateBundle(parsed, { plants: userPlants(req.user), sourceType: 'DEMO_IMPORT' });
+    const base = { dryRun: dryRun !== false, plant: validated.plant, checksum: checksum(content), counts: JSON.stringify(validated.counts),
+      errors: validated.errors, preview: validated.preview, caseIds: [] };
+    if (dryRun !== false) return { ...base, importId: null, accepted: !validated.errors.length };
+    if (validated.errors.length) {
+      const first = validated.errors[0];
+      return req.reject({ status: 400, code: 'IMPORT_VALIDATION_FAILED',
+        message: `Import refused: ${validated.errors.length} validation error(s); first: ${first.line ?? ''} ${first.message}`.trim() });
+    }
+    const importId = cds.utils.uuid();
+    const { caseIds } = await commitBundle(validated, { importId, user: req.user.id, fileName, format: String(format).toLowerCase(), content, meta: parsed.meta });
+    req.info({ message: `Imported ${validated.counts.reviewCases} review case(s) and ${Object.values(validated.counts).reduce((a, b) => a + b, 0)} records (import ${importId}).` });
+    return { ...base, importId, accepted: true, caseIds };
   }
 
   async #runImpact(req) {

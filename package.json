@@ -11,7 +11,7 @@
   },
   "scripts": {
     "start": "cds-serve",
-    "test": "node --test test/assembly-service.test.js test/impact-calculator.test.js test/engineering-review.test.js test/seed-data.test.js test/case-worklist-app.test.js test/m05-run-impact-ui.test.js test/assembly-visuals.test.js test/m04-review-decisions.test.js test/m05-review-workflow.test.js",
+    "test": "node --test test/assembly-service.test.js test/impact-calculator.test.js test/engineering-review.test.js test/seed-data.test.js test/case-worklist-app.test.js test/m05-run-impact-ui.test.js test/assembly-visuals.test.js test/m04-review-decisions.test.js test/m05-review-workflow.test.js test/m05-scenarios.test.js test/m05-import.test.js",
     "lint": "eslint srv test --max-warnings=0"
   },
   "private": true,
@@ -57,7 +57,8 @@
             "analyst": {
               "password": "development-only",
               "roles": [
-                "ChangeAnalyst"
+                "ChangeAnalyst",
+                "DemoDataImporter"
               ],
               "attr": {
                 "plants": [
@@ -319,6 +320,29 @@
                   "1000"
                 ]
               }
+            },
+            "importer": {
+              "password": "test",
+              "roles": [
+                "ChangeAnalyst",
+                "DemoDataImporter"
+              ],
+              "attr": {
+                "plants": [
+                  "1000"
+                ]
+              }
+            },
+            "importer2000": {
+              "password": "test",
+              "roles": [
+                "DemoDataImporter"
+              ],
+              "attr": {
+                "plants": [
+                  "2000"
+                ]
+              }
             }
           }
         },
@@ -333,6 +357,16 @@
         "auth": {
           "kind": "jwt"
         }
+      }
+    },
+    "[development]": {
+      "features": {
+        "demo_import": true
+      }
+    },
+    "[test]": {
+      "features": {
+        "demo_import": true
       }
     }
   }

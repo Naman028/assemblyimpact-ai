@@ -1,0 +1,13 @@
+{
+  "datasetId": "DS-SCENARIOS-01",
+  "version": "1.0.0",
+  "purpose": "M05 scenario expansion: six independent engineering changes (replacement, quantity change, new and removed components, shortages, cost changes, outdated instructions, stale stock, missing price)",
+  "synthetic": true,
+  "dataLabel": "SYNTHETIC DEMO DATA - fictional company NovaMotion Manufacturing - not SAP S/4HANA data",
+  "company": "NovaMotion Manufacturing",
+  "plant": "1000",
+  "currency": "EUR",
+  "referenceDate": "2026-11-08",
+  "randomness": "none - all values fixed",
+  "sourceOfFixedValues": "Authored for M05 demonstration; expected outcomes are hand-calculated in expected-results.json and checked by test/m05-scenarios.test.js. Impact runs are never seeded; they are produced by the calculation engine."
+}
