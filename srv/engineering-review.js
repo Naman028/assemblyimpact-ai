@@ -35,7 +35,12 @@ export default class EngineeringReview extends cds.ApplicationService {
       const runID = await persistImpactRun(loaded.reviewCase, result, {
         fingerprint: fingerprint(RULESET, loaded.input), user: req.user.id, now: new Date().toISOString(),
       });
-      return SELECT.one.from(this.entities.ImpactRuns, runID);
+      const run = await SELECT.one.from(this.entities.ImpactRuns, runID);
+      // M05: confirm the result to the caller (shown by Fiori elements); figures are the persisted run's.
+      req.info({ message: `Impact calculated as of ${run.asOfDate} (${run.status}): estimated cost delta ` +
+        `${run.costDeltaTotal ?? 'not available'} ${run.currency}, ${run.materialsShort} material(s) short, ` +
+        `${run.instructionFindings} outdated instruction reference(s).` });
+      return run;
     } catch (error) {
       if (error instanceof ConcurrentRunError) {
         return req.reject({ status: 409, code: 'CONCURRENT_IMPACT_RUN', message: 'Another impact run completed first; reload and retry.' });
