@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><title>COOL-100 component diagram — state preview (synthetic)</title>
+<style>body{font-family:Arial,Helvetica,sans-serif;margin:24px;color:#1d2d3e}#d{max-width:560px}table{border-collapse:collapse;margin-top:12px}td,th{border:1px solid #c8ccd2;padding:4px 8px;font-size:13px}.k{display:inline-block;width:12px;height:12px;border:3px solid}</style></head>
+<body><h1 style="font-size:18px">COOL-100 component diagram — comparison states A → B (synthetic preview)</h1>
+<p style="font-size:13px">Static review page, not the P4 application. States are the DS-ORACLE-01 expected comparison lines.</p>
+<div id="d"></div>
+<table><tr><th>State</th><th>Items</th></tr>
+<tr><td><span class="k" style="border-color:#aa0808"></span> REPLACED</td><td>0010 FAN-A → FAN-B</td></tr>
+<tr><td><span class="k" style="border-color:#e76500"></span> QUANTITY_CHANGED</td><td>0020 BRKT-01 2 → 3 (units 1–2)</td></tr>
+<tr><td><span class="k" style="border-color:#256f3a"></span> ADDED</td><td>0040 SEAL-01; 0020 bracket unit 3</td></tr>
+<tr><td>UNCHANGED</td><td>0030 SENS-01</td></tr></table>
+<script>
+const states = { '0010': 'REPLACED', '0020': 'QUANTITY_CHANGED', '0030': 'UNCHANGED', '0040': 'ADDED' };
+Promise.all([fetch('COOL-100.components.svg').then(r => r.text()), fetch('COOL-100.component-map.json').then(r => r.json())]).then(([svg, map]) => {
+  document.getElementById('d').innerHTML = svg;
+  for (const c of map.components) {
+    const st = states[c.itemNo];
+    for (const id of c.elementIds) {
+      const el = document.getElementById(id);
+      const addedUnit = c.unitElements && !c.unitElements.A.includes(id);
+      el.classList.add(map.stateClasses[addedUnit ? 'ADDED' : st]);
+    }
+  }
+});
+</script></body></html>
