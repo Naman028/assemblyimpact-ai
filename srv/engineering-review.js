@@ -4,6 +4,8 @@ import { loadImpactInput, fingerprint, persistImpactRun, ConcurrentRunError, Cas
 import { userPlants } from './lib/plants.js';
 import { decide, DecisionError, TRANSITIONS, submittersOf, availabilityFor } from './lib/review-decisions.js';
 import { parseImport, validateBundle, commitBundle, checksum, ImportFormatError, ImportConflictError } from './lib/scenario-import.js';
+import { extract, transportFor, ErpConfigError, ErpTransportError, MODE_SOURCE_TYPE } from './integration/erp/erp-source.js';
+import { MappingError } from './integration/erp/s4-mapping.js';
 
 // Calculations are deterministic server-side (lib/impact-calculator.js); no LLM is involved.
 export default class EngineeringReview extends cds.ApplicationService {
@@ -12,6 +14,7 @@ export default class EngineeringReview extends cds.ApplicationService {
     this.before('*', req => { if (!userPlants(req.user)) req.reject(403); });
     this.on('runImpact', 'ReviewCases', req => this.#runImpact(req));
     this.on('importScenario', req => this.#importScenario(req));
+    this.on('extractFromErp', req => this.#extractFromErp(req));
     this.after('READ', 'ReviewCases', (rows, req) => annotateAvailability(rows, req));
     this.on('myCapabilities', req => capabilitiesOf(req.user));
     for (const action of Object.keys(TRANSITIONS)) this.on(action, 'ReviewCases', req => this.#decide(req, TRANSITIONS[action]));
@@ -70,6 +73,50 @@ export default class EngineeringReview extends cds.ApplicationService {
       throw error;
     }
     req.info({ message: `Imported ${validated.counts.reviewCases} review case(s) and ${Object.values(validated.counts).reduce((a, b) => a + b, 0)} records (import ${importId}).` });
+    return { ...base, importId, accepted: true, caseIds };
+  }
+
+  // P2: ERP extract -> import bundle -> the same validation and transactional commit as file imports.
+  async #extractFromErp(req) {
+    const { mode, material, plant, bomUsage = '1', alternative = '01', fromDate, toDate, changeNumber, caseNumber, title,
+      productionQuantity, dryRun = true } = req.data;
+    if (!(mode in MODE_SOURCE_TYPE)) return req.reject({ status: 400, code: 'INVALID_ERP_MODE', message: 'mode must be synthetic, sandbox or s4.' });
+    if (!/^\d{1,2}$/.test(String(alternative))) return req.reject({ status: 400, code: 'INVALID_ALTERNATIVE', message: 'alternative must be a number of at most two digits.' });
+    if (!userPlants(req.user).includes(plant)) return req.reject({ status: 403, code: 'PLANT_NOT_AUTHORIZED', message: `You are not authorized for plant ${plant}.` });
+    let bundle;
+    try {
+      const transport = transportFor(mode);
+      bundle = await extract({ transport, mode, selection: { material, plant, bomUsage, alternative: String(Number(alternative)),
+        fromDate, toDate, changeNumber, caseNumber, title, productionQuantity, description: null,
+        validityEnd: cds.env.requires?.['erp-source']?.validityEnd ?? 'inclusive' } });
+    } catch (error) {
+      if (error instanceof ErpConfigError) return req.reject({ status: 409, code: error.code, message: error.message });
+      if (error instanceof ErpTransportError) return req.reject({ status: 502, code: error.code, message: error.message });
+      if (error instanceof MappingError) return req.reject({ status: 422, code: error.code, message: error.message });
+      throw error;
+    }
+    const content = JSON.stringify(bundle);
+    const sourceType = MODE_SOURCE_TYPE[mode];
+    const validated = await validateBundle({ meta: {}, records: Object.fromEntries(Object.entries(bundle)
+      .filter(([, v]) => Array.isArray(v)).map(([k, v]) => [k, v.map((r, i) => ({ ...r, _line: `${k}[${i}]` }))])) },
+    { plants: userPlants(req.user), sourceType, policy: 'erp-merge' });
+    const base = { dryRun: dryRun !== false, plant: validated.plant, checksum: checksum(content), counts: JSON.stringify(validated.counts),
+      errors: validated.errors, preview: validated.preview, caseIds: [] };
+    if (dryRun !== false) return { ...base, importId: null, accepted: !validated.errors.length };
+    if (validated.errors.length) {
+      return req.reject({ status: 400, code: 'IMPORT_VALIDATION_FAILED', message: `ERP extract refused: ${validated.errors[0].message}` });
+    }
+    const importId = cds.utils.uuid();
+    let caseIds;
+    try {
+      ({ caseIds } = await commitBundle(validated, { importId, user: req.user.id, fileName: null, format: 'odata', content,
+        meta: { datasetId: bundle.datasetId, source: bundle.source } }));
+    } catch (error) {
+      if (error instanceof ImportConflictError || /UNIQUE|unique constraint/i.test(error.message)) {
+        return req.reject({ status: 409, code: 'IMPORT_CONFLICT', message: 'A concurrent change conflicts with this extract; nothing was imported. Validate again.' });
+      }
+      throw error;
+    }
     return { ...base, importId, accepted: true, caseIds };
   }
 
