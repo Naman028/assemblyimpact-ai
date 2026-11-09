@@ -10,7 +10,7 @@ service EngineeringReview {
 
     @readonly
     @restrict: [
-        { grant: 'READ', to: ['ChangeViewer', 'ChangeAnalyst', 'ChangeApprover'], where: 'plant = $user.plants' },
+        { grant: 'READ', to: ['ChangeViewer', 'ChangeAnalyst', 'ChangeApprover', 'JouleReader'], where: 'plant = $user.plants' },
         // Instance check for the action is done in the handler (404 for foreign/missing cases, as in M03).
         { grant: 'runImpact', to: 'ChangeAnalyst' },
         // M04 Slice 2a: review decisions. Plant, state and separation-of-duties checks are in the handler.
@@ -46,7 +46,7 @@ service EngineeringReview {
 
     // Decision history: read-only to every client, written only by the three review actions.
     @readonly
-    @restrict: [{ grant: 'READ', to: ['ChangeViewer', 'ChangeAnalyst', 'ChangeApprover'], where: 'reviewCase.plant = $user.plants' }]
+    @restrict: [{ grant: 'READ', to: ['ChangeViewer', 'ChangeAnalyst', 'ChangeApprover', 'JouleReader'], where: 'reviewCase.plant = $user.plants' }]
     entity DecisionEvents as projection on db.DecisionEvents {
         *,
         case action when 'SUBMIT' then 'Submitted for review' when 'APPROVE' then 'Approved'
@@ -54,19 +54,19 @@ service EngineeringReview {
     };
 
     @readonly
-    @restrict: [{ grant: 'READ', to: ['ChangeViewer', 'ChangeAnalyst', 'ChangeApprover'], where: 'reviewCase.plant = $user.plants' }]
+    @restrict: [{ grant: 'READ', to: ['ChangeViewer', 'ChangeAnalyst', 'ChangeApprover', 'JouleReader'], where: 'reviewCase.plant = $user.plants' }]
     entity ImpactRuns as projection on db.ImpactRuns;
 
     @readonly
-    @restrict: [{ grant: 'READ', to: ['ChangeViewer', 'ChangeAnalyst', 'ChangeApprover'], where: 'run.reviewCase.plant = $user.plants' }]
+    @restrict: [{ grant: 'READ', to: ['ChangeViewer', 'ChangeAnalyst', 'ChangeApprover', 'JouleReader'], where: 'run.reviewCase.plant = $user.plants' }]
     entity ImpactComparisonLines as projection on db.ImpactComparisonLines;
 
     @readonly
-    @restrict: [{ grant: 'READ', to: ['ChangeViewer', 'ChangeAnalyst', 'ChangeApprover'], where: 'run.reviewCase.plant = $user.plants' }]
+    @restrict: [{ grant: 'READ', to: ['ChangeViewer', 'ChangeAnalyst', 'ChangeApprover', 'JouleReader'], where: 'run.reviewCase.plant = $user.plants' }]
     entity ImpactMaterialLines as projection on db.ImpactMaterialLines;
 
     @readonly
-    @restrict: [{ grant: 'READ', to: ['ChangeViewer', 'ChangeAnalyst', 'ChangeApprover'], where: 'run.reviewCase.plant = $user.plants' }]
+    @restrict: [{ grant: 'READ', to: ['ChangeViewer', 'ChangeAnalyst', 'ChangeApprover', 'JouleReader'], where: 'run.reviewCase.plant = $user.plants' }]
     entity Findings as projection on db.Findings;
 
     @readonly
@@ -92,6 +92,28 @@ service EngineeringReview {
     @readonly
     @restrict: [{ grant: 'READ', to: ['ChangeViewer', 'ChangeAnalyst', 'ChangeApprover'], where: 'instruction.plant = $user.plants' }]
     entity InstructionReferences as projection on db.InstructionReferences;
+
+    // ---- P1: read-only lookup for Joule (named parameters instead of an OData $filter string) ----
+    // JouleReader is a TECHNICAL client role: read-only on the review data above, no actions, plants from
+    // server configuration (cds.requires.joule.plants), never combined with business roles (see the handler).
+    type CaseSummary {
+        caseNumber          : String(20);
+        title               : String(160);
+        assemblyCode        : String(40);
+        plant               : String(4);
+        fromRevision        : String(10);
+        toRevision          : String(10);
+        status              : String(12);
+        statusText          : String(20);
+        latestRunStatus     : String(24);
+        latestRunAsOf       : Date;
+        costDeltaTotal      : Decimal(15, 2);
+        currency            : String(3);
+        materialsShort      : Integer;
+        instructionFindings : Integer;
+    }
+    @restrict: [{ to: ['ChangeViewer', 'ChangeAnalyst', 'ChangeApprover', 'JouleReader'] }]
+    function lookupCases(caseNumber : String(20), status : String(12), assemblyCode : String(40)) returns many CaseSummary;
 
     // ---- M05: controlled import of SYNTHETIC demonstration scenarios ----------------------------
     // Enabled only where cds.requires['demo-import'].enabled is set (development/test profiles);

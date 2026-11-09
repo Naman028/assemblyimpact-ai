@@ -1,15 +1,36 @@
 import cds from '@sap/cds';
 import { calculateImpact, ImpactRejection, RULESET } from './lib/impact-calculator.js';
 import { loadImpactInput, fingerprint, persistImpactRun, ConcurrentRunError, CaseDecidedError, IMPACT_ALLOWED_STATUSES } from './lib/impact-persistence.js';
-import { userPlants } from './lib/plants.js';
+import { userPlants, jouleReaderPlants } from './lib/plants.js';
 import { decide, DecisionError, TRANSITIONS } from './lib/review-decisions.js';
 import { validateDemoImport, commitDemoImport, purgeDemoImport } from './lib/demo-import.js';
+
+// P1: a JouleReader technical client gets its plants from server configuration (cds.requires.joule.plants).
+// Runs right after authentication, i.e. before @restrict evaluates $user.plants. Nothing is granted to any
+// other identity: human users, mixed roles or a missing/invalid configuration keep plants = undefined.
+if (!globalThis.__aiJouleMiddleware) {
+  globalThis.__aiJouleMiddleware = true;
+  cds.middlewares.add(function jouleReaderPlantsFromConfig(req, res, next) {
+    const user = cds.context?.user ?? req.user;
+    if (user?.is?.('JouleReader')) {
+      const plants = jouleReaderPlants(user, cds.env.requires.joule?.plants);
+      if (plants) user.attr = { ...user.attr, plants };
+    }
+    next();
+  }, { after: 'auth' });
+}
 
 // Calculations are deterministic server-side (lib/impact-calculator.js); no LLM is involved.
 export default class EngineeringReview extends cds.ApplicationService {
   init() {
+    // P1: identities holding JouleReader that the middleware below did not accept are refused here.
+    this.before('*', req => {
+      if (req.user.is('JouleReader') && !jouleReaderPlants(req.user, cds.env.requires.joule?.plants))
+        return req.reject(403, 'JouleReader is accepted only for a configured technical client without business roles.');
+    });
     // Malformed or missing plant memberships never grant access (same rule as M03).
     this.before('*', req => { if (!userPlants(req.user)) req.reject(403); });
+    this.on('lookupCases', req => this.#lookupCases(req));
     this.on('runImpact', 'ReviewCases', req => this.#runImpact(req));
     for (const action of Object.keys(TRANSITIONS)) this.on(action, 'ReviewCases', req => this.#decide(req, TRANSITIONS[action]));
     // Slice 2b: per-user action availability for the UI (hints; the actions enforce the rules).
@@ -41,6 +62,24 @@ export default class EngineeringReview extends cds.ApplicationService {
       return true;
     });
     return super.init();
+  }
+
+  // P1: read-only case lookup with named parameters (Joule action contract). Plant-filtered, max 50 rows.
+  async #lookupCases(req) {
+    const { caseNumber, status, assemblyCode } = req.data;
+    if (caseNumber && !/^EC-\d{6}$/.test(caseNumber)) return req.reject(400, 'caseNumber must look like EC-000123.');
+    if (status && !['OPEN', 'IN_REVIEW', 'APPROVED', 'REJECTED'].includes(status)) return req.reject(400, 'status must be OPEN, IN_REVIEW, APPROVED or REJECTED.');
+    if (assemblyCode && !/^[A-Z][A-Z0-9-]{1,39}$/.test(assemblyCode)) return req.reject(400, 'assemblyCode has an invalid format.');
+    const where = { plant: { in: userPlants(req.user) } };
+    if (caseNumber) where.caseNumber = caseNumber;
+    if (status) where.status = status;
+    if (assemblyCode) where.assemblyCode = assemblyCode;
+    const rows = await SELECT.from(this.entities.ReviewCases).columns(c => {
+      c.caseNumber, c.title, c.assemblyCode, c.plant, c.fromRevision, c.toRevision, c.status, c.statusText,
+      c.latestRun(r => { r.status, r.asOfDate, r.costDeltaTotal, r.currency, r.materialsShort, r.instructionFindings; });
+    }).where(where).orderBy('caseNumber').limit(50);
+    return rows.map(({ latestRun: r, ...c }) => ({ ...c, latestRunStatus: r?.status ?? null, latestRunAsOf: r?.asOfDate ?? null,
+      costDeltaTotal: r?.costDeltaTotal ?? null, currency: r?.currency ?? null, materialsShort: r?.materialsShort ?? null, instructionFindings: r?.instructionFindings ?? null }));
   }
 
   // M04 Slice 2a: submitForReview / approve / reject (rules in lib/review-decisions.js).

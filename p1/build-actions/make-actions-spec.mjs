@@ -1,6 +1,6 @@
 // Derives the SAP Build Actions input spec from the CAP-generated OpenAPI document of EngineeringReview.
 // Usage: node make-actions-spec.mjs engineering-review.openapi.full.json > assemblyimpact-engineering-actions.openapi.json
-// Only three operations are exposed; all calculations stay in the CAP backend (runImpact).
+// Seven read-mostly operations are exposed (one write: RunEngineeringImpact); all calculations stay in the CAP backend.
 import { readFileSync } from 'node:fs';
 const full = JSON.parse(readFileSync(process.argv[2], 'utf8'));
 const pick = (path, method, operationId, summary, description) => {
@@ -15,6 +15,16 @@ const ops = [
     'Returns one immutable impact run. Use $expand=findings,materialLines,comparisonLines to include findings, stock shortages and BOM changes. The run ID is ReviewCases.latestRun_ID or the result of RunEngineeringImpact. Cross-plant IDs return 404.'),
   pick('/ReviewCases({ID})/EngineeringReview.runImpact', 'post', 'RunEngineeringImpact', 'Run the engineering impact calculation',
     'Invokes the existing bound OData V4 action runImpact for one review case. Allowed for role ChangeAnalyst within the user\'s plants only (403 otherwise, 404 for other plants). Returns the new immutable impact run. Body: {"asOfDate": "YYYY-MM-DD"}.'),
+  // P1 (feat/platform-integration): read-only operations for the four Joule skills. lookupCases takes
+  // named parameters, so a skill maps its inputs directly instead of building an OData $filter string.
+  pick('/lookupCases', 'get', 'LookupEngineeringCases', 'Look up engineering review cases',
+    'Read-only. Optional named filters caseNumber (EC-000123), status (OPEN, IN_REVIEW, APPROVED, REJECTED) and assemblyCode. Returns at most 50 cases of the caller\'s plants with the latest impact figures. Synthetic demo data.'),
+  pick('/ImpactRuns({ID})/findings', 'get', 'GetImpactFindings', 'Get the findings of an impact run',
+    'Read-only. BOM and work-instruction findings with severity and evidence references, as calculated by the backend.'),
+  pick('/ImpactRuns({ID})/materialLines', 'get', 'GetMaterialImpact', 'Get the material impact of an impact run',
+    'Read-only. Required, available and gap quantity, stock status and unit price per material, as calculated by the backend.'),
+  pick('/ReviewCases({ID})/decisions', 'get', 'GetDecisionHistory', 'Get the review decision history of a case',
+    'Read-only. Submit, approve and reject events with actor, comment and the evaluated impact run. Joule never approves or rejects.'),
 ];
 const paths = {};
 for (const [p, m, op] of ops) (paths[p] ??= {})[m] = op;

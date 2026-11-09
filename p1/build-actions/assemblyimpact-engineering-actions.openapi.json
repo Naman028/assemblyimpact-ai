@@ -84,10 +84,20 @@
                   "sourceType desc",
                   "evidenceRef",
                   "evidenceRef desc",
+                  "statusText",
+                  "statusText desc",
+                  "sourceTypeText",
+                  "sourceTypeText desc",
                   "createdAt",
                   "createdAt desc",
                   "modifiedAt",
                   "modifiedAt desc",
+                  "canSubmit",
+                  "canSubmit desc",
+                  "canDecide",
+                  "canDecide desc",
+                  "canRunImpact",
+                  "canRunImpact desc",
                   "latestRun_ID",
                   "latestRun_ID desc"
                 ]
@@ -117,8 +127,13 @@
                   "owner",
                   "sourceType",
                   "evidenceRef",
+                  "statusText",
+                  "sourceTypeText",
                   "createdAt",
                   "modifiedAt",
+                  "canSubmit",
+                  "canDecide",
+                  "canRunImpact",
                   "latestRun_ID"
                 ]
               }
@@ -137,7 +152,8 @@
                 "enum": [
                   "*",
                   "latestRun",
-                  "runs"
+                  "runs",
+                  "decisions"
                 ]
               }
             }
@@ -325,6 +341,521 @@
         "operationId": "RunEngineeringImpact",
         "description": "Invokes the existing bound OData V4 action runImpact for one review case. Allowed for role ChangeAnalyst within the user's plants only (403 otherwise, 404 for other plants). Returns the new immutable impact run. Body: {\"asOfDate\": \"YYYY-MM-DD\"}."
       }
+    },
+    "/lookupCases": {
+      "get": {
+        "summary": "Look up engineering review cases",
+        "tags": [
+          "AssemblyImpact Engineering Actions"
+        ],
+        "parameters": [
+          {
+            "required": false,
+            "in": "query",
+            "name": "caseNumber",
+            "description": "String value needs to be enclosed in single quotes",
+            "schema": {
+              "type": "string",
+              "maxLength": 20,
+              "nullable": true,
+              "pattern": "^(null|'([^']|'')*')$",
+              "default": "null"
+            }
+          },
+          {
+            "required": false,
+            "in": "query",
+            "name": "status",
+            "description": "String value needs to be enclosed in single quotes",
+            "schema": {
+              "type": "string",
+              "maxLength": 12,
+              "nullable": true,
+              "pattern": "^(null|'([^']|'')*')$",
+              "default": "null"
+            }
+          },
+          {
+            "required": false,
+            "in": "query",
+            "name": "assemblyCode",
+            "description": "String value needs to be enclosed in single quotes",
+            "schema": {
+              "type": "string",
+              "maxLength": 40,
+              "nullable": true,
+              "pattern": "^(null|'([^']|'')*')$",
+              "default": "null"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "title": "Collection of CaseSummary",
+                  "properties": {
+                    "@count": {
+                      "$ref": "#/components/schemas/count"
+                    },
+                    "value": {
+                      "type": "array",
+                      "items": {
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/EngineeringReview.CaseSummary"
+                          }
+                        ],
+                        "nullable": true
+                      }
+                    },
+                    "@nextLink": {
+                      "type": "string",
+                      "format": "uri",
+                      "description": "URL of the next page in server-driven paging, see [Server-driven Paging](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_ServerDrivenPaging)"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        },
+        "operationId": "LookupEngineeringCases",
+        "description": "Read-only. Optional named filters caseNumber (EC-000123), status (OPEN, IN_REVIEW, APPROVED, REJECTED) and assemblyCode. Returns at most 50 cases of the caller's plants with the latest impact figures. Synthetic demo data."
+      }
+    },
+    "/ImpactRuns({ID})/findings": {
+      "get": {
+        "summary": "Get the findings of an impact run",
+        "tags": [
+          "AssemblyImpact Engineering Actions"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/top"
+          },
+          {
+            "$ref": "#/components/parameters/skip"
+          },
+          {
+            "$ref": "#/components/parameters/search"
+          },
+          {
+            "name": "$filter",
+            "description": "Filter items by property values, see [Filtering](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionfilter)",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/count"
+          },
+          {
+            "name": "$orderby",
+            "description": "Order items by property values, see [Sorting](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionorderby)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "ID",
+                  "ID desc",
+                  "run_ID",
+                  "run_ID desc",
+                  "type",
+                  "type desc",
+                  "severity",
+                  "severity desc",
+                  "material",
+                  "material desc",
+                  "details",
+                  "details desc",
+                  "evidenceRefs",
+                  "evidenceRefs desc"
+                ]
+              }
+            }
+          },
+          {
+            "name": "$select",
+            "description": "Select properties to be returned, see [Select](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionselect)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "ID",
+                  "run_ID",
+                  "type",
+                  "severity",
+                  "material",
+                  "details",
+                  "evidenceRefs"
+                ]
+              }
+            }
+          },
+          {
+            "name": "$expand",
+            "description": "The value of $expand query option is a comma-separated list of navigation property names, stream property names, or $value indicating the stream content of a media-entity. The corresponding related entities and stream values will be represented inline, see [Expand](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionexpand)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "*",
+                  "run"
+                ]
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Retrieved findings",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "title": "Collection of Findings",
+                  "properties": {
+                    "@count": {
+                      "$ref": "#/components/schemas/count"
+                    },
+                    "value": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/EngineeringReview.Findings"
+                      }
+                    },
+                    "@nextLink": {
+                      "type": "string",
+                      "format": "uri",
+                      "description": "URL of the next page in server-driven paging, see [Server-driven Paging](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_ServerDrivenPaging)"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        },
+        "operationId": "GetImpactFindings",
+        "description": "Read-only. BOM and work-instruction findings with severity and evidence references, as calculated by the backend."
+      }
+    },
+    "/ImpactRuns({ID})/materialLines": {
+      "get": {
+        "summary": "Get the material impact of an impact run",
+        "tags": [
+          "AssemblyImpact Engineering Actions"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/top"
+          },
+          {
+            "$ref": "#/components/parameters/skip"
+          },
+          {
+            "$ref": "#/components/parameters/search"
+          },
+          {
+            "name": "$filter",
+            "description": "Filter items by property values, see [Filtering](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionfilter)",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/count"
+          },
+          {
+            "name": "$orderby",
+            "description": "Order items by property values, see [Sorting](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionorderby)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "ID",
+                  "ID desc",
+                  "run_ID",
+                  "run_ID desc",
+                  "material",
+                  "material desc",
+                  "unit",
+                  "unit desc",
+                  "required",
+                  "required desc",
+                  "available",
+                  "available desc",
+                  "gap",
+                  "gap desc",
+                  "status",
+                  "status desc",
+                  "stale",
+                  "stale desc",
+                  "snapshotAt",
+                  "snapshotAt desc",
+                  "unitPrice",
+                  "unitPrice desc",
+                  "priceEvidenceRef",
+                  "priceEvidenceRef desc",
+                  "stockEvidenceRef",
+                  "stockEvidenceRef desc"
+                ]
+              }
+            }
+          },
+          {
+            "name": "$select",
+            "description": "Select properties to be returned, see [Select](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionselect)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "ID",
+                  "run_ID",
+                  "material",
+                  "unit",
+                  "required",
+                  "available",
+                  "gap",
+                  "status",
+                  "stale",
+                  "snapshotAt",
+                  "unitPrice",
+                  "priceEvidenceRef",
+                  "stockEvidenceRef"
+                ]
+              }
+            }
+          },
+          {
+            "name": "$expand",
+            "description": "The value of $expand query option is a comma-separated list of navigation property names, stream property names, or $value indicating the stream content of a media-entity. The corresponding related entities and stream values will be represented inline, see [Expand](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionexpand)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "*",
+                  "run"
+                ]
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Retrieved material lines",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "title": "Collection of ImpactMaterialLines",
+                  "properties": {
+                    "@count": {
+                      "$ref": "#/components/schemas/count"
+                    },
+                    "value": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/EngineeringReview.ImpactMaterialLines"
+                      }
+                    },
+                    "@nextLink": {
+                      "type": "string",
+                      "format": "uri",
+                      "description": "URL of the next page in server-driven paging, see [Server-driven Paging](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_ServerDrivenPaging)"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        },
+        "operationId": "GetMaterialImpact",
+        "description": "Read-only. Required, available and gap quantity, stock status and unit price per material, as calculated by the backend."
+      }
+    },
+    "/ReviewCases({ID})/decisions": {
+      "get": {
+        "summary": "Get the review decision history of a case",
+        "tags": [
+          "AssemblyImpact Engineering Actions"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/top"
+          },
+          {
+            "$ref": "#/components/parameters/skip"
+          },
+          {
+            "$ref": "#/components/parameters/search"
+          },
+          {
+            "name": "$filter",
+            "description": "Filter items by property values, see [Filtering](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionfilter)",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/count"
+          },
+          {
+            "name": "$orderby",
+            "description": "Order items by property values, see [Sorting](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionorderby)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "ID",
+                  "ID desc",
+                  "reviewCase_ID",
+                  "reviewCase_ID desc",
+                  "action",
+                  "action desc",
+                  "fromStatus",
+                  "fromStatus desc",
+                  "toStatus",
+                  "toStatus desc",
+                  "actor",
+                  "actor desc",
+                  "comment",
+                  "comment desc",
+                  "at",
+                  "at desc",
+                  "basedOnRun_ID",
+                  "basedOnRun_ID desc",
+                  "acknowledgedWarnings",
+                  "acknowledgedWarnings desc",
+                  "actionText",
+                  "actionText desc"
+                ]
+              }
+            }
+          },
+          {
+            "name": "$select",
+            "description": "Select properties to be returned, see [Select](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionselect)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "ID",
+                  "reviewCase_ID",
+                  "action",
+                  "fromStatus",
+                  "toStatus",
+                  "actor",
+                  "comment",
+                  "at",
+                  "basedOnRun_ID",
+                  "acknowledgedWarnings",
+                  "actionText"
+                ]
+              }
+            }
+          },
+          {
+            "name": "$expand",
+            "description": "The value of $expand query option is a comma-separated list of navigation property names, stream property names, or $value indicating the stream content of a media-entity. The corresponding related entities and stream values will be represented inline, see [Expand](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionexpand)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "*",
+                  "reviewCase",
+                  "basedOnRun"
+                ]
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Retrieved decisions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "title": "Collection of DecisionEvents",
+                  "properties": {
+                    "@count": {
+                      "$ref": "#/components/schemas/count"
+                    },
+                    "value": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/EngineeringReview.DecisionEvents"
+                      }
+                    },
+                    "@nextLink": {
+                      "type": "string",
+                      "format": "uri",
+                      "description": "URL of the next page in server-driven paging, see [Server-driven Paging](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_ServerDrivenPaging)"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        },
+        "operationId": "GetDecisionHistory",
+        "description": "Read-only. Submit, approve and reject events with actor, comment and the evaluated impact run. Joule never approves or rejects."
+      }
     }
   },
   "components": {
@@ -440,12 +971,23 @@
               "SYNTHETIC_FIXTURE",
               "MANUAL",
               "GENAI_PROPOSAL",
-              "S4_IMPORT"
+              "S4_IMPORT",
+              "DEMO_IMPORT"
             ]
           },
           "evidenceRef": {
             "type": "string",
             "maxLength": 200,
+            "nullable": true
+          },
+          "statusText": {
+            "type": "string",
+            "maxLength": 20,
+            "nullable": true
+          },
+          "sourceTypeText": {
+            "type": "string",
+            "maxLength": 30,
             "nullable": true
           },
           "createdAt": {
@@ -458,6 +1000,18 @@
             "type": "string",
             "format": "date-time",
             "example": "2017-04-13T15:51:04.0000000Z",
+            "nullable": true
+          },
+          "canSubmit": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "canDecide": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "canRunImpact": {
+            "type": "boolean",
             "nullable": true
           },
           "latestRun": {
@@ -481,6 +1035,15 @@
             }
           },
           "runs@count": {
+            "$ref": "#/components/schemas/count"
+          },
+          "decisions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EngineeringReview.DecisionEvents"
+            }
+          },
+          "decisions@count": {
             "$ref": "#/components/schemas/count"
           }
         }
@@ -951,6 +1514,87 @@
           }
         }
       },
+      "EngineeringReview.DecisionEvents": {
+        "title": "DecisionEvents",
+        "type": "object",
+        "properties": {
+          "ID": {
+            "type": "string",
+            "format": "uuid",
+            "example": "01234567-89ab-cdef-0123-456789abcdef"
+          },
+          "reviewCase": {
+            "$ref": "#/components/schemas/EngineeringReview.ReviewCases"
+          },
+          "reviewCase_ID": {
+            "type": "string",
+            "format": "uuid",
+            "example": "01234567-89ab-cdef-0123-456789abcdef"
+          },
+          "action": {
+            "type": "string",
+            "maxLength": 16
+          },
+          "fromStatus": {
+            "type": "string",
+            "maxLength": 12,
+            "enum": [
+              "OPEN",
+              "IN_REVIEW",
+              "APPROVED",
+              "REJECTED"
+            ]
+          },
+          "toStatus": {
+            "type": "string",
+            "maxLength": 12,
+            "enum": [
+              "OPEN",
+              "IN_REVIEW",
+              "APPROVED",
+              "REJECTED"
+            ]
+          },
+          "actor": {
+            "type": "string",
+            "maxLength": 255
+          },
+          "comment": {
+            "type": "string",
+            "maxLength": 1000,
+            "nullable": true
+          },
+          "at": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2017-04-13T15:51:04.0000000Z"
+          },
+          "basedOnRun": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/EngineeringReview.ImpactRuns"
+              }
+            ],
+            "nullable": true
+          },
+          "basedOnRun_ID": {
+            "type": "string",
+            "format": "uuid",
+            "example": "01234567-89ab-cdef-0123-456789abcdef",
+            "nullable": true
+          },
+          "acknowledgedWarnings": {
+            "type": "string",
+            "maxLength": 200,
+            "nullable": true
+          },
+          "actionText": {
+            "type": "string",
+            "maxLength": 30,
+            "nullable": true
+          }
+        }
+      },
       "error": {
         "type": "object",
         "required": [
@@ -999,6 +1643,96 @@
                 "description": "The structure of this object is service-specific"
               }
             }
+          }
+        }
+      },
+      "EngineeringReview.CaseSummary": {
+        "title": "CaseSummary",
+        "type": "object",
+        "properties": {
+          "caseNumber": {
+            "type": "string",
+            "maxLength": 20,
+            "nullable": true
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 160,
+            "nullable": true
+          },
+          "assemblyCode": {
+            "type": "string",
+            "maxLength": 40,
+            "nullable": true
+          },
+          "plant": {
+            "type": "string",
+            "maxLength": 4,
+            "nullable": true
+          },
+          "fromRevision": {
+            "type": "string",
+            "maxLength": 10,
+            "nullable": true
+          },
+          "toRevision": {
+            "type": "string",
+            "maxLength": 10,
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "maxLength": 12,
+            "nullable": true
+          },
+          "statusText": {
+            "type": "string",
+            "maxLength": 20,
+            "nullable": true
+          },
+          "latestRunStatus": {
+            "type": "string",
+            "maxLength": 24,
+            "nullable": true
+          },
+          "latestRunAsOf": {
+            "type": "string",
+            "format": "date",
+            "example": "2017-04-13",
+            "nullable": true
+          },
+          "costDeltaTotal": {
+            "anyOf": [
+              {
+                "type": "number",
+                "format": "decimal",
+                "multipleOf": 0.01,
+                "maximum": 9999999999999.99,
+                "minimum": -9999999999999.99
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "example": 0,
+            "x-sap-precision": 15,
+            "x-sap-scale": 2,
+            "nullable": true
+          },
+          "currency": {
+            "type": "string",
+            "maxLength": 3,
+            "nullable": true
+          },
+          "materialsShort": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "instructionFindings": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
           }
         }
       }
