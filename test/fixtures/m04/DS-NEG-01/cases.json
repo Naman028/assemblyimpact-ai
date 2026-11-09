@@ -1,0 +1,421 @@
+{
+ "datasetId": "DS-NEG-01",
+ "version": "1.1.0",
+ "purpose": "Invalid, missing, ambiguous and non-comparable variants of DS-ORACLE-01. Each case applies mutations to a copy of the base dataset; expected outcomes are executable via tools/oracle.py --negative.",
+ "synthetic": true,
+ "cases": [
+  {
+   "id": "NEG-01-missing-price",
+   "category": "missing",
+   "baseDataset": "DS-ORACLE-01",
+   "caseNumber": "EC-000473",
+   "mutations": [
+    {
+     "file": "cost_prices",
+     "op": "delete",
+     "where": {
+      "material": "SEAL-01"
+     }
+    }
+   ],
+   "expected": {
+    "status": "INCOMPLETE",
+    "flagsInclude": [
+     "COST_INCOMPLETE"
+    ],
+    "checks": {
+     "cost.deltaTotal": null,
+     "cost.toPerAssembly": null,
+     "cost.fromPerAssembly": "56.00",
+     "cost.issues.0.issue": "MISSING_PRICE"
+    }
+   }
+  },
+  {
+   "id": "NEG-02-missing-stock",
+   "category": "missing",
+   "baseDataset": "DS-ORACLE-01",
+   "caseNumber": "EC-000473",
+   "mutations": [
+    {
+     "file": "stock_snapshots",
+     "op": "delete",
+     "where": {
+      "material": "SENS-01"
+     }
+    }
+   ],
+   "expected": {
+    "status": "INCOMPLETE",
+    "flagsInclude": [
+     "STOCK_UNKNOWN"
+    ],
+    "checks": {
+     "summary.materialsUnknown": 1,
+     "summary.materialsShort": 2,
+     "cost.deltaTotal": "1200.00"
+    }
+   }
+  },
+  {
+   "id": "NEG-03-stale-stock",
+   "category": "stale",
+   "baseDataset": "DS-ORACLE-01",
+   "caseNumber": "EC-000473",
+   "mutations": [
+    {
+     "file": "stock_snapshots",
+     "op": "update",
+     "where": {
+      "material": "FAN-B"
+     },
+     "set": {
+      "snapshotAt": "2026-10-20T08:00:00Z"
+     }
+    }
+   ],
+   "expected": {
+    "status": "COMPLETE_WITH_WARNINGS",
+    "flagsInclude": [
+     "STOCK_STALE"
+    ],
+    "checks": {
+     "summary.materialsShort": 2
+    }
+   }
+  },
+  {
+   "id": "NEG-04-foreign-currency",
+   "category": "non-comparable",
+   "baseDataset": "DS-ORACLE-01",
+   "caseNumber": "EC-000473",
+   "mutations": [
+    {
+     "file": "cost_prices",
+     "op": "update",
+     "where": {
+      "material": "FAN-B"
+     },
+     "set": {
+      "currency": "USD"
+     }
+    }
+   ],
+   "expected": {
+    "status": "INCOMPLETE",
+    "flagsInclude": [
+     "COST_INCOMPLETE"
+    ],
+    "checks": {
+     "cost.deltaTotal": null,
+     "cost.issues.0.issue": "NON_COMPARABLE_CURRENCY"
+    }
+   }
+  },
+  {
+   "id": "NEG-05-unit-mismatch",
+   "category": "non-comparable",
+   "baseDataset": "DS-ORACLE-01",
+   "caseNumber": "EC-000473",
+   "mutations": [
+    {
+     "file": "bom_items",
+     "op": "update",
+     "where": {
+      "bomStateId": "BOM-COOL-100-B",
+      "itemNo": "0020"
+     },
+     "set": {
+      "unit": "KG"
+     }
+    }
+   ],
+   "expected": {
+    "status": "INCOMPLETE",
+    "flagsInclude": [
+     "NON_COMPARABLE_UNIT",
+     "COST_INCOMPLETE",
+     "STOCK_NON_COMPARABLE"
+    ],
+    "checks": {
+     "comparison.1.change": "NON_COMPARABLE",
+     "cost.deltaTotal": null
+    }
+   }
+  },
+  {
+   "id": "NEG-06-ambiguous-bom-state",
+   "category": "ambiguous",
+   "baseDataset": "DS-ORACLE-01",
+   "caseNumber": "EC-000473",
+   "mutations": [
+    {
+     "file": "bom_states",
+     "op": "append",
+     "row": {
+      "bomStateId": "BOM-COOL-100-B2",
+      "assemblyCode": "COOL-100",
+      "plant": "1000",
+      "bomUsage": "1",
+      "alternative": "01",
+      "revision": "B",
+      "validFrom": "2027-01-01",
+      "validTo": "9999-12-31",
+      "status": "PROPOSED",
+      "changeNumber": "EC-000499",
+      "sourceType": "SYNTHETIC_FIXTURE",
+      "evidenceRef": "DS-NEG-01/bom_states/BOM-COOL-100-B2"
+     }
+    }
+   ],
+   "expected": {
+    "status": "REJECTED",
+    "errorCode": "AMBIGUOUS_BOM_STATE"
+   }
+  },
+  {
+   "id": "NEG-07-different-plant",
+   "category": "non-comparable",
+   "baseDataset": "DS-ORACLE-01",
+   "caseNumber": "EC-000473",
+   "mutations": [
+    {
+     "file": "bom_states",
+     "op": "update",
+     "where": {
+      "bomStateId": "BOM-COOL-100-B"
+     },
+     "set": {
+      "plant": "2000"
+     }
+    }
+   ],
+   "expected": {
+    "status": "REJECTED",
+    "errorCode": "NON_COMPARABLE_BOM_STATES"
+   }
+  },
+  {
+   "id": "NEG-08-zero-production-quantity",
+   "category": "invalid",
+   "baseDataset": "DS-ORACLE-01",
+   "caseNumber": "EC-000473",
+   "mutations": [
+    {
+     "file": "review_cases",
+     "op": "update",
+     "where": {
+      "caseNumber": "EC-000473"
+     },
+     "set": {
+      "productionQuantity": "0"
+     }
+    }
+   ],
+   "expected": {
+    "status": "REJECTED",
+    "errorCode": "INVALID_PRODUCTION_QUANTITY"
+   }
+  },
+  {
+   "id": "NEG-09-negative-bom-quantity",
+   "category": "invalid",
+   "baseDataset": "DS-ORACLE-01",
+   "caseNumber": "EC-000473",
+   "mutations": [
+    {
+     "file": "bom_items",
+     "op": "update",
+     "where": {
+      "bomStateId": "BOM-COOL-100-B",
+      "itemNo": "0020"
+     },
+     "set": {
+      "quantity": "-3"
+     }
+    }
+   ],
+   "expected": {
+    "status": "REJECTED",
+    "errorCode": "INVALID_BOM_QUANTITY"
+   }
+  },
+  {
+   "id": "NEG-10-duplicate-item-number",
+   "category": "invalid",
+   "baseDataset": "DS-ORACLE-01",
+   "caseNumber": "EC-000473",
+   "mutations": [
+    {
+     "file": "bom_items",
+     "op": "append",
+     "row": {
+      "bomStateId": "BOM-COOL-100-B",
+      "itemNo": "0040",
+      "material": "SENS-01",
+      "quantity": "1",
+      "unit": "PC",
+      "evidenceRef": "DS-NEG-01/bom_items/dup"
+     }
+    }
+   ],
+   "expected": {
+    "status": "REJECTED",
+    "errorCode": "DUPLICATE_ITEM_NUMBER"
+   }
+  },
+  {
+   "id": "NEG-11-price-unit-normalisation",
+   "category": "positive-control",
+   "baseDataset": "DS-ORACLE-01",
+   "caseNumber": "EC-000473",
+   "mutations": [
+    {
+     "file": "cost_prices",
+     "op": "update",
+     "where": {
+      "material": "BRKT-01"
+     },
+     "set": {
+      "price": "30.00",
+      "priceUnit": "10"
+     }
+    }
+   ],
+   "expected": {
+    "status": "COMPLETE",
+    "checks": {
+     "cost.deltaTotal": "1200.00",
+     "cost.fromPerAssembly": "56.00",
+     "cost.toPerAssembly": "68.00"
+    }
+   }
+  },
+  {
+   "id": "NEG-12-ambiguous-price",
+   "category": "ambiguous",
+   "baseDataset": "DS-ORACLE-01",
+   "caseNumber": "EC-000473",
+   "mutations": [
+    {
+     "file": "cost_prices",
+     "op": "append",
+     "row": {
+      "material": "BRKT-01",
+      "plant": "1000",
+      "price": "3.20",
+      "currency": "EUR",
+      "priceUnit": "1",
+      "unit": "PC",
+      "priceBasis": "SYNTHETIC_STANDARD_PRICE",
+      "validFrom": "2026-06-01",
+      "validTo": "9999-12-31",
+      "sourceType": "SYNTHETIC_FIXTURE",
+      "evidenceRef": "DS-NEG-01/cost_prices/BRKT-01-dup"
+     }
+    }
+   ],
+   "expected": {
+    "status": "INCOMPLETE",
+    "flagsInclude": [
+     "COST_INCOMPLETE"
+    ],
+    "checks": {
+     "cost.issues.0.issue": "AMBIGUOUS_PRICE"
+    }
+   }
+  },
+  {
+   "id": "NEG-13-missing-bom-state",
+   "category": "missing",
+   "baseDataset": "DS-ORACLE-01",
+   "caseNumber": "EC-000473",
+   "mutations": [
+    {
+     "file": "review_cases",
+     "op": "update",
+     "where": {
+      "caseNumber": "EC-000473"
+     },
+     "set": {
+      "toBomStateId": "BOM-COOL-100-Z"
+     }
+    }
+   ],
+   "expected": {
+    "status": "REJECTED",
+    "errorCode": "MISSING_BOM_STATE"
+   }
+  },
+  {
+   "id": "NEG-14-different-alternative",
+   "category": "non-comparable",
+   "baseDataset": "DS-ORACLE-01",
+   "caseNumber": "EC-000473",
+   "mutations": [
+    {
+     "file": "bom_states",
+     "op": "update",
+     "where": {
+      "bomStateId": "BOM-COOL-100-B"
+     },
+     "set": {
+      "alternative": "02"
+     }
+    }
+   ],
+   "expected": {
+    "status": "REJECTED",
+    "errorCode": "NON_COMPARABLE_BOM_STATES"
+   }
+  },
+  {
+   "id": "NEG-15-fractional-production-quantity",
+   "category": "invalid",
+   "baseDataset": "DS-ORACLE-01",
+   "caseNumber": "EC-000473",
+   "mutations": [
+    {
+     "file": "review_cases",
+     "op": "update",
+     "where": {
+      "caseNumber": "EC-000473"
+     },
+     "set": {
+      "productionQuantity": "100.5"
+     }
+    }
+   ],
+   "expected": {
+    "status": "REJECTED",
+    "errorCode": "INVALID_PRODUCTION_QUANTITY"
+   }
+  },
+  {
+   "id": "NEG-16-instruction-not-yet-effective",
+   "category": "validity",
+   "baseDataset": "DS-ORACLE-01",
+   "caseNumber": "EC-000473",
+   "mutations": [
+    {
+     "file": "instructions",
+     "op": "update",
+     "where": {
+      "instructionId": "WI-COOL-100-TST",
+      "version": "2"
+     },
+     "set": {
+      "validFrom": "2027-01-01"
+     }
+    }
+   ],
+   "expected": {
+    "status": "COMPLETE",
+    "checks": {
+     "summary.instructionFindings": 0,
+     "summary.instructionsToUpdate": 0
+    }
+   }
+  }
+ ]
+}

@@ -1,0 +1,13 @@
+{
+  "datasetId": "DS-ORACLE-01",
+  "version": "1.0.0",
+  "purpose": "Four-component calculation oracle for COOL-100 (Rev A -> Rev B)",
+  "synthetic": true,
+  "dataLabel": "SYNTHETIC DEMO DATA - fictional company NovaMotion Manufacturing - not SAP S/4HANA data",
+  "company": "NovaMotion Manufacturing",
+  "plant": "1000",
+  "currency": "EUR",
+  "referenceDate": "2026-11-08",
+  "randomness": "none - all values fixed",
+  "sourceOfFixedValues": "Owner-supplied M04 kickoff text (handbook values as quoted there). Values marked PROPOSED in the data contract are not from the handbook and need owner confirmation."
+}

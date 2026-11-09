@@ -1,0 +1,4 @@
+instructionId,version,assemblyCode,plant,title,appliesToRevision,status,validFrom,sourceType,valueStatus,evidenceRef
+WI-COOL-100-ASM,2,COOL-100,1000,Assemble cooling module,A,SUPERSEDED,2026-01-01,SYNTHETIC_FIXTURE,PROPOSED,DS-ORACLE-01/instructions/WI-COOL-100-ASM/v2
+WI-COOL-100-ASM,3,COOL-100,1000,Assemble cooling module,B,RELEASED,2026-12-01,SYNTHETIC_FIXTURE,PROPOSED,DS-ORACLE-01/instructions/WI-COOL-100-ASM/v3
+WI-COOL-100-TST,2,COOL-100,1000,End-of-line function test,,RELEASED,2026-06-01,SYNTHETIC_FIXTURE,PROPOSED,DS-ORACLE-01/instructions/WI-COOL-100-TST/v2

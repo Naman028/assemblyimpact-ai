@@ -1,0 +1,6 @@
+material,description,baseUnit,sourceType
+FAN-A,Cooling fan (standard),PC,SYNTHETIC_FIXTURE
+FAN-B,Cooling fan (high-flow),PC,SYNTHETIC_FIXTURE
+BRKT-01,Mounting bracket,PC,SYNTHETIC_FIXTURE
+SENS-01,Temperature sensor,PC,SYNTHETIC_FIXTURE
+SEAL-01,Housing seal,PC,SYNTHETIC_FIXTURE
