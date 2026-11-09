@@ -1,0 +1,13 @@
+# E-06 authorization and negative checks on seeded records 2026-11-09T02:45:27Z
+  anonymous GET ReviewCases                                      expected 401  got 401  PASS
+  wrong password GET ReviewCases                                 expected 401  got 401  PASS
+  analyst2000 GET plant-1000 case by key (cross-plant)           expected 404  got 404  PASS
+  analyst2000 runImpact on plant-1000 case (cross-plant)         expected 404  got 404  PASS
+  cviewer runImpact (ChangeViewer has no run right)              expected 403  got 403  PASS
+  developer (M03 role only) GET ReviewCases                      expected 403  got 403  PASS
+  analyst runImpact asOfDate='not-a-date'                        expected 400  got 400  PASS
+  analyst runImpact unknown case                                 expected 404  got 404  PASS
+  analyst PATCH seeded CostPrices (read-only)                    expected 405  got 405  PASS
+  analyst POST ReviewCases (read-only)                           expected 405  got 405  PASS
+  analyst DELETE ImpactRuns (immutable snapshot)                 expected 405  got 400  FAIL
+  plant-2000 user sees 0 of 2 plant-1000 runs; FAN-B price still 42.0000

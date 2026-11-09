@@ -1,0 +1,156 @@
+{
+  "milestone": "M04 Slice 1b",
+  "repository": "Naman028/assemblyimpact-ai",
+  "branch": "feat/m04-slice1b",
+  "implementationCommit": "68d6501126a1dafcb9f35e0b65a226f11cfc9efb",
+  "baseCommit": "eaf97f2780d3d66b6bd636aee00d873b29377fdf",
+  "environment": "SAP BAS dev space ws-lecln, Node v24.21.0",
+  "generatedAt": "2026-11-09T02:53:11.555Z",
+  "note": "Screenshots: unedited Claude in Chrome captures of the BAS tab. Logs: produced in BAS by the E-01..E-07 commands. Synthetic data only.",
+  "files": [
+    {
+      "evidenceId": null,
+      "path": "docs/evidence/m04-slice1b/M04_Slice1b_Report.pdf",
+      "bytes": 896800,
+      "sha256": "33eca11e7188dd988747f19e69fa21f78e66a972472d4092a8a2e3f14d318cba"
+    },
+    {
+      "evidenceId": null,
+      "path": "docs/evidence/m04-slice1b/decisions.md",
+      "bytes": 4109,
+      "sha256": "2c14dd655b0f27ea7984d6276b8bb76b489941ef4cee165e148577ff8e0a2d52"
+    },
+    {
+      "evidenceId": null,
+      "path": "docs/evidence/m04-slice1b/implementation-report.md",
+      "bytes": 18994,
+      "sha256": "29e2e1917cac4b5b8e45300662ddae75ca67ead4dd8d72faa394b337530157e9"
+    },
+    {
+      "evidenceId": "E-01",
+      "path": "docs/evidence/m04-slice1b/logs/E-01-environment.log",
+      "bytes": 617,
+      "sha256": "3a0cc8dbf3535c201e21a6f2fa7a6dc7527dc41f2dc519b12a79d7ad945adf95"
+    },
+    {
+      "evidenceId": "E-02",
+      "path": "docs/evidence/m04-slice1b/logs/E-02-dataset-config.log",
+      "bytes": 1580,
+      "sha256": "e8d24d0d93b4582b0d010eef0a5737064028f8fc8920af4e67f63629c663702b"
+    },
+    {
+      "evidenceId": "E-03",
+      "path": "docs/evidence/m04-slice1b/logs/E-03-server-start.log",
+      "bytes": 15193,
+      "sha256": "47e0da04b57a4c0a7651d2f5d1cfff4ac931e6dd9095063edb1f90896de75803"
+    },
+    {
+      "evidenceId": "E-04",
+      "path": "docs/evidence/m04-slice1b/logs/E-04-odata-seeded.log",
+      "bytes": 1395,
+      "sha256": "05d456af2cb7a7a6be5d24e40dca12ba6864956709cd091a744e5a90f3c872db"
+    },
+    {
+      "evidenceId": "E-05",
+      "path": "docs/evidence/m04-slice1b/logs/E-05-runimpact-oracle.log",
+      "bytes": 1507,
+      "sha256": "4778fc822da7c02525ef9bc5a5a2bcc9f1386d164ec6f4578dd3ce407b53b0e8"
+    },
+    {
+      "evidenceId": "E-06a",
+      "path": "docs/evidence/m04-slice1b/logs/E-06-authorization-negative.log",
+      "bytes": 1176,
+      "sha256": "0d25a71f71ff1018b1252d612a0b5d0e2a2c49b3f07ff5a4d50b13a5e000d133"
+    },
+    {
+      "evidenceId": "E-06b",
+      "path": "docs/evidence/m04-slice1b/logs/E-06b-authorization-recheck.log",
+      "bytes": 486,
+      "sha256": "cf9dfb5fae31a294e66ba957f7ae11e4d119ea9b1288bfe313a5fe99f9b09bc1"
+    },
+    {
+      "evidenceId": "E-07",
+      "path": "docs/evidence/m04-slice1b/logs/E-07-npm-test.log",
+      "bytes": 2993,
+      "sha256": "8bbb5d7ad07ce5c31227e946b25380379cd2fda909f2e6f1615f36f1703ea100"
+    },
+    {
+      "evidenceId": "E-07",
+      "path": "docs/evidence/m04-slice1b/logs/E-07-regression-summary.log",
+      "bytes": 1036,
+      "sha256": "2399bf8aa192781050043b48d9bae43f12c7e7104577e886858bb568a0e26241"
+    },
+    {
+      "evidenceId": null,
+      "path": "docs/evidence/m04-slice1b/report-source/build_report.py",
+      "bytes": 27969,
+      "sha256": "6c8a64159b3f3fea068c25e72f4af0a29e78360bc69ab37fa36647d611e367a2"
+    },
+    {
+      "evidenceId": null,
+      "path": "docs/evidence/m04-slice1b/report-source/github.json",
+      "bytes": 119,
+      "sha256": "ceca7aa08230d8f7b34ed22061bbf75e2cc24b98760fd6c437312bc6e46747cd"
+    },
+    {
+      "evidenceId": null,
+      "path": "docs/evidence/m04-slice1b/report-source/times.txt",
+      "bytes": 210,
+      "sha256": "167539d5d32b9cdd1bdfb2807fa427ee8b1bc9eb7c3e0bdb7a8f62b9b63a4de9"
+    },
+    {
+      "evidenceId": "E-01",
+      "path": "docs/evidence/m04-slice1b/screenshots/E-01_bas-environment.jpg",
+      "bytes": 70361,
+      "sha256": "4e95305d38046deb4a18b625d3ec830ad732913c538656c5754ffadeae48fe7f"
+    },
+    {
+      "evidenceId": "E-02",
+      "path": "docs/evidence/m04-slice1b/screenshots/E-02_dataset-files-and-config.jpg",
+      "bytes": 102173,
+      "sha256": "f5cd022e8b1a0e47fca03d70e5d9ead799628f647ec57aa47246a56f78a92652"
+    },
+    {
+      "evidenceId": "E-03",
+      "path": "docs/evidence/m04-slice1b/screenshots/E-03_cap-server-startup-seed-loaded.jpg",
+      "bytes": 75585,
+      "sha256": "b58e58ff6bec997cd8589e2dcbd054243c12d36732fa0ad791bc37624726d0c5"
+    },
+    {
+      "evidenceId": "E-04",
+      "path": "docs/evidence/m04-slice1b/screenshots/E-04_odata-seeded-records.jpg",
+      "bytes": 92448,
+      "sha256": "5395d4a6aec34b8416fd5844b26bcbaaf1062319430b7ecedaee7268d5151b11"
+    },
+    {
+      "evidenceId": "E-05",
+      "path": "docs/evidence/m04-slice1b/screenshots/E-05_runimpact-oracle-result.jpg",
+      "bytes": 96228,
+      "sha256": "4a05a85d639d1818c51eb02f998b9dc44a92a673b7330581b830df665e74ef75"
+    },
+    {
+      "evidenceId": "E-06a",
+      "path": "docs/evidence/m04-slice1b/screenshots/E-06a_authorization-negative-checks.jpg",
+      "bytes": 81141,
+      "sha256": "3994af137d1f1276607ebb518db88afc1763f4210e1ea331b5e1b6c67332595c"
+    },
+    {
+      "evidenceId": "E-06b",
+      "path": "docs/evidence/m04-slice1b/screenshots/E-06b_authorization-recheck.jpg",
+      "bytes": 67827,
+      "sha256": "77a55457a49d236fb58d4da7e40b69316f8d2e51fb79e39581dbe4ef44423ce3"
+    },
+    {
+      "evidenceId": "E-07",
+      "path": "docs/evidence/m04-slice1b/screenshots/E-07_bas-regression-gate.jpg",
+      "bytes": 81628,
+      "sha256": "82795b6e0126e254e1d9222502e314c47ed2dc62c8ca72710d6f5549691307a7"
+    },
+    {
+      "evidenceId": null,
+      "path": "docs/evidence/m04-slice1b/test-results/verification-summary.md",
+      "bytes": 1506,
+      "sha256": "3f358cf80290f4b64990bf7d8952eb665d5ab3e3a75c1880211c459499861065"
+    }
+  ]
+}

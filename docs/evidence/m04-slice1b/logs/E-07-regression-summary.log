@@ -1,0 +1,15 @@
+# E-07 BAS regression gate 2026-11-09T02:46:06Z  HEAD=68d6501 node=v24.21.0
+npm ci                         exit 0  (found 0 vulnerabilities)
+npm run lint                   exit 0
+npm test                       exit 0   tests 35  pass 35  fail 0  cancelled 0  skipped 0 
+npm audit (high)               exit 0  (found 0 vulnerabilities)
+build-seed --check             exit 0  (test/data is up to date)
+seed-data.test.js results:
+  ✔ committed test/data CSVs are exactly the generator output (reproducible, no drift)
+  ✔ seed data is referentially and semantically consistent
+  ✔ CAP loads test/data; authenticated OData returns the seeded records per plant
+  ✔ runImpact on the persisted seed case reproduces DS-ORACLE-01 and is deterministic
+  ✔ seeded records keep authentication, role, plant and input checks
+  ✔ DS-DEMO-01 (test-only, not seeded) reproduces its expected results through persisted runImpact
+  ✔ production configuration never loads test/data
+tracked changes after tests: 0  untracked outside evidence: 0

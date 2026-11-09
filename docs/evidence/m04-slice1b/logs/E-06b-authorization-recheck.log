@@ -1,0 +1,6 @@
+# E-06b corrected re-check 2026-11-09T02:45:47Z
+  cause of E-06a FAIL: RID was assigned inside the piped E-05 block (subshell), so the DELETE targeted ImpactRuns() with an empty key -> 400. Harness error, not an application defect.
+  RID=02dfaeb0-8014-4560-87fb-fc55ed2978c5
+  analyst DELETE ImpactRuns(<existing run>) (immutable snapshot) expected 405  got 405  PASS
+  analyst PATCH ImpactRuns(<existing run>) (immutable snapshot)  expected 405  got 405  PASS
+  run still present: 200

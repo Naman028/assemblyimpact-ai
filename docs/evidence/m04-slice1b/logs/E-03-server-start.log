@@ -1,0 +1,225 @@
+# E-03 npm start (development profile) 2026-11-09T02:44:09Z
+
+> assemblyimpact-ai@1.0.0 start
+> cds-serve
+
+[cds] - loaded model from 5 file(s):
+ 
+  srv/engineering-review.cds
+  srv/assembly-service.cds
+  db/engineering.cds
+  db/schema.cds
+  node_modules/@sap/cds/common.cds
+
+[cds] - connect to db > sqlite { url: ':memory:' }
+  > init from test/data/assemblyimpact-StockSnapshots.csv 
+  > init from test/data/assemblyimpact-ReviewCases.csv 
+  > init from test/data/assemblyimpact-Instructions.csv 
+  > init from test/data/assemblyimpact-InstructionReferences.csv 
+  > init from test/data/assemblyimpact-CostPrices.csv 
+  > init from test/data/assemblyimpact-BOMStates.csv 
+  > init from test/data/assemblyimpact-BOMItems.csv 
+  > init from test/data/assemblyimpact-Assemblies.csv 
+/> successfully deployed to in-memory database. 
+
+[cds] - using auth strategy { kind: 'mocked' }
+[cds] - serving AssemblyCatalog {
+  at: [ '/odata/v4/assembly-catalog' ],
+  decl: 'srv/assembly-service.cds:5',
+  impl: 'srv/assembly-service.js'
+}
+[cds] - serving EngineeringReview {
+  at: [ '/odata/v4/engineering-review' ],
+  decl: 'srv/engineering-review.cds:8',
+  impl: 'srv/engineering-review.js'
+}
+[cds] - server listening on { url: 'http://localhost:4004' }
+[cds] - server v10.2.2 launched in 439 ms
+[cds] - [ terminate with ^C ]
+
+[odata] - GET /odata/v4/engineering-review/ReviewCases { '$orderby': 'caseNumber' }
+[odata] - GET /odata/v4/engineering-review/ReviewCases 
+[odata] - GET /odata/v4/engineering-review/BOMItems {
+  '$filter': "bomState/stateKey eq 'BOM-COOL-100-B'",
+  '$orderby': 'itemNo'
+}
+[odata] - GET /odata/v4/engineering-review/CostPrices { '$orderby': 'material' }
+[odata] - GET /odata/v4/engineering-review/ReviewCases/$count 
+[odata] - GET /odata/v4/engineering-review/BOMStates/$count 
+[odata] - GET /odata/v4/engineering-review/BOMItems/$count 
+[odata] - GET /odata/v4/engineering-review/CostPrices/$count 
+[odata] - GET /odata/v4/engineering-review/StockSnapshots/$count 
+[odata] - GET /odata/v4/engineering-review/Instructions/$count 
+[odata] - GET /odata/v4/engineering-review/InstructionReferences/$count 
+[odata] - GET /odata/v4/engineering-review/ImpactRuns/$count 
+[odata] - GET /odata/v4/assembly-catalog/Assemblies 
+[odata] - GET /odata/v4/engineering-review/ReviewCases { '$filter': "caseNumber eq 'EC-000473'", '$select': 'ID' }
+[odata] - POST /odata/v4/engineering-review/ReviewCases(7263f5aa-71cf-5325-8dd7-41ca2e1a0fd5)/runImpact 
+[odata] - POST /odata/v4/engineering-review/ReviewCases(7263f5aa-71cf-5325-8dd7-41ca2e1a0fd5)/runImpact 
+[odata] - GET /odata/v4/engineering-review/ImpactRuns/$count 
+[odata] - GET /odata/v4/engineering-review/ImpactMaterialLines {
+  '$filter': 'run_ID eq 33d5b67c-5420-4706-a5bb-6b507bf56899',
+  '$orderby': 'material'
+}
+[odata] - GET /odata/v4/engineering-review/Findings {
+  '$filter': 'run_ID eq 33d5b67c-5420-4706-a5bb-6b507bf56899',
+  '$orderby': 'type'
+}
+[odata] - GET /odata/v4/engineering-review/ReviewCases(7263f5aa-71cf-5325-8dd7-41ca2e1a0fd5) 
+[odata] - 404 - Error: Not Found
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/read.js:265:19
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5) {
+  status: 404,
+  code: '404',
+  _i18n: 1
+}
+[odata] - POST /odata/v4/engineering-review/ReviewCases(7263f5aa-71cf-5325-8dd7-41ca2e1a0fd5)/runImpact 
+[odata] - 404 - Error: Not Found
+    at #runImpact (file:///home/user/projects/assemblyimpact-ai/srv/engineering-review.js:22:29)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async next (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:57:19)
+    at async EngineeringReview.handle (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:55:12) {
+  code: '404',
+  status: 404,
+  _i18n: 1
+}
+[odata] - POST /odata/v4/engineering-review/ReviewCases(7263f5aa-71cf-5325-8dd7-41ca2e1a0fd5)/runImpact 
+[odata] - 403 - Error: Forbidden
+    at reject (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/generic/auth/utils.js:10:19)
+    at EngineeringReview.enforce_auth (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/generic/auth/restrict.js:229:5)
+    at EngineeringReview.handle_authorization (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/generic/auth/index.js:79:27)
+    at EngineeringReview.handle (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/Service.js:73:47)
+    at EngineeringReview.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:32:17)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:50
+    at EngineeringReview.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at EngineeringReview.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:36)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/operation.js:127:17
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:48 {
+  internal: null,
+  code: '403',
+  status: 403,
+  _i18n: 1
+}
+[odata] - GET /odata/v4/engineering-review/ReviewCases 
+[odata] - 403 - Error: Forbidden
+    at reject (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/generic/auth/utils.js:10:19)
+    at EngineeringReview.enforce_auth (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/generic/auth/restrict.js:229:5)
+    at EngineeringReview.handle_authorization (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/generic/auth/index.js:79:27)
+    at EngineeringReview.handle (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/Service.js:73:47)
+    at EngineeringReview.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:32:17)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:50
+    at EngineeringReview.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at EngineeringReview.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:36)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/read.js:262:24
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:48 {
+  internal: null,
+  code: '403',
+  status: 403,
+  _i18n: 1
+}
+[odata] - POST /odata/v4/engineering-review/ReviewCases(7263f5aa-71cf-5325-8dd7-41ca2e1a0fd5)/runImpact 
+[odata] - 400 - [Value not-a-date is not a valid Date] {
+  code: 'ASSERT_DATA_TYPE',
+  args: [ 'not-a-date', 'Date' ],
+  target: 'asOfDate',
+  _i18n: 1
+}
+[odata] - POST /odata/v4/engineering-review/ReviewCases(00000000-0000-4000-8000-000000000000)/runImpact 
+[odata] - 404 - Error: Not Found
+    at #runImpact (file:///home/user/projects/assemblyimpact-ai/srv/engineering-review.js:22:29)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async next (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:57:19)
+    at async EngineeringReview.handle (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:55:12) {
+  code: '404',
+  status: 404,
+  _i18n: 1
+}
+[odata] - GET /odata/v4/engineering-review/CostPrices { '$top': '1', '$select': 'ID' }
+[odata] - PATCH /odata/v4/engineering-review/CostPrices(54b8cd27-c4a6-5212-8efb-d8a531a07129) 
+[odata] - 405 - Error: Entity "EngineeringReview.CostPrices" is read-only
+    at EngineeringReview.check_readonly (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/generic/auth/readOnly.js:10:61)
+    at EngineeringReview.handle_authorization (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/generic/auth/index.js:73:21)
+    at EngineeringReview.handle (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/Service.js:73:47)
+    at EngineeringReview.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:32:17)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:50
+    at EngineeringReview.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at EngineeringReview.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:36)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/update.js:121:24
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:48
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:65:14) {
+  code: 'ENTITY_IS_READ_ONLY',
+  args: [ 'EngineeringReview.CostPrices' ],
+  status: 405,
+  _i18n: 1
+}
+[odata] - POST /odata/v4/engineering-review/ReviewCases 
+[odata] - 405 - Error: Entity "EngineeringReview.ReviewCases" is read-only
+    at EngineeringReview.check_readonly (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/generic/auth/readOnly.js:10:61)
+    at EngineeringReview.handle_authorization (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/generic/auth/index.js:73:21)
+    at EngineeringReview.handle (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/Service.js:73:47)
+    at EngineeringReview.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:32:17)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:50
+    at EngineeringReview.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at EngineeringReview.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:36)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/create.js:74:24
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:48
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:65:14) {
+  code: 'ENTITY_IS_READ_ONLY',
+  args: [ 'EngineeringReview.ReviewCases' ],
+  status: 405,
+  _i18n: 1
+}
+[odata] - DELETE /odata/v4/engineering-review/ImpactRuns() 
+[odata] - 400 - Error: Key "ID" is missing for entity "EngineeringReview.ImpactRuns"
+    at _checkAllKeysProvided (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/parse/afterburner.js:802:11)
+    at _processSegments (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/parse/afterburner.js:432:11)
+    at module.exports [as afterburner] (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/parse/afterburner.js:970:36)
+    at _enhanceCqn (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/index.js:73:19)
+    at Object.parse (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/index.js:125:13)
+    at parse_odata_url (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/parse.js:25:28)
+    at Layer.handleRequest (/home/user/projects/assemblyimpact-ai/node_modules/router/lib/layer.js:152:17)
+    at trimPrefix (/home/user/projects/assemblyimpact-ai/node_modules/router/index.js:342:13)
+    at /home/user/projects/assemblyimpact-ai/node_modules/router/index.js:297:9
+    at processParams (/home/user/projects/assemblyimpact-ai/node_modules/router/index.js:582:12) {
+  status: 400,
+  code: '400'
+}
+[odata] - GET /odata/v4/engineering-review/ImpactRuns/$count 
+[odata] - GET /odata/v4/engineering-review/ImpactRuns/$count 
+[odata] - GET /odata/v4/engineering-review/CostPrices { '$filter': "material eq 'FAN-B'" }
+[odata] - GET /odata/v4/engineering-review/ImpactRuns { '$top': '1', '$select': 'ID' }
+[odata] - DELETE /odata/v4/engineering-review/ImpactRuns(02dfaeb0-8014-4560-87fb-fc55ed2978c5) 
+[odata] - 405 - Error: Entity "EngineeringReview.ImpactRuns" is read-only
+    at EngineeringReview.check_readonly (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/generic/auth/readOnly.js:10:61)
+    at EngineeringReview.handle_authorization (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/generic/auth/index.js:73:21)
+    at EngineeringReview.handle (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/Service.js:73:47)
+    at EngineeringReview.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:32:17)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:50
+    at EngineeringReview.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at EngineeringReview.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:36)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/delete.js:55:24
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:48
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:65:14) {
+  code: 'ENTITY_IS_READ_ONLY',
+  args: [ 'EngineeringReview.ImpactRuns' ],
+  status: 405,
+  _i18n: 1
+}
+[odata] - PATCH /odata/v4/engineering-review/ImpactRuns(02dfaeb0-8014-4560-87fb-fc55ed2978c5) 
+[odata] - 405 - Error: Entity "EngineeringReview.ImpactRuns" is read-only
+    at EngineeringReview.check_readonly (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/generic/auth/readOnly.js:10:61)
+    at EngineeringReview.handle_authorization (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/generic/auth/index.js:73:21)
+    at EngineeringReview.handle (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/_runtime/common/Service.js:73:47)
+    at EngineeringReview.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:32:17)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:50
+    at EngineeringReview.run (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/cds.Service.js:177:44)
+    at EngineeringReview.dispatch (/home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-dispatch.js:20:36)
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/libx/odata/middleware/update.js:121:24
+    at /home/user/projects/assemblyimpact-ai/node_modules/@sap/cds/lib/srv/srv-tx.js:27:48
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:65:14) {
+  code: 'ENTITY_IS_READ_ONLY',
+  args: [ 'EngineeringReview.ImpactRuns' ],
+  status: 405,
+  _i18n: 1
+}
+[odata] - GET /odata/v4/engineering-review/ImpactRuns(02dfaeb0-8014-4560-87fb-fc55ed2978c5) 

@@ -1,0 +1,27 @@
+# E-04 OData responses with seeded data (development profile) 2026-11-09T02:44:38Z
+GET engineering-review/ReviewCases  as cviewer (ChangeViewer, plant 1000):
+  EC-000473 | 1000 | COOL-100 | A | B | 100 | IN_REVIEW | SYNTHETIC_FIXTURE
+GET engineering-review/ReviewCases  as analyst2000 (ChangeAnalyst, plant 2000):
+  EC-200473 | 2000 | Replace cooling fan on COOL-100 (plant 2000 isolation mirror)
+GET BOMItems of BOM-COOL-100-B  as cviewer:
+  0010 | FAN-B | 1.000 | PC | DS-ORACLE-01/bom_items/BOM-COOL-100-B/0010
+  0020 | BRKT-01 | 3.000 | PC | DS-ORACLE-01/bom_items/BOM-COOL-100-B/0020
+  0030 | SENS-01 | 1.000 | PC | DS-ORACLE-01/bom_items/BOM-COOL-100-B/0030
+  0040 | SEAL-01 | 1.000 | PC | DS-ORACLE-01/bom_items/BOM-COOL-100-B/0040
+GET CostPrices  as cviewer:
+  BRKT-01 | 1000 | 3.0000 | EUR | SYNTHETIC_FIXTURE
+  FAN-A | 1000 | 35.0000 | EUR | SYNTHETIC_FIXTURE
+  FAN-B | 1000 | 42.0000 | EUR | SYNTHETIC_FIXTURE
+  SEAL-01 | 1000 | 2.0000 | EUR | SYNTHETIC_FIXTURE
+  SENS-01 | 1000 | 15.0000 | EUR | SYNTHETIC_FIXTURE
+$count per set  as cviewer:
+  ReviewCases            1
+  BOMStates              2
+  BOMItems               7
+  CostPrices             5
+  StockSnapshots         5
+  Instructions           3
+  InstructionReferences  9
+  ImpactRuns             0
+GET assembly-catalog/Assemblies  as developer (M03, plant 1000):
+  COOL-100 | 1000 | Cooling Module [SYNTHETIC DS-ORACLE-01]
