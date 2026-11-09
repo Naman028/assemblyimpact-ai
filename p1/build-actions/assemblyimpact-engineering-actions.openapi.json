@@ -440,7 +440,9 @@
               "SYNTHETIC_FIXTURE",
               "MANUAL",
               "GENAI_PROPOSAL",
-              "S4_IMPORT"
+              "S4_IMPORT",
+              "DEMO_IMPORT",
+              "SANDBOX_IMPORT"
             ]
           },
           "evidenceRef": {
@@ -888,7 +890,7 @@
               {
                 "type": "number",
                 "format": "decimal",
-                "multipleOf": 1e-9
+                "multipleOf": 1e-09
               },
               {
                 "type": "string"

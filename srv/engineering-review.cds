@@ -17,7 +17,9 @@ service EngineeringReview {
     @restrict: [
         { grant: 'READ', to: ['ChangeViewer', 'ChangeAnalyst', 'ChangeApprover'], where: 'plant = $user.plants' },
         // Instance check for the action is done in the handler (404 for foreign/missing cases, as in M03).
-        { grant: 'runImpact', to: 'ChangeAnalyst' },
+        { grant: 'runImpact', to: ['ChangeAnalyst', 'ImpactRunner'] },
+        // P1: ImpactRunner = run the deterministic calculation only (Joule assistant); no submit/approve/reject,
+        // no import. Combined with ChangeViewer for reading. Plant isolation applies unchanged.
         // M04 Slice 2a: review decisions. Plant, state and separation-of-duties checks are in the handler.
         { grant: 'submitForReview', to: 'ChangeAnalyst' },
         { grant: ['approve', 'reject'], to: 'ChangeApprover' }

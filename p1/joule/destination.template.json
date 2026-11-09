@@ -1,0 +1,15 @@
+{
+  "Name": "ASSEMBLYIMPACT_ENGINEERING",
+  "Type": "HTTP",
+  "Description": "AssemblyImpact EngineeringReview OData V4 (CAP on Cloud Foundry) for SAP Build Actions / Joule",
+  "URL": "https://<cap-srv-route>.cfapps.<region>.hana.ondemand.com/odata/v4/engineering-review",
+  "ProxyType": "Internet",
+  "Authentication": "OAuth2JWTBearer",
+  "tokenServiceURL": "https://<subaccount>.authentication.<region>.hana.ondemand.com/oauth/token",
+  "clientId": "<from the dedicated xsuaa service key; never commit>",
+  "clientSecret": "<from the dedicated xsuaa service key; never commit>",
+  "sap.applicationdevelopment.actions.enabled": "true",
+  "sap.processautomation.enabled": "true",
+  "HTML5.DynamicDestination": "false",
+  "WebIDEEnabled": "false"
+}
