@@ -1,0 +1,132 @@
+{
+ "d": {
+  "results": [
+   {
+    "__metadata": {
+     "id": "A_BillOfMaterialItem(...)",
+     "uri": "A_BillOfMaterialItem(...)",
+     "type": "API_BILL_OF_MATERIAL_SRV.A_BillOfMaterialItemType"
+    },
+    "BillOfMaterial": "00000123",
+    "BillOfMaterialCategory": "M",
+    "BillOfMaterialVariant": "1",
+    "BillOfMaterialItemNumber": "0010",
+    "BillOfMaterialComponent": "HSG-4711",
+    "BillOfMaterialItemQuantity": "1.000",
+    "BillOfMaterialItemUnit": "ST",
+    "ValidityStartDate": "/Date(1735689600000)/",
+    "ValidityEndDate": "/Date(253402214400000)/",
+    "EngineeringChangeDocument": "",
+    "ChgToEngineeringChgDocument": ""
+   },
+   {
+    "__metadata": {
+     "id": "A_BillOfMaterialItem(...)",
+     "uri": "A_BillOfMaterialItem(...)",
+     "type": "API_BILL_OF_MATERIAL_SRV.A_BillOfMaterialItemType"
+    },
+    "BillOfMaterial": "00000123",
+    "BillOfMaterialCategory": "M",
+    "BillOfMaterialVariant": "1",
+    "BillOfMaterialItemNumber": "0020",
+    "BillOfMaterialComponent": "IMP-4711-A",
+    "BillOfMaterialItemQuantity": "1.000",
+    "BillOfMaterialItemUnit": "ST",
+    "ValidityStartDate": "/Date(1735689600000)/",
+    "ValidityEndDate": "/Date(1798675200000)/",
+    "EngineeringChangeDocument": "",
+    "ChgToEngineeringChgDocument": "500000000012"
+   },
+   {
+    "__metadata": {
+     "id": "A_BillOfMaterialItem(...)",
+     "uri": "A_BillOfMaterialItem(...)",
+     "type": "API_BILL_OF_MATERIAL_SRV.A_BillOfMaterialItemType"
+    },
+    "BillOfMaterial": "00000123",
+    "BillOfMaterialCategory": "M",
+    "BillOfMaterialVariant": "1",
+    "BillOfMaterialItemNumber": "0020",
+    "BillOfMaterialComponent": "IMP-4711-B",
+    "BillOfMaterialItemQuantity": "1.000",
+    "BillOfMaterialItemUnit": "ST",
+    "ValidityStartDate": "/Date(1798761600000)/",
+    "ValidityEndDate": "/Date(253402214400000)/",
+    "EngineeringChangeDocument": "500000000012",
+    "ChgToEngineeringChgDocument": ""
+   },
+   {
+    "__metadata": {
+     "id": "A_BillOfMaterialItem(...)",
+     "uri": "A_BillOfMaterialItem(...)",
+     "type": "API_BILL_OF_MATERIAL_SRV.A_BillOfMaterialItemType"
+    },
+    "BillOfMaterial": "00000123",
+    "BillOfMaterialCategory": "M",
+    "BillOfMaterialVariant": "1",
+    "BillOfMaterialItemNumber": "0030",
+    "BillOfMaterialComponent": "SCREW-M5",
+    "BillOfMaterialItemQuantity": "6.000",
+    "BillOfMaterialItemUnit": "ST",
+    "ValidityStartDate": "/Date(1735689600000)/",
+    "ValidityEndDate": "/Date(1798675200000)/",
+    "EngineeringChangeDocument": "",
+    "ChgToEngineeringChgDocument": "500000000012"
+   },
+   {
+    "__metadata": {
+     "id": "A_BillOfMaterialItem(...)",
+     "uri": "A_BillOfMaterialItem(...)",
+     "type": "API_BILL_OF_MATERIAL_SRV.A_BillOfMaterialItemType"
+    },
+    "BillOfMaterial": "00000123",
+    "BillOfMaterialCategory": "M",
+    "BillOfMaterialVariant": "1",
+    "BillOfMaterialItemNumber": "0030",
+    "BillOfMaterialComponent": "SCREW-M5",
+    "BillOfMaterialItemQuantity": "8.000",
+    "BillOfMaterialItemUnit": "ST",
+    "ValidityStartDate": "/Date(1798761600000)/",
+    "ValidityEndDate": "/Date(253402214400000)/",
+    "EngineeringChangeDocument": "500000000012",
+    "ChgToEngineeringChgDocument": ""
+   },
+   {
+    "__metadata": {
+     "id": "A_BillOfMaterialItem(...)",
+     "uri": "A_BillOfMaterialItem(...)",
+     "type": "API_BILL_OF_MATERIAL_SRV.A_BillOfMaterialItemType"
+    },
+    "BillOfMaterial": "00000123",
+    "BillOfMaterialCategory": "M",
+    "BillOfMaterialVariant": "1",
+    "BillOfMaterialItemNumber": "0040",
+    "BillOfMaterialComponent": "SEAL-4711",
+    "BillOfMaterialItemQuantity": "1.000",
+    "BillOfMaterialItemUnit": "ST",
+    "ValidityStartDate": "/Date(1798761600000)/",
+    "ValidityEndDate": "/Date(253402214400000)/",
+    "EngineeringChangeDocument": "500000000012",
+    "ChgToEngineeringChgDocument": ""
+   },
+   {
+    "__metadata": {
+     "id": "A_BillOfMaterialItem(...)",
+     "uri": "A_BillOfMaterialItem(...)",
+     "type": "API_BILL_OF_MATERIAL_SRV.A_BillOfMaterialItemType"
+    },
+    "BillOfMaterial": "00000123",
+    "BillOfMaterialCategory": "M",
+    "BillOfMaterialVariant": "1",
+    "BillOfMaterialItemNumber": "0050",
+    "BillOfMaterialComponent": "CLIP-4711",
+    "BillOfMaterialItemQuantity": "2.000",
+    "BillOfMaterialItemUnit": "ST",
+    "ValidityStartDate": "/Date(1735689600000)/",
+    "ValidityEndDate": "/Date(1798675200000)/",
+    "EngineeringChangeDocument": "",
+    "ChgToEngineeringChgDocument": "500000000012"
+   }
+  ]
+ }
+}

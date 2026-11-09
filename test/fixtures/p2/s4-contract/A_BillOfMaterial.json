@@ -1,0 +1,25 @@
+{
+ "d": {
+  "results": [
+   {
+    "__metadata": {
+     "id": "A_BillOfMaterial(...)",
+     "uri": "A_BillOfMaterial(...)",
+     "type": "API_BILL_OF_MATERIAL_SRV.A_BillOfMaterialType"
+    },
+    "BillOfMaterial": "00000123",
+    "BillOfMaterialCategory": "M",
+    "BillOfMaterialVariant": "1",
+    "BillOfMaterialVariantUsage": "1",
+    "Material": "PMP-4711",
+    "Plant": "1000",
+    "HeaderValidityStartDate": "/Date(1735689600000)/",
+    "HeaderValidityEndDate": "/Date(253402214400000)/",
+    "EngineeringChangeDocument": "",
+    "BOMHeaderBaseUnit": "ST",
+    "BOMHeaderQuantityInBaseUnit": "1.000",
+    "BillOfMaterialStatus": "01"
+   }
+  ]
+ }
+}

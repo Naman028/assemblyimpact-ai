@@ -1,0 +1,186 @@
+{
+ "d": {
+  "results": [
+   {
+    "__metadata": {
+     "id": "A_MatlStkInAcctMod(...)",
+     "uri": "A_MatlStkInAcctMod(...)",
+     "type": "API_MATERIAL_STOCK_SRV.A_MatlStkInAcctModType"
+    },
+    "Material": "HSG-4711",
+    "Plant": "1000",
+    "StorageLocation": "0001",
+    "Batch": "",
+    "Supplier": "",
+    "Customer": "",
+    "WBSElementInternalID": "00000000",
+    "SDDocument": "",
+    "SDDocumentItem": "000000",
+    "InventorySpecialStockType": "",
+    "InventoryStockType": "01",
+    "MaterialBaseUnit": "ST",
+    "MatlWrhsStkQtyInMatlBaseUnit": "120.000"
+   },
+   {
+    "__metadata": {
+     "id": "A_MatlStkInAcctMod(...)",
+     "uri": "A_MatlStkInAcctMod(...)",
+     "type": "API_MATERIAL_STOCK_SRV.A_MatlStkInAcctModType"
+    },
+    "Material": "HSG-4711",
+    "Plant": "1000",
+    "StorageLocation": "0002",
+    "Batch": "",
+    "Supplier": "",
+    "Customer": "",
+    "WBSElementInternalID": "00000000",
+    "SDDocument": "",
+    "SDDocumentItem": "000000",
+    "InventorySpecialStockType": "",
+    "InventoryStockType": "01",
+    "MaterialBaseUnit": "ST",
+    "MatlWrhsStkQtyInMatlBaseUnit": "30.000"
+   },
+   {
+    "__metadata": {
+     "id": "A_MatlStkInAcctMod(...)",
+     "uri": "A_MatlStkInAcctMod(...)",
+     "type": "API_MATERIAL_STOCK_SRV.A_MatlStkInAcctModType"
+    },
+    "Material": "IMP-4711-B",
+    "Plant": "1000",
+    "StorageLocation": "0001",
+    "Batch": "",
+    "Supplier": "",
+    "Customer": "",
+    "WBSElementInternalID": "00000000",
+    "SDDocument": "",
+    "SDDocumentItem": "000000",
+    "InventorySpecialStockType": "",
+    "InventoryStockType": "01",
+    "MaterialBaseUnit": "ST",
+    "MatlWrhsStkQtyInMatlBaseUnit": "40.000"
+   },
+   {
+    "__metadata": {
+     "id": "A_MatlStkInAcctMod(...)",
+     "uri": "A_MatlStkInAcctMod(...)",
+     "type": "API_MATERIAL_STOCK_SRV.A_MatlStkInAcctModType"
+    },
+    "Material": "IMP-4711-B",
+    "Plant": "1000",
+    "StorageLocation": "0001",
+    "Batch": "",
+    "Supplier": "",
+    "Customer": "",
+    "WBSElementInternalID": "00000000",
+    "SDDocument": "",
+    "SDDocumentItem": "000000",
+    "InventorySpecialStockType": "",
+    "InventoryStockType": "02",
+    "MaterialBaseUnit": "ST",
+    "MatlWrhsStkQtyInMatlBaseUnit": "100.000"
+   },
+   {
+    "__metadata": {
+     "id": "A_MatlStkInAcctMod(...)",
+     "uri": "A_MatlStkInAcctMod(...)",
+     "type": "API_MATERIAL_STOCK_SRV.A_MatlStkInAcctModType"
+    },
+    "Material": "IMP-4711-A",
+    "Plant": "1000",
+    "StorageLocation": "0001",
+    "Batch": "",
+    "Supplier": "",
+    "Customer": "",
+    "WBSElementInternalID": "00000000",
+    "SDDocument": "",
+    "SDDocumentItem": "000000",
+    "InventorySpecialStockType": "",
+    "InventoryStockType": "01",
+    "MaterialBaseUnit": "ST",
+    "MatlWrhsStkQtyInMatlBaseUnit": "75.000"
+   },
+   {
+    "__metadata": {
+     "id": "A_MatlStkInAcctMod(...)",
+     "uri": "A_MatlStkInAcctMod(...)",
+     "type": "API_MATERIAL_STOCK_SRV.A_MatlStkInAcctModType"
+    },
+    "Material": "SCREW-M5",
+    "Plant": "1000",
+    "StorageLocation": "0001",
+    "Batch": "",
+    "Supplier": "",
+    "Customer": "",
+    "WBSElementInternalID": "00000000",
+    "SDDocument": "",
+    "SDDocumentItem": "000000",
+    "InventorySpecialStockType": "",
+    "InventoryStockType": "01",
+    "MaterialBaseUnit": "ST",
+    "MatlWrhsStkQtyInMatlBaseUnit": "5000.000"
+   },
+   {
+    "__metadata": {
+     "id": "A_MatlStkInAcctMod(...)",
+     "uri": "A_MatlStkInAcctMod(...)",
+     "type": "API_MATERIAL_STOCK_SRV.A_MatlStkInAcctModType"
+    },
+    "Material": "SEAL-4711",
+    "Plant": "1000",
+    "StorageLocation": "0001",
+    "Batch": "",
+    "Supplier": "",
+    "Customer": "",
+    "WBSElementInternalID": "00000000",
+    "SDDocument": "",
+    "SDDocumentItem": "000000",
+    "InventorySpecialStockType": "",
+    "InventoryStockType": "01",
+    "MaterialBaseUnit": "ST",
+    "MatlWrhsStkQtyInMatlBaseUnit": "80.000"
+   },
+   {
+    "__metadata": {
+     "id": "A_MatlStkInAcctMod(...)",
+     "uri": "A_MatlStkInAcctMod(...)",
+     "type": "API_MATERIAL_STOCK_SRV.A_MatlStkInAcctModType"
+    },
+    "Material": "SEAL-4711",
+    "Plant": "1000",
+    "StorageLocation": "0001",
+    "Batch": "",
+    "Supplier": "",
+    "Customer": "",
+    "WBSElementInternalID": "00000000",
+    "SDDocument": "",
+    "SDDocumentItem": "000000",
+    "InventorySpecialStockType": "K",
+    "InventoryStockType": "01",
+    "MaterialBaseUnit": "ST",
+    "MatlWrhsStkQtyInMatlBaseUnit": "500.000"
+   },
+   {
+    "__metadata": {
+     "id": "A_MatlStkInAcctMod(...)",
+     "uri": "A_MatlStkInAcctMod(...)",
+     "type": "API_MATERIAL_STOCK_SRV.A_MatlStkInAcctModType"
+    },
+    "Material": "CLIP-4711",
+    "Plant": "1000",
+    "StorageLocation": "0001",
+    "Batch": "",
+    "Supplier": "",
+    "Customer": "",
+    "WBSElementInternalID": "00000000",
+    "SDDocument": "",
+    "SDDocumentItem": "000000",
+    "InventorySpecialStockType": "",
+    "InventoryStockType": "01",
+    "MaterialBaseUnit": "ST",
+    "MatlWrhsStkQtyInMatlBaseUnit": "300.000"
+   }
+  ]
+ }
+}

@@ -1,0 +1,150 @@
+{
+ "d": {
+  "results": [
+   {
+    "__metadata": {
+     "id": "A_ProductValuation(...)",
+     "uri": "A_ProductValuation(...)",
+     "type": "API_PRODUCT_SRV.A_ProductValuationType"
+    },
+    "Product": "HSG-4711",
+    "ValuationArea": "1000",
+    "ValuationType": "",
+    "ValuationClass": "3000",
+    "PriceDeterminationControl": "2",
+    "StandardPrice": "45.00",
+    "PriceUnitQty": "1",
+    "InventoryValuationProcedure": "S",
+    "MovingAveragePrice": "0.00",
+    "Currency": "EUR",
+    "BaseUnit": "ST"
+   },
+   {
+    "__metadata": {
+     "id": "A_ProductValuation(...)",
+     "uri": "A_ProductValuation(...)",
+     "type": "API_PRODUCT_SRV.A_ProductValuationType"
+    },
+    "Product": "IMP-4711-A",
+    "ValuationArea": "1000",
+    "ValuationType": "",
+    "ValuationClass": "3000",
+    "PriceDeterminationControl": "2",
+    "StandardPrice": "30.00",
+    "PriceUnitQty": "1",
+    "InventoryValuationProcedure": "S",
+    "MovingAveragePrice": "0.00",
+    "Currency": "EUR",
+    "BaseUnit": "ST"
+   },
+   {
+    "__metadata": {
+     "id": "A_ProductValuation(...)",
+     "uri": "A_ProductValuation(...)",
+     "type": "API_PRODUCT_SRV.A_ProductValuationType"
+    },
+    "Product": "IMP-4711-B",
+    "ValuationArea": "1000",
+    "ValuationType": "",
+    "ValuationClass": "3000",
+    "PriceDeterminationControl": "2",
+    "StandardPrice": "36.50",
+    "PriceUnitQty": "1",
+    "InventoryValuationProcedure": "S",
+    "MovingAveragePrice": "0.00",
+    "Currency": "EUR",
+    "BaseUnit": "ST"
+   },
+   {
+    "__metadata": {
+     "id": "A_ProductValuation(...)",
+     "uri": "A_ProductValuation(...)",
+     "type": "API_PRODUCT_SRV.A_ProductValuationType"
+    },
+    "Product": "SCREW-M5",
+    "ValuationArea": "1000",
+    "ValuationType": "",
+    "ValuationClass": "3000",
+    "PriceDeterminationControl": "2",
+    "StandardPrice": "4.00",
+    "PriceUnitQty": "100",
+    "InventoryValuationProcedure": "S",
+    "MovingAveragePrice": "0.00",
+    "Currency": "EUR",
+    "BaseUnit": "ST"
+   },
+   {
+    "__metadata": {
+     "id": "A_ProductValuation(...)",
+     "uri": "A_ProductValuation(...)",
+     "type": "API_PRODUCT_SRV.A_ProductValuationType"
+    },
+    "Product": "SEAL-4711",
+    "ValuationArea": "1000",
+    "ValuationType": "",
+    "ValuationClass": "3000",
+    "PriceDeterminationControl": "2",
+    "StandardPrice": "1.20",
+    "PriceUnitQty": "1",
+    "InventoryValuationProcedure": "S",
+    "MovingAveragePrice": "0.00",
+    "Currency": "EUR",
+    "BaseUnit": "ST"
+   },
+   {
+    "__metadata": {
+     "id": "A_ProductValuation(...)",
+     "uri": "A_ProductValuation(...)",
+     "type": "API_PRODUCT_SRV.A_ProductValuationType"
+    },
+    "Product": "CLIP-4711",
+    "ValuationArea": "1000",
+    "ValuationType": "",
+    "ValuationClass": "3000",
+    "PriceDeterminationControl": "2",
+    "StandardPrice": "0.40",
+    "PriceUnitQty": "1",
+    "InventoryValuationProcedure": "S",
+    "MovingAveragePrice": "0.00",
+    "Currency": "EUR",
+    "BaseUnit": "ST"
+   },
+   {
+    "__metadata": {
+     "id": "A_ProductValuation(...)",
+     "uri": "A_ProductValuation(...)",
+     "type": "API_PRODUCT_SRV.A_ProductValuationType"
+    },
+    "Product": "IMP-4711-B",
+    "ValuationArea": "2000",
+    "ValuationType": "",
+    "ValuationClass": "3000",
+    "PriceDeterminationControl": "2",
+    "StandardPrice": "99.00",
+    "PriceUnitQty": "1",
+    "InventoryValuationProcedure": "S",
+    "MovingAveragePrice": "0.00",
+    "Currency": "EUR",
+    "BaseUnit": "ST"
+   },
+   {
+    "__metadata": {
+     "id": "A_ProductValuation(...)",
+     "uri": "A_ProductValuation(...)",
+     "type": "API_PRODUCT_SRV.A_ProductValuationType"
+    },
+    "Product": "HSG-4711",
+    "ValuationArea": "1000",
+    "ValuationType": "SPLIT-X",
+    "ValuationClass": "3000",
+    "PriceDeterminationControl": "2",
+    "StandardPrice": "47.00",
+    "PriceUnitQty": "1",
+    "InventoryValuationProcedure": "S",
+    "MovingAveragePrice": "0.00",
+    "Currency": "EUR",
+    "BaseUnit": "ST"
+   }
+  ]
+ }
+}

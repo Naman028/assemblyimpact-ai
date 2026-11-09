@@ -71,6 +71,15 @@ service EngineeringReview {
     @(requires: 'DemoDataImporter')
     action importScenario(fileName : String(120), format : String(8) @mandatory, content : LargeString @mandatory, dryRun : Boolean) returns ImportResult;
 
+    // P2: extract one engineering change (two date-effective BOM states, stock, standard prices) from an ERP
+    // source and import it through the same validation as importScenario. mode: synthetic | sandbox | s4.
+    // Unconfigured modes are refused (409 ERP_NOT_CONFIGURED); sandbox/synthetic data is never labelled S4_IMPORT.
+    @(requires: 'ErpExtractor')
+    action extractFromErp(mode : String(10) @mandatory, material : String(40) @mandatory, plant : String(4) @mandatory,
+        bomUsage : String(1), alternative : String(2), fromDate : Date @mandatory, toDate : Date @mandatory,
+        changeNumber : String(20), caseNumber : String(20) @mandatory, title : String(160) @mandatory,
+        productionQuantity : Integer @mandatory, dryRun : Boolean) returns ImportResult;
+
     // Decision history: read-only to every client, written only by the three review actions.
     @readonly
     @restrict: [{ grant: 'READ', to: ['ChangeViewer', 'ChangeAnalyst', 'ChangeApprover'], where: 'reviewCase.plant = $user.plants' }]
