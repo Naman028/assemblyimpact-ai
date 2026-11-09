@@ -40,7 +40,10 @@ test('role collections (cockpit definitions): separation of duties and a least-p
   for (const roles of Object.values(rc)) for (const r of roles) assert(templates.includes(r), r);
   assert(!rc.AssemblyImpact_Analyst.includes('ChangeApprover'));
   assert(!rc.AssemblyImpact_Approver.includes('ChangeAnalyst'));
-  assert.deepEqual(rc.AssemblyImpact_JouleAssistant.sort(), ['ChangeViewer', 'ImpactRunner']);
+  // P1 reconciliation (#10/#11 -> RC1): read-only and impact-running Joule access are separate collections.
+  assert.deepEqual(rc.AssemblyImpact_JouleReader, ['ChangeViewer']);
+  assert.deepEqual(rc.AssemblyImpact_JouleImpactRunner.sort(), ['ChangeViewer', 'ImpactRunner']);
+  assert.equal(rc.AssemblyImpact_JouleAssistant, undefined, 'the combined collection was split');
   assert(rc.AssemblyImpact_ErpExtractor.includes('ErpExtractor'));
   for (const roles of Object.values(rc)) assert(!roles.includes('DemoDataImporter'), 'no collection grants the demo import');
 });

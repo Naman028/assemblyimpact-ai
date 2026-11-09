@@ -13,7 +13,7 @@
   },
   "scripts": {
     "start": "cds-serve",
-    "test": "node --test test/assembly-service.test.js test/impact-calculator.test.js test/engineering-review.test.js test/seed-data.test.js test/case-worklist-app.test.js test/m05-run-impact-ui.test.js test/assembly-visuals.test.js test/m04-review-decisions.test.js test/m05-review-workflow.test.js test/m05-scenarios.test.js test/m05-import.test.js test/m05-investigation-studio.test.js test/p2-erp-adapter.test.js test/p1-actions-contract.test.js test/btp-deployment-config.test.js",
+    "test": "node --test test/assembly-service.test.js test/impact-calculator.test.js test/engineering-review.test.js test/seed-data.test.js test/case-worklist-app.test.js test/m05-run-impact-ui.test.js test/assembly-visuals.test.js test/m04-review-decisions.test.js test/m05-review-workflow.test.js test/m05-scenarios.test.js test/m05-import.test.js test/m05-investigation-studio.test.js test/p2-erp-adapter.test.js test/p2-genai-explanation.test.js test/p1-actions-contract.test.js test/btp-deployment-config.test.js",
     "lint": "eslint srv test --max-warnings=0",
     "build:btp": "mbt build -t mta_archives"
   },
@@ -371,6 +371,17 @@
                   "1000"
                 ]
               }
+            },
+            "joulereader": {
+              "password": "test",
+              "roles": [
+                "ChangeViewer"
+              ],
+              "attr": {
+                "plants": [
+                  "1000"
+                ]
+              }
             }
           }
         },
@@ -379,6 +390,10 @@
             "db/data",
             "db/csv"
           ]
+        },
+        "genai": {
+          "provider": "fixture",
+          "fixture": "test/fixtures/p2/genai/answers.json"
         }
       },
       "[production]": {
@@ -419,6 +434,19 @@
             "enabled": false
           }
         }
+      },
+      "genai-hub": {
+        "kind": "rest",
+        "credentials": {
+          "destination": "ASSEMBLYIMPACT_GENAI_HUB"
+        }
+      },
+      "genai": {
+        "provider": null,
+        "service": "genai-hub",
+        "resourceGroup": null,
+        "deploymentId": null,
+        "apiVersion": "2024-02-01"
       }
     },
     "[development]": {

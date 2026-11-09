@@ -38,11 +38,13 @@ complete examination project or production deployment is demonstrated.**
 
 - `app/case-worklist`: SAP Fiori elements OData V4 List Report / Object Page app on the existing read-only `EngineeringReview` service: Review Cases (filters Assembly, Plant, Proposed Revision, Review Status, Source Type) -> Review Case -> Impact Run -> Finding, with the `runImpact` action. Open `http://localhost:4004/case-worklist/webapp/index.html` after `npm start`.
 - Generated first with SAP Project Accelerator in a separate sandbox; the generated draft-enabled service and data model were not imported, only the page structure was adopted (evidence in `docs/evidence/p3-case-worklist/`).
-- Decision history is not shown yet (no backend entity until the approval workflow slice).
+- Review workflow (submit, approve, reject, evidence acknowledgement, decision history) and the Investigation Studio
+  (`app/investigation-studio`) are implemented; the worklist object page links to the Studio for the same case.
 
-Not implemented: review/approval workflow, Fiori apps beyond the P3 worklist, Joule,
-S/4HANA/GenAI integrations, HANA persistence and BTP deployment. No LLM takes part
-in calculations or authorization.
+Status (2026-11-09, RC1 stack PRs #12–#16, none merged or deployed): P1 Joule skill design and Actions contract,
+P2 S/4HANA adapter (synthetic fixtures; sandbox and S/4 modes not run live) and GenAI explanation (fixture provider only;
+no live SAP AI Core call), HANA/XSUAA/MTA configuration (not deployed). No LLM takes part in calculations,
+authorization or decisions.
 
 ## Local development and verification
 
@@ -151,10 +153,10 @@ No M03 backend result substitutes for SAP-specific evidence.
 
 | Project | Required evidence | Current status |
 | --- | --- | --- |
-| P1 — Joule Skills & Agent | Working skills and agent; authorized tool connections; multi-step task inputs, tool results and outcome/demo | Not implemented |
-| P2 — S/4HANA + GenAI | Real authorized S/4HANA requests/results; grounded GenAI process; prescribed Project Accelerator steps/artifacts | Not implemented |
-| P3 — AI-assisted Fiori | Actual BAS/SAP AI-tool prompts and outputs; identified generated code; student modifications/review; working Fiori app | Not implemented |
-| P4 — Fiori on BTP | Integrated application running on BTP; UI/backend bindings; deterministic rules, tests and end-to-end demonstration | Backend foundation + M04 impact service (local tests only) |
+| P1 — Joule Skills & Agent | Working skills and agent; authorized tool connections; multi-step task inputs, tool results and outcome/demo | Skill design + Actions contract tested locally; skills not configured in Joule Studio, no live run |
+| P2 — S/4HANA + GenAI | Real authorized S/4HANA requests/results; grounded GenAI process; prescribed Project Accelerator steps/artifacts | Adapter + grounded explanation implemented and tested with fixtures; no live S/4HANA/sandbox or AI Core call; no P2 Project Accelerator evidence |
+| P3 — AI-assisted Fiori | Actual BAS/SAP AI-tool prompts and outputs; identified generated code; student modifications/review; working Fiori app | Worklist implemented; Project Accelerator evidence in `docs/evidence/p3-case-worklist/`; provenance table and student review pending |
+| P4 — Fiori on BTP | Integrated application running on BTP; UI/backend bindings; deterministic rules, tests and end-to-end demonstration | Application complete locally (135+ tests); BTP configuration ready, not deployed |
 | Cross-project | Original scenario and any required professor/topic approval | Unverified |
 
 For each future evidence item record requirement/source page, tool and version,

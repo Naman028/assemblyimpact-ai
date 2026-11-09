@@ -58,3 +58,28 @@ Contract fixtures: `test/fixtures/p2/s4-contract` (hand-authored, synthetic; see
    Not provisioned without separate authorization.
 
 AI assistance: designed and implemented with Claude (Anthropic) under the owner's instruction; review pending.
+
+## GenAI explanation (added in the RC1 reconciliation)
+
+```
+persisted ImpactRun ──► evidenceOf (numbered facts RUN, F*, M*, B*) ──► SAP Generative AI Hub (chat completion)
+                                                                       └─► validateExplanation ──► GROUNDED text | WITHHELD
+srv/integration/genai/impact-explanation.js · bound function EngineeringReview.ReviewCases/explainImpact()
+```
+
+- The model only explains: it receives the latest **persisted** run of the case (figures, findings, shortages, BOM
+  changes) and must cite fact ids. The deterministic engine stays the only source of figures.
+- Before anything is returned, the server checks the answer: every citation must exist, every number must occur in
+  the evidence, and the text must not recommend approving or rejecting. Failing answers are **withheld** (`text`
+  null, `issues` listed). Each response carries `generatedBy`, `model`, `promptSha256` and the run ID.
+- Roles: ChangeViewer, ChangeAnalyst, ChangeApprover (also the Joule reader); foreign plants 404; no write.
+- UI: Investigation Studio → tab **AI Explanation**.
+- Providers (`cds.requires.genai.provider`): `genai-hub` (SAP AI Core via destination `ASSEMBLYIMPACT_GENAI_HUB`,
+  needs `deploymentId` and `resourceGroup`), `fixture` (tests only, labelled `FIXTURE_LLM_RESPONSE`). Unconfigured →
+  409 `GENAI_NOT_CONFIGURED`; nothing is substituted silently.
+
+**Not verified live:** no SAP AI Core instance or Generative AI Hub deployment is available to this project yet. The
+request shape follows the AI Core inference API for OpenAI-family chat models and is covered by a unit test, not by a
+real call. Needed: an SAP AI Core service instance (extended plan) with a foundation-model deployment, a destination
+(OAuth2ClientCredentials) and the two configuration values. Whether a SAP API Hub sandbox extract satisfies the exam's
+"S/4HANA" requirement still needs the lecturer's confirmation.

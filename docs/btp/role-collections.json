@@ -28,8 +28,15 @@
       ]
     },
     {
-      "name": "AssemblyImpact_JouleAssistant",
-      "description": "Joule assistant users (principal propagation): read and run impact only, no decisions",
+      "name": "AssemblyImpact_JouleReader",
+      "description": "Joule assistant users (principal propagation): read-only skills, no calculations, no decisions",
+      "roleTemplates": [
+        "ChangeViewer"
+      ]
+    },
+    {
+      "name": "AssemblyImpact_JouleImpactRunner",
+      "description": "Joule assistant users who may also run the deterministic impact calculation (confirmed per run); no decisions",
       "roleTemplates": [
         "ChangeViewer",
         "ImpactRunner"

@@ -1,7 +1,7 @@
 {
   "schema": "assemblyimpact.p1.joule-skill-design/1",
   "project": "AssemblyImpact Engineering Assistant (existing SAP Build Joule project; do not recreate)",
-  "actionsProject": "AssemblyImpact Engineering Actions (existing; operations FindEngineeringCases, GetEngineeringImpact, RunEngineeringImpact)",
+  "actionsProject": "AssemblyImpact Engineering Actions (existing; operations LookupEngineeringCases, FindEngineeringCases, GetEngineeringImpact, GetDecisionHistory, RunEngineeringImpact)",
   "agent": {
     "name": "AssemblyImpact Engineering Assistant",
     "instructions": [
@@ -42,20 +42,22 @@
       ],
       "steps": [
         {
-          "action": "FindEngineeringCases",
-          "query": "$filter built from the given inputs (eq, combined with and); $select=ID,caseNumber,title,assemblyCode,status,sourceType,sourceTypeText; $expand=latestRun; $orderby=caseNumber; $top=20"
+          "action": "LookupEngineeringCases",
+          "query": "named parameters caseNumber, status, assemblyCode (only those the user gave); no $filter string is built"
         },
         {
           "condition": "value is empty",
           "respond": "Say that no case matches in the user's plants (OData returns an empty list, not 404)."
         }
       ],
-      "output": "List: caseNumber, title, assemblyCode, status, sourceTypeText, latestRun.costDeltaTotal (EUR), latestRun.materialsShort, latestRun.instructionFindings; 'not calculated' when latestRun is null.",
+      "output": "List (max 50): caseNumber, title, assemblyCode, statusText, sourceType, latestRunStatus, costDeltaTotal with currency, materialsShort, instructionFindings; 'not calculated' when latestRunStatus is null.",
       "errorHandling": {
         "401": "Ask the user to sign in again.",
         "403": "Explain that the user's role does not allow reading engineering cases.",
-        "404": "Say that no case matches in the user's plants."
-      }
+        "404": "Say that no case matches in the user's plants.",
+        "400": "Repeat the accepted formats: caseNumber EC-000123, status OPEN/IN_REVIEW/APPROVED/REJECTED."
+      },
+      "requiredRoleCollection": "AssemblyImpact_JouleReader"
     },
     {
       "name": "explain_case_impact",
@@ -69,12 +71,12 @@
       ],
       "steps": [
         {
-          "action": "FindEngineeringCases",
-          "query": "$filter=caseNumber eq '<caseNumber>'&$select=ID,caseNumber,title,status,sourceType,sourceTypeText,latestRun_ID"
+          "action": "LookupEngineeringCases",
+          "query": "caseNumber='<caseNumber>' as a named parameter (the server validates the EC-000123 format and returns 400 otherwise); never build an OData $filter from user input"
         },
         {
-          "condition": "value is empty",
-          "respond": "Say that the case is not visible in the user's plants; stop."
+          "condition": "value length is not exactly 1",
+          "respond": "Say that no case (or not exactly one case) with this number is visible in the user's plants; stop without calling any further action."
         },
         {
           "condition": "latestRun_ID is null",
@@ -90,8 +92,10 @@
       "errorHandling": {
         "401": "Ask the user to sign in again.",
         "403": "Explain the missing authorization.",
-        "404": "Say that the case or run is not visible in the user's plants."
-      }
+        "404": "Say that the case or run is not visible in the user's plants.",
+        "400": "Repeat the accepted case number format EC-000123."
+      },
+      "requiredRoleCollection": "AssemblyImpact_JouleReader"
     },
     {
       "name": "run_engineering_impact",
@@ -111,12 +115,12 @@
       ],
       "steps": [
         {
-          "action": "FindEngineeringCases",
-          "query": "$filter=caseNumber eq '<caseNumber>'&$select=ID,status,sourceType"
+          "action": "LookupEngineeringCases",
+          "query": "caseNumber='<caseNumber>' as a named parameter (the server validates the EC-000123 format and returns 400 otherwise); never build an OData $filter from user input"
         },
         {
-          "condition": "value is empty",
-          "respond": "Say that the case is not visible in the user's plants; stop without calling any action."
+          "condition": "value length is not exactly 1",
+          "respond": "Say that no case (or not exactly one case) with this number is visible in the user's plants; stop without calling any further action."
         },
         {
           "confirm": "Run the impact calculation for <caseNumber> as of <asOfDate or today>? A new immutable run will replace the latest evidence."
@@ -133,21 +137,70 @@
       "errorHandling": {
         "400": "Repeat the expected date format YYYY-MM-DD.",
         "401": "Ask the user to sign in again.",
-        "403": "Only engineering analysts may run calculations.",
+        "403": "The user's assistant role does not allow running calculations (needs AssemblyImpact_JouleImpactRunner).",
         "404": "The case is not in the user's plants.",
         "409": "The case is already decided or another run finished first; reload and explain.",
         "422": "Explain the input problem code returned by the service."
+      },
+      "requiredRoleCollection": "AssemblyImpact_JouleImpactRunner"
+    },
+    {
+      "name": "review_decision_history",
+      "description": "Show the review decision history of one case (submit, approve, reject) with the evaluated impact run. Read-only; ported from PR #11.",
+      "requiredRoleCollection": "AssemblyImpact_JouleReader",
+      "inputs": [
+        {
+          "name": "caseNumber",
+          "type": "string",
+          "required": true
+        }
+      ],
+      "steps": [
+        {
+          "action": "LookupEngineeringCases",
+          "query": "caseNumber='<caseNumber>' as a named parameter (the server validates the EC-000123 format and returns 400 otherwise); never build an OData $filter from user input"
+        },
+        {
+          "condition": "value length is not exactly 1",
+          "respond": "Say that no case (or not exactly one case) with this number is visible in the user's plants; stop without calling any further action."
+        },
+        {
+          "action": "GetDecisionHistory",
+          "path": "ID",
+          "query": "$orderby=at"
+        },
+        {
+          "condition": "value is empty",
+          "respond": "Say that no review decision has been recorded yet."
+        }
+      ],
+      "output": "Chronological list: action, fromStatus -> toStatus, actor, at, comment, basedOnRun and evidence status. Never suggest or perform a decision.",
+      "errorHandling": {
+        "401": "Ask the user to sign in again.",
+        "403": "Explain that the user's role does not allow reading engineering cases.",
+        "404": "The case is not in the user's plants.",
+        "400": "Repeat the accepted case number format EC-000123."
       }
     }
   ],
-  "technicalIdentity": {
+  "identities": {
     "mode": "Principal propagation only: the destination uses OAuth2JWTBearer, so every call runs as the signed-in user with that user's roles and plants attribute, and runs are attributed to that person (computedBy).",
-    "noClientCredentials": "A client-credentials technical client is not supported: it carries no plants attribute (every call would be refused) and would hide who ran a calculation.",
-    "roles": [
-      "ChangeViewer",
-      "ImpactRunner"
-    ],
-    "roleCollection": "AssemblyImpact_JouleAssistant (assigned to the human users who may use the assistant)",
+    "noClientCredentials": "A client-credentials technical client is not supported: it carries no plants attribute (every call would be refused) and would hide who ran a calculation. PR #11's JouleReader technical client (plants from server configuration) was therefore not carried over; its read-only intent is kept by the reader collection below.",
+    "reader": {
+      "roles": [
+        "ChangeViewer"
+      ],
+      "roleCollection": "AssemblyImpact_JouleReader",
+      "purpose": "Default for assistant users: read-only skills (lookup, impact explanation, decision history). Cannot run calculations."
+    },
+    "impactRunner": {
+      "roles": [
+        "ChangeViewer",
+        "ImpactRunner"
+      ],
+      "roleCollection": "AssemblyImpact_JouleImpactRunner",
+      "purpose": "Only for users who may trigger the deterministic calculation from Joule; every run needs explicit confirmation and is attributed to the user."
+    },
     "excludedRoles": [
       "ChangeAnalyst",
       "ChangeApprover",

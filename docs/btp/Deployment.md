@@ -9,13 +9,14 @@ destination was provisioned, and nothing was deployed. Each of these needs the o
 | --- | --- | --- |
 | SAP HANA Cloud persistence (HDI container, `hdi-shared`) | `package.json` `[production].db.kind = hana`, `@cap-js/hana` | `cds build --production` (cds-dk 10.2.1) produced `gen/db` with 50+ `.hdbtable/.hdbindex` artefacts; test |
 | XSUAA: scopes/role templates for every role in the CDS model, `plants` attribute, role collections | `xs-security.json` | `test/btp-deployment-config.test.js` derives roles from the compiled model |
-| Separation of duties | role collections Analyst / Approver / Viewer / JouleAssistant | test (Analyst ∌ Approver, Joule = Viewer + Analyst only) |
+| Separation of duties | role collections Analyst / Approver / Viewer / JouleReader / JouleImpactRunner / ErpExtractor | test (Analyst ∌ Approver; JouleReader = Viewer only; JouleImpactRunner = Viewer + ImpactRunner) |
 | MTA: CAP service, HDI deployer, app router, destination service | `mta.yaml` | YAML parsed and checked in test |
 | App router: XSUAA login on every route, CSRF on OData, both UIs served from local resources | `app/router/xs-app.json`, `tools/btp/stage-ui.mjs` | test; staging script executed |
 | Controlled demo data (opt-in) | `mta-demo.mtaext`, `tools/btp/stage-demo-data.mjs` | seed staged into `db/data` before the build, so `cds build` generates `.hdbtabledata`; removed afterwards |
 | Demo import disabled in production | `[production].features.demo_import = false` | test |
-| Joule/Actions destination | `p1/joule/destination.template.json` (branch `feat/p1-joule-skill-contract`) | placeholders only |
-| S/4HANA destinations | `docs/p2/S4HANA_Adapter.md` (branch `feat/p2-s4-adapter`) | blocked: no authorized system |
+| Joule/Actions destination | `p1/joule/destination.template.json` (scope narrowed to ChangeViewer + ImpactRunner) | placeholders only |
+| S/4HANA destinations | `docs/p2/S4HANA_Adapter.md` | blocked: no authorized system |
+| GenAI explanation destination | `ASSEMBLYIMPACT_GENAI_HUB` → SAP AI Core (`docs/p2/S4HANA_Adapter.md`, section GenAI) | blocked: needs an AI Core instance, a foundation-model deployment and `cds.requires.genai` values |
 
 UI5: both apps keep loading SAPUI5 1.149.0 from the SAP CDN (`index.html`); no bundling step is required.
 
@@ -31,7 +32,7 @@ UI5: both apps keep loading SAPUI5 1.149.0 from the SAP CDN (`index.html`); no b
 5. Smoke test: open the router URL → Investigation Studio; analyst runs impact and submits; a different approver
    approves. Check `/odata/v4/engineering-review/$metadata` is not reachable without a token.
 6. For P1: create destination `ASSEMBLYIMPACT_ENGINEERING` from the template with a dedicated XSUAA service key
-   (role collection `AssemblyImpact_JouleAssistant`), select it in the existing Actions project's Test tab.
+   (role collection `AssemblyImpact_JouleReader`, plus `AssemblyImpact_JouleImpactRunner` for users who may run calculations), select it in the existing Actions project's Test tab.
 
 ## Rollback and cleanup
 

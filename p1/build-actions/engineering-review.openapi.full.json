@@ -10,7 +10,7 @@
   "x-sap-shortText": "Use the Core.Description annotation on your CDS service to provide a meaningful short text.",
   "servers": [
     {
-      "url": "https://REPLACE-WITH-DESTINATION/odata/v4/engineering-review"
+      "url": "/odata/v4/engineering-review"
     }
   ],
   "tags": [
@@ -22,6 +22,12 @@
     },
     {
       "name": "Cost Prices"
+    },
+    {
+      "name": "Data Imports"
+    },
+    {
+      "name": "Decision Events"
     },
     {
       "name": "Findings"
@@ -940,6 +946,620 @@
         }
       }
     },
+    "/DataImports": {
+      "get": {
+        "summary": "Retrieves a list of data imports.",
+        "tags": [
+          "Data Imports"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/top"
+          },
+          {
+            "$ref": "#/components/parameters/skip"
+          },
+          {
+            "$ref": "#/components/parameters/search"
+          },
+          {
+            "name": "$filter",
+            "description": "Filter items by property values, see [Filtering](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionfilter)",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/count"
+          },
+          {
+            "name": "$orderby",
+            "description": "Order items by property values, see [Sorting](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionorderby)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "ID",
+                  "ID desc",
+                  "plant",
+                  "plant desc",
+                  "datasetId",
+                  "datasetId desc",
+                  "fileName",
+                  "fileName desc",
+                  "format",
+                  "format desc",
+                  "checksum",
+                  "checksum desc",
+                  "sourceType",
+                  "sourceType desc",
+                  "source",
+                  "source desc",
+                  "importedBy",
+                  "importedBy desc",
+                  "importedAt",
+                  "importedAt desc",
+                  "counts",
+                  "counts desc"
+                ]
+              }
+            }
+          },
+          {
+            "name": "$select",
+            "description": "Select properties to be returned, see [Select](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionselect)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "ID",
+                  "plant",
+                  "datasetId",
+                  "fileName",
+                  "format",
+                  "checksum",
+                  "sourceType",
+                  "source",
+                  "importedBy",
+                  "importedAt",
+                  "counts"
+                ]
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Retrieved data imports",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "title": "Collection of DataImports",
+                  "properties": {
+                    "@count": {
+                      "$ref": "#/components/schemas/count"
+                    },
+                    "value": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/EngineeringReview.DataImports"
+                      }
+                    },
+                    "@nextLink": {
+                      "type": "string",
+                      "format": "uri",
+                      "description": "URL of the next page in server-driven paging, see [Server-driven Paging](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_ServerDrivenPaging)"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        }
+      }
+    },
+    "/DataImports({ID})": {
+      "parameters": [
+        {
+          "description": "key: ID",
+          "in": "path",
+          "name": "ID",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "example": "01234567-89ab-cdef-0123-456789abcdef"
+          }
+        }
+      ],
+      "get": {
+        "summary": "Retrieves a single data import.",
+        "tags": [
+          "Data Imports"
+        ],
+        "parameters": [
+          {
+            "name": "$select",
+            "description": "Select properties to be returned, see [Select](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionselect)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "ID",
+                  "plant",
+                  "datasetId",
+                  "fileName",
+                  "format",
+                  "checksum",
+                  "sourceType",
+                  "source",
+                  "importedBy",
+                  "importedAt",
+                  "counts"
+                ]
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Retrieved data import",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EngineeringReview.DataImports"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        }
+      }
+    },
+    "/DecisionEvents": {
+      "get": {
+        "summary": "Retrieves a list of decision events.",
+        "tags": [
+          "Decision Events"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/top"
+          },
+          {
+            "$ref": "#/components/parameters/skip"
+          },
+          {
+            "$ref": "#/components/parameters/search"
+          },
+          {
+            "name": "$filter",
+            "description": "Filter items by property values, see [Filtering](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionfilter)",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/count"
+          },
+          {
+            "name": "$orderby",
+            "description": "Order items by property values, see [Sorting](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionorderby)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "ID",
+                  "ID desc",
+                  "reviewCase_ID",
+                  "reviewCase_ID desc",
+                  "action",
+                  "action desc",
+                  "fromStatus",
+                  "fromStatus desc",
+                  "toStatus",
+                  "toStatus desc",
+                  "actor",
+                  "actor desc",
+                  "comment",
+                  "comment desc",
+                  "at",
+                  "at desc",
+                  "basedOnRun_ID",
+                  "basedOnRun_ID desc",
+                  "evidenceStatus",
+                  "evidenceStatus desc",
+                  "warningsAcknowledged",
+                  "warningsAcknowledged desc"
+                ]
+              }
+            }
+          },
+          {
+            "name": "$select",
+            "description": "Select properties to be returned, see [Select](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionselect)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "ID",
+                  "reviewCase_ID",
+                  "action",
+                  "fromStatus",
+                  "toStatus",
+                  "actor",
+                  "comment",
+                  "at",
+                  "basedOnRun_ID",
+                  "evidenceStatus",
+                  "warningsAcknowledged"
+                ]
+              }
+            }
+          },
+          {
+            "name": "$expand",
+            "description": "The value of $expand query option is a comma-separated list of navigation property names, stream property names, or $value indicating the stream content of a media-entity. The corresponding related entities and stream values will be represented inline, see [Expand](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionexpand)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "*",
+                  "reviewCase",
+                  "basedOnRun"
+                ]
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Retrieved decision events",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "title": "Collection of DecisionEvents",
+                  "properties": {
+                    "@count": {
+                      "$ref": "#/components/schemas/count"
+                    },
+                    "value": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/EngineeringReview.DecisionEvents"
+                      }
+                    },
+                    "@nextLink": {
+                      "type": "string",
+                      "format": "uri",
+                      "description": "URL of the next page in server-driven paging, see [Server-driven Paging](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_ServerDrivenPaging)"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        }
+      }
+    },
+    "/DecisionEvents({ID})": {
+      "parameters": [
+        {
+          "description": "key: ID",
+          "in": "path",
+          "name": "ID",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "example": "01234567-89ab-cdef-0123-456789abcdef"
+          }
+        }
+      ],
+      "get": {
+        "summary": "Retrieves a single decision event.",
+        "tags": [
+          "Decision Events"
+        ],
+        "parameters": [
+          {
+            "name": "$select",
+            "description": "Select properties to be returned, see [Select](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionselect)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "ID",
+                  "reviewCase_ID",
+                  "action",
+                  "fromStatus",
+                  "toStatus",
+                  "actor",
+                  "comment",
+                  "at",
+                  "basedOnRun_ID",
+                  "evidenceStatus",
+                  "warningsAcknowledged"
+                ]
+              }
+            }
+          },
+          {
+            "name": "$expand",
+            "description": "The value of $expand query option is a comma-separated list of navigation property names, stream property names, or $value indicating the stream content of a media-entity. The corresponding related entities and stream values will be represented inline, see [Expand](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionexpand)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "*",
+                  "reviewCase",
+                  "basedOnRun"
+                ]
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Retrieved decision event",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EngineeringReview.DecisionEvents"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        }
+      }
+    },
+    "/DecisionEvents({ID})/basedOnRun": {
+      "parameters": [
+        {
+          "description": "key: ID",
+          "in": "path",
+          "name": "ID",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "example": "01234567-89ab-cdef-0123-456789abcdef"
+          }
+        }
+      ],
+      "get": {
+        "summary": "Retrieves based on run of a decision event.",
+        "tags": [
+          "Decision Events",
+          "Impact Runs"
+        ],
+        "parameters": [
+          {
+            "name": "$select",
+            "description": "Select properties to be returned, see [Select](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionselect)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "ID",
+                  "reviewCase_ID",
+                  "ruleset",
+                  "asOfDate",
+                  "inputFingerprint",
+                  "status",
+                  "flags",
+                  "currency",
+                  "productionQuantity",
+                  "fromRevision",
+                  "toRevision",
+                  "fromCostPerAssembly",
+                  "toCostPerAssembly",
+                  "deltaPerAssembly",
+                  "fromCostTotal",
+                  "toCostTotal",
+                  "costDeltaTotal",
+                  "costDeltaPercent",
+                  "instructionFindings",
+                  "instructionsToUpdate",
+                  "materialsShort",
+                  "materialsUnknown",
+                  "computedAt",
+                  "computedBy",
+                  "statusText"
+                ]
+              }
+            }
+          },
+          {
+            "name": "$expand",
+            "description": "The value of $expand query option is a comma-separated list of navigation property names, stream property names, or $value indicating the stream content of a media-entity. The corresponding related entities and stream values will be represented inline, see [Expand](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionexpand)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "*",
+                  "reviewCase",
+                  "comparisonLines",
+                  "materialLines",
+                  "findings"
+                ]
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Retrieved based on run",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EngineeringReview.ImpactRuns"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        }
+      }
+    },
+    "/DecisionEvents({ID})/reviewCase": {
+      "parameters": [
+        {
+          "description": "key: ID",
+          "in": "path",
+          "name": "ID",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "example": "01234567-89ab-cdef-0123-456789abcdef"
+          }
+        }
+      ],
+      "get": {
+        "summary": "Retrieves review case of a decision event.",
+        "tags": [
+          "Decision Events",
+          "Review Cases"
+        ],
+        "parameters": [
+          {
+            "name": "$select",
+            "description": "Select properties to be returned, see [Select](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionselect)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "ID",
+                  "caseNumber",
+                  "title",
+                  "assemblyCode",
+                  "plant",
+                  "fromRevision",
+                  "toRevision",
+                  "productionQuantity",
+                  "status",
+                  "owner",
+                  "sourceType",
+                  "evidenceRef",
+                  "statusText",
+                  "sourceTypeText",
+                  "assemblyDescription",
+                  "createdAt",
+                  "modifiedAt",
+                  "latestRun_ID",
+                  "sourceImport_ID",
+                  "fromState_ID",
+                  "toState_ID",
+                  "canRunImpact",
+                  "canSubmit",
+                  "canDecide",
+                  "submittedBy"
+                ]
+              }
+            }
+          },
+          {
+            "name": "$expand",
+            "description": "The value of $expand query option is a comma-separated list of navigation property names, stream property names, or $value indicating the stream content of a media-entity. The corresponding related entities and stream values will be represented inline, see [Expand](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionexpand)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "*",
+                  "latestRun",
+                  "runs",
+                  "decisions",
+                  "sourceImport",
+                  "fromState",
+                  "toState"
+                ]
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Retrieved review case",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EngineeringReview.ReviewCases"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        }
+      }
+    },
     "/Findings": {
       "get": {
         "summary": "Retrieves a list of findings.",
@@ -1202,7 +1822,8 @@
                   "materialsShort",
                   "materialsUnknown",
                   "computedAt",
-                  "computedBy"
+                  "computedBy",
+                  "statusText"
                 ]
               }
             }
@@ -1515,7 +2136,8 @@
                   "materialsShort",
                   "materialsUnknown",
                   "computedAt",
-                  "computedBy"
+                  "computedBy",
+                  "statusText"
                 ]
               }
             }
@@ -1844,7 +2466,8 @@
                   "materialsShort",
                   "materialsUnknown",
                   "computedAt",
-                  "computedBy"
+                  "computedBy",
+                  "statusText"
                 ]
               }
             }
@@ -1972,7 +2595,9 @@
                   "computedAt",
                   "computedAt desc",
                   "computedBy",
-                  "computedBy desc"
+                  "computedBy desc",
+                  "statusText",
+                  "statusText desc"
                 ]
               }
             }
@@ -2011,7 +2636,8 @@
                   "materialsShort",
                   "materialsUnknown",
                   "computedAt",
-                  "computedBy"
+                  "computedBy",
+                  "statusText"
                 ]
               }
             }
@@ -2125,7 +2751,8 @@
                   "materialsShort",
                   "materialsUnknown",
                   "computedAt",
-                  "computedBy"
+                  "computedBy",
+                  "statusText"
                 ]
               }
             }
@@ -2668,9 +3295,19 @@
                   "owner",
                   "sourceType",
                   "evidenceRef",
+                  "statusText",
+                  "sourceTypeText",
+                  "assemblyDescription",
                   "createdAt",
                   "modifiedAt",
-                  "latestRun_ID"
+                  "latestRun_ID",
+                  "sourceImport_ID",
+                  "fromState_ID",
+                  "toState_ID",
+                  "canRunImpact",
+                  "canSubmit",
+                  "canDecide",
+                  "submittedBy"
                 ]
               }
             }
@@ -2688,7 +3325,11 @@
                 "enum": [
                   "*",
                   "latestRun",
-                  "runs"
+                  "runs",
+                  "decisions",
+                  "sourceImport",
+                  "fromState",
+                  "toState"
                 ]
               }
             }
@@ -2959,7 +3600,8 @@
                   "status",
                   "validFrom",
                   "sourceType",
-                  "evidenceRef"
+                  "evidenceRef",
+                  "assemblyCode"
                 ]
               }
             }
@@ -3056,7 +3698,9 @@
                   "sourceType",
                   "sourceType desc",
                   "evidenceRef",
-                  "evidenceRef desc"
+                  "evidenceRef desc",
+                  "assemblyCode",
+                  "assemblyCode desc"
                 ]
               }
             }
@@ -3081,7 +3725,8 @@
                   "status",
                   "validFrom",
                   "sourceType",
-                  "evidenceRef"
+                  "evidenceRef",
+                  "assemblyCode"
                 ]
               }
             }
@@ -3178,7 +3823,8 @@
                   "status",
                   "validFrom",
                   "sourceType",
-                  "evidenceRef"
+                  "evidenceRef",
+                  "assemblyCode"
                 ]
               }
             }
@@ -3424,12 +4070,24 @@
                   "sourceType desc",
                   "evidenceRef",
                   "evidenceRef desc",
+                  "statusText",
+                  "statusText desc",
+                  "sourceTypeText",
+                  "sourceTypeText desc",
+                  "assemblyDescription",
+                  "assemblyDescription desc",
                   "createdAt",
                   "createdAt desc",
                   "modifiedAt",
                   "modifiedAt desc",
                   "latestRun_ID",
-                  "latestRun_ID desc"
+                  "latestRun_ID desc",
+                  "sourceImport_ID",
+                  "sourceImport_ID desc",
+                  "fromState_ID",
+                  "fromState_ID desc",
+                  "toState_ID",
+                  "toState_ID desc"
                 ]
               }
             }
@@ -3457,9 +4115,19 @@
                   "owner",
                   "sourceType",
                   "evidenceRef",
+                  "statusText",
+                  "sourceTypeText",
+                  "assemblyDescription",
                   "createdAt",
                   "modifiedAt",
-                  "latestRun_ID"
+                  "latestRun_ID",
+                  "sourceImport_ID",
+                  "fromState_ID",
+                  "toState_ID",
+                  "canRunImpact",
+                  "canSubmit",
+                  "canDecide",
+                  "submittedBy"
                 ]
               }
             }
@@ -3477,7 +4145,11 @@
                 "enum": [
                   "*",
                   "latestRun",
-                  "runs"
+                  "runs",
+                  "decisions",
+                  "sourceImport",
+                  "fromState",
+                  "toState"
                 ]
               }
             }
@@ -3560,9 +4232,19 @@
                   "owner",
                   "sourceType",
                   "evidenceRef",
+                  "statusText",
+                  "sourceTypeText",
+                  "assemblyDescription",
                   "createdAt",
                   "modifiedAt",
-                  "latestRun_ID"
+                  "latestRun_ID",
+                  "sourceImport_ID",
+                  "fromState_ID",
+                  "toState_ID",
+                  "canRunImpact",
+                  "canSubmit",
+                  "canDecide",
+                  "submittedBy"
                 ]
               }
             }
@@ -3580,7 +4262,11 @@
                 "enum": [
                   "*",
                   "latestRun",
-                  "runs"
+                  "runs",
+                  "decisions",
+                  "sourceImport",
+                  "fromState",
+                  "toState"
                 ]
               }
             }
@@ -3599,6 +4285,179 @@
           },
           "4XX": {
             "$ref": "#/components/responses/error"
+          }
+        }
+      }
+    },
+    "/ReviewCases({ID})/EngineeringReview.approve": {
+      "post": {
+        "summary": "Invokes action approve",
+        "tags": [
+          "Review Cases"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/EngineeringReview.ReviewCases"
+                    }
+                  ],
+                  "nullable": true
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        },
+        "parameters": [
+          {
+            "description": "key: ID",
+            "in": "path",
+            "name": "ID",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "01234567-89ab-cdef-0123-456789abcdef"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Action parameters",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "comment": {
+                    "type": "string",
+                    "maxLength": 1000,
+                    "nullable": true
+                  },
+                  "basedOnRun": {
+                    "type": "string",
+                    "format": "uuid",
+                    "example": "01234567-89ab-cdef-0123-456789abcdef",
+                    "nullable": true
+                  },
+                  "acknowledgeWarnings": {
+                    "type": "boolean",
+                    "nullable": true
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ReviewCases({ID})/EngineeringReview.explainImpact": {
+      "get": {
+        "summary": "Invokes function explainImpact",
+        "tags": [
+          "Review Cases"
+        ],
+        "parameters": [
+          {
+            "description": "key: ID",
+            "in": "path",
+            "name": "ID",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "01234567-89ab-cdef-0123-456789abcdef"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/EngineeringReview.ImpactExplanation"
+                    }
+                  ],
+                  "nullable": true
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        }
+      }
+    },
+    "/ReviewCases({ID})/EngineeringReview.reject": {
+      "post": {
+        "summary": "Invokes action reject",
+        "tags": [
+          "Review Cases"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/EngineeringReview.ReviewCases"
+                    }
+                  ],
+                  "nullable": true
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        },
+        "parameters": [
+          {
+            "description": "key: ID",
+            "in": "path",
+            "name": "ID",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "01234567-89ab-cdef-0123-456789abcdef"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Action parameters",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "comment": {
+                    "type": "string",
+                    "maxLength": 1000,
+                    "nullable": true
+                  },
+                  "basedOnRun": {
+                    "type": "string",
+                    "format": "uuid",
+                    "example": "01234567-89ab-cdef-0123-456789abcdef",
+                    "nullable": true
+                  }
+                }
+              }
+            }
           }
         }
       }
@@ -3662,6 +4521,304 @@
         }
       }
     },
+    "/ReviewCases({ID})/EngineeringReview.submitForReview": {
+      "post": {
+        "summary": "Invokes action submitForReview",
+        "tags": [
+          "Review Cases"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/EngineeringReview.ReviewCases"
+                    }
+                  ],
+                  "nullable": true
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        },
+        "parameters": [
+          {
+            "description": "key: ID",
+            "in": "path",
+            "name": "ID",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "01234567-89ab-cdef-0123-456789abcdef"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Action parameters",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "comment": {
+                    "type": "string",
+                    "maxLength": 1000,
+                    "nullable": true
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ReviewCases({ID})/decisions": {
+      "parameters": [
+        {
+          "description": "key: ID",
+          "in": "path",
+          "name": "ID",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "example": "01234567-89ab-cdef-0123-456789abcdef"
+          }
+        }
+      ],
+      "get": {
+        "summary": "Retrieves a list of decisions of a review case.",
+        "tags": [
+          "Review Cases",
+          "Decision Events"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/top"
+          },
+          {
+            "$ref": "#/components/parameters/skip"
+          },
+          {
+            "$ref": "#/components/parameters/search"
+          },
+          {
+            "name": "$filter",
+            "description": "Filter items by property values, see [Filtering](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionfilter)",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/count"
+          },
+          {
+            "name": "$orderby",
+            "description": "Order items by property values, see [Sorting](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionorderby)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "ID",
+                  "ID desc",
+                  "reviewCase_ID",
+                  "reviewCase_ID desc",
+                  "action",
+                  "action desc",
+                  "fromStatus",
+                  "fromStatus desc",
+                  "toStatus",
+                  "toStatus desc",
+                  "actor",
+                  "actor desc",
+                  "comment",
+                  "comment desc",
+                  "at",
+                  "at desc",
+                  "basedOnRun_ID",
+                  "basedOnRun_ID desc",
+                  "evidenceStatus",
+                  "evidenceStatus desc",
+                  "warningsAcknowledged",
+                  "warningsAcknowledged desc"
+                ]
+              }
+            }
+          },
+          {
+            "name": "$select",
+            "description": "Select properties to be returned, see [Select](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionselect)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "ID",
+                  "reviewCase_ID",
+                  "action",
+                  "fromStatus",
+                  "toStatus",
+                  "actor",
+                  "comment",
+                  "at",
+                  "basedOnRun_ID",
+                  "evidenceStatus",
+                  "warningsAcknowledged"
+                ]
+              }
+            }
+          },
+          {
+            "name": "$expand",
+            "description": "The value of $expand query option is a comma-separated list of navigation property names, stream property names, or $value indicating the stream content of a media-entity. The corresponding related entities and stream values will be represented inline, see [Expand](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionexpand)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "*",
+                  "reviewCase",
+                  "basedOnRun"
+                ]
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Retrieved decisions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "title": "Collection of DecisionEvents",
+                  "properties": {
+                    "@count": {
+                      "$ref": "#/components/schemas/count"
+                    },
+                    "value": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/EngineeringReview.DecisionEvents"
+                      }
+                    },
+                    "@nextLink": {
+                      "type": "string",
+                      "format": "uri",
+                      "description": "URL of the next page in server-driven paging, see [Server-driven Paging](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_ServerDrivenPaging)"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        }
+      }
+    },
+    "/ReviewCases({ID})/fromState": {
+      "parameters": [
+        {
+          "description": "key: ID",
+          "in": "path",
+          "name": "ID",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "example": "01234567-89ab-cdef-0123-456789abcdef"
+          }
+        }
+      ],
+      "get": {
+        "summary": "Retrieves from state of a review case.",
+        "tags": [
+          "Review Cases",
+          "BOMStates"
+        ],
+        "parameters": [
+          {
+            "name": "$select",
+            "description": "Select properties to be returned, see [Select](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionselect)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "ID",
+                  "stateKey",
+                  "plant",
+                  "bomUsage",
+                  "alternative",
+                  "revision",
+                  "validFrom",
+                  "validTo",
+                  "status",
+                  "changeNumber",
+                  "sourceType",
+                  "evidenceRef"
+                ]
+              }
+            }
+          },
+          {
+            "name": "$expand",
+            "description": "The value of $expand query option is a comma-separated list of navigation property names, stream property names, or $value indicating the stream content of a media-entity. The corresponding related entities and stream values will be represented inline, see [Expand](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionexpand)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "*",
+                  "items"
+                ]
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Retrieved from state",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EngineeringReview.BOMStates"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        }
+      }
+    },
     "/ReviewCases({ID})/latestRun": {
       "parameters": [
         {
@@ -3717,7 +4874,8 @@
                   "materialsShort",
                   "materialsUnknown",
                   "computedAt",
-                  "computedBy"
+                  "computedBy",
+                  "statusText"
                 ]
               }
             }
@@ -3859,7 +5017,9 @@
                   "computedAt",
                   "computedAt desc",
                   "computedBy",
-                  "computedBy desc"
+                  "computedBy desc",
+                  "statusText",
+                  "statusText desc"
                 ]
               }
             }
@@ -3898,7 +5058,8 @@
                   "materialsShort",
                   "materialsUnknown",
                   "computedAt",
-                  "computedBy"
+                  "computedBy",
+                  "statusText"
                 ]
               }
             }
@@ -3948,6 +5109,154 @@
                       "description": "URL of the next page in server-driven paging, see [Server-driven Paging](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_ServerDrivenPaging)"
                     }
                   }
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        }
+      }
+    },
+    "/ReviewCases({ID})/sourceImport": {
+      "parameters": [
+        {
+          "description": "key: ID",
+          "in": "path",
+          "name": "ID",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "example": "01234567-89ab-cdef-0123-456789abcdef"
+          }
+        }
+      ],
+      "get": {
+        "summary": "Retrieves source import of a review case.",
+        "tags": [
+          "Review Cases",
+          "Data Imports"
+        ],
+        "parameters": [
+          {
+            "name": "$select",
+            "description": "Select properties to be returned, see [Select](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionselect)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "ID",
+                  "plant",
+                  "datasetId",
+                  "fileName",
+                  "format",
+                  "checksum",
+                  "sourceType",
+                  "source",
+                  "importedBy",
+                  "importedAt",
+                  "counts"
+                ]
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Retrieved source import",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EngineeringReview.DataImports"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        }
+      }
+    },
+    "/ReviewCases({ID})/toState": {
+      "parameters": [
+        {
+          "description": "key: ID",
+          "in": "path",
+          "name": "ID",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "example": "01234567-89ab-cdef-0123-456789abcdef"
+          }
+        }
+      ],
+      "get": {
+        "summary": "Retrieves to state of a review case.",
+        "tags": [
+          "Review Cases",
+          "BOMStates"
+        ],
+        "parameters": [
+          {
+            "name": "$select",
+            "description": "Select properties to be returned, see [Select](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionselect)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "ID",
+                  "stateKey",
+                  "plant",
+                  "bomUsage",
+                  "alternative",
+                  "revision",
+                  "validFrom",
+                  "validTo",
+                  "status",
+                  "changeNumber",
+                  "sourceType",
+                  "evidenceRef"
+                ]
+              }
+            }
+          },
+          {
+            "name": "$expand",
+            "description": "The value of $expand query option is a comma-separated list of navigation property names, stream property names, or $value indicating the stream content of a media-entity. The corresponding related entities and stream values will be represented inline, see [Expand](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionexpand)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "*",
+                  "items"
+                ]
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Retrieved to state",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EngineeringReview.BOMStates"
                 }
               }
             }
@@ -4134,6 +5443,280 @@
           }
         }
       }
+    },
+    "/extractFromErp": {
+      "post": {
+        "summary": "Invokes action extractFromErp",
+        "tags": [
+          "Service Operations"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/EngineeringReview.ImportResult"
+                    }
+                  ],
+                  "nullable": true
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        },
+        "requestBody": {
+          "description": "Action parameters",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "mode": {
+                    "type": "string",
+                    "maxLength": 10,
+                    "nullable": true
+                  },
+                  "material": {
+                    "type": "string",
+                    "maxLength": 40,
+                    "nullable": true
+                  },
+                  "plant": {
+                    "type": "string",
+                    "maxLength": 4,
+                    "nullable": true
+                  },
+                  "bomUsage": {
+                    "type": "string",
+                    "maxLength": 1,
+                    "nullable": true
+                  },
+                  "alternative": {
+                    "type": "string",
+                    "maxLength": 2,
+                    "nullable": true
+                  },
+                  "fromDate": {
+                    "type": "string",
+                    "format": "date",
+                    "example": "2017-04-13",
+                    "nullable": true
+                  },
+                  "toDate": {
+                    "type": "string",
+                    "format": "date",
+                    "example": "2017-04-13",
+                    "nullable": true
+                  },
+                  "changeNumber": {
+                    "type": "string",
+                    "maxLength": 20,
+                    "nullable": true
+                  },
+                  "caseNumber": {
+                    "type": "string",
+                    "maxLength": 20,
+                    "nullable": true
+                  },
+                  "title": {
+                    "type": "string",
+                    "maxLength": 160,
+                    "nullable": true
+                  },
+                  "productionQuantity": {
+                    "type": "integer",
+                    "format": "int32",
+                    "nullable": true
+                  },
+                  "dryRun": {
+                    "type": "boolean",
+                    "nullable": true
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/importScenario": {
+      "post": {
+        "summary": "Invokes action importScenario",
+        "tags": [
+          "Service Operations"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/EngineeringReview.ImportResult"
+                    }
+                  ],
+                  "nullable": true
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        },
+        "requestBody": {
+          "description": "Action parameters",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "fileName": {
+                    "type": "string",
+                    "maxLength": 120,
+                    "nullable": true
+                  },
+                  "format": {
+                    "type": "string",
+                    "maxLength": 8,
+                    "nullable": true
+                  },
+                  "content": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "dryRun": {
+                    "type": "boolean",
+                    "nullable": true
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/lookupCases": {
+      "get": {
+        "summary": "Invokes function lookupCases",
+        "tags": [
+          "Service Operations"
+        ],
+        "parameters": [
+          {
+            "required": false,
+            "in": "query",
+            "name": "caseNumber",
+            "description": "String value needs to be enclosed in single quotes",
+            "schema": {
+              "type": "string",
+              "maxLength": 20,
+              "nullable": true,
+              "pattern": "^(null|'([^']|'')*')$",
+              "default": "null"
+            }
+          },
+          {
+            "required": false,
+            "in": "query",
+            "name": "status",
+            "description": "String value needs to be enclosed in single quotes",
+            "schema": {
+              "type": "string",
+              "maxLength": 12,
+              "nullable": true,
+              "pattern": "^(null|'([^']|'')*')$",
+              "default": "null"
+            }
+          },
+          {
+            "required": false,
+            "in": "query",
+            "name": "assemblyCode",
+            "description": "String value needs to be enclosed in single quotes",
+            "schema": {
+              "type": "string",
+              "maxLength": 40,
+              "nullable": true,
+              "pattern": "^(null|'([^']|'')*')$",
+              "default": "null"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "title": "Collection of CaseSummary",
+                  "properties": {
+                    "@count": {
+                      "$ref": "#/components/schemas/count"
+                    },
+                    "value": {
+                      "type": "array",
+                      "items": {
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/EngineeringReview.CaseSummary"
+                          }
+                        ],
+                        "nullable": true
+                      }
+                    },
+                    "@nextLink": {
+                      "type": "string",
+                      "format": "uri",
+                      "description": "URL of the next page in server-driven paging, see [Server-driven Paging](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_ServerDrivenPaging)"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        }
+      }
+    },
+    "/myCapabilities": {
+      "get": {
+        "summary": "Invokes function myCapabilities",
+        "tags": [
+          "Service Operations"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/EngineeringReview.Capabilities"
+                    }
+                  ],
+                  "nullable": true
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        }
+      }
     }
   },
   "components": {
@@ -4265,6 +5848,121 @@
           }
         }
       },
+      "EngineeringReview.Capabilities": {
+        "title": "Capabilities",
+        "type": "object",
+        "properties": {
+          "canImport": {
+            "type": "boolean",
+            "nullable": true
+          }
+        }
+      },
+      "EngineeringReview.CaseSummary": {
+        "title": "CaseSummary",
+        "type": "object",
+        "properties": {
+          "ID": {
+            "type": "string",
+            "format": "uuid",
+            "example": "01234567-89ab-cdef-0123-456789abcdef",
+            "nullable": true
+          },
+          "caseNumber": {
+            "type": "string",
+            "maxLength": 20,
+            "nullable": true
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 160,
+            "nullable": true
+          },
+          "assemblyCode": {
+            "type": "string",
+            "maxLength": 40,
+            "nullable": true
+          },
+          "plant": {
+            "type": "string",
+            "maxLength": 4,
+            "nullable": true
+          },
+          "fromRevision": {
+            "type": "string",
+            "maxLength": 10,
+            "nullable": true
+          },
+          "toRevision": {
+            "type": "string",
+            "maxLength": 10,
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "maxLength": 12,
+            "nullable": true
+          },
+          "statusText": {
+            "type": "string",
+            "maxLength": 20,
+            "nullable": true
+          },
+          "sourceType": {
+            "type": "string",
+            "maxLength": 20,
+            "nullable": true
+          },
+          "latestRun_ID": {
+            "type": "string",
+            "format": "uuid",
+            "example": "01234567-89ab-cdef-0123-456789abcdef",
+            "nullable": true
+          },
+          "latestRunStatus": {
+            "type": "string",
+            "maxLength": 24,
+            "nullable": true
+          },
+          "latestRunAsOf": {
+            "type": "string",
+            "format": "date",
+            "example": "2017-04-13",
+            "nullable": true
+          },
+          "costDeltaTotal": {
+            "anyOf": [
+              {
+                "type": "number",
+                "format": "decimal",
+                "multipleOf": 0.01
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "example": 0,
+            "x-sap-precision": 17,
+            "x-sap-scale": 2,
+            "nullable": true
+          },
+          "currency": {
+            "type": "string",
+            "maxLength": 3,
+            "nullable": true
+          },
+          "materialsShort": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "instructionFindings": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          }
+        }
+      },
       "EngineeringReview.CostPrices": {
         "title": "CostPrices",
         "type": "object",
@@ -4340,6 +6038,149 @@
           "evidenceRef": {
             "type": "string",
             "maxLength": 200
+          }
+        }
+      },
+      "EngineeringReview.DataImports": {
+        "title": "DataImports",
+        "type": "object",
+        "properties": {
+          "ID": {
+            "type": "string",
+            "format": "uuid",
+            "example": "01234567-89ab-cdef-0123-456789abcdef"
+          },
+          "plant": {
+            "type": "string",
+            "maxLength": 4
+          },
+          "datasetId": {
+            "type": "string",
+            "maxLength": 40,
+            "nullable": true
+          },
+          "fileName": {
+            "type": "string",
+            "maxLength": 120,
+            "nullable": true
+          },
+          "format": {
+            "type": "string",
+            "maxLength": 8
+          },
+          "checksum": {
+            "type": "string",
+            "maxLength": 71
+          },
+          "sourceType": {
+            "type": "string",
+            "maxLength": 20,
+            "enum": [
+              "SYNTHETIC_FIXTURE",
+              "MANUAL",
+              "GENAI_PROPOSAL",
+              "S4_IMPORT",
+              "DEMO_IMPORT",
+              "SANDBOX_IMPORT"
+            ]
+          },
+          "source": {
+            "type": "string",
+            "maxLength": 200,
+            "nullable": true
+          },
+          "importedBy": {
+            "type": "string",
+            "maxLength": 255
+          },
+          "importedAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2017-04-13T15:51:04.0000000Z"
+          },
+          "counts": {
+            "type": "string",
+            "maxLength": 500
+          }
+        }
+      },
+      "EngineeringReview.DecisionEvents": {
+        "title": "DecisionEvents",
+        "type": "object",
+        "properties": {
+          "ID": {
+            "type": "string",
+            "format": "uuid",
+            "example": "01234567-89ab-cdef-0123-456789abcdef"
+          },
+          "reviewCase": {
+            "$ref": "#/components/schemas/EngineeringReview.ReviewCases"
+          },
+          "reviewCase_ID": {
+            "type": "string",
+            "format": "uuid",
+            "example": "01234567-89ab-cdef-0123-456789abcdef"
+          },
+          "action": {
+            "type": "string",
+            "maxLength": 16
+          },
+          "fromStatus": {
+            "type": "string",
+            "maxLength": 12,
+            "enum": [
+              "OPEN",
+              "IN_REVIEW",
+              "APPROVED",
+              "REJECTED"
+            ]
+          },
+          "toStatus": {
+            "type": "string",
+            "maxLength": 12,
+            "enum": [
+              "OPEN",
+              "IN_REVIEW",
+              "APPROVED",
+              "REJECTED"
+            ]
+          },
+          "actor": {
+            "type": "string",
+            "maxLength": 255
+          },
+          "comment": {
+            "type": "string",
+            "maxLength": 1000,
+            "nullable": true
+          },
+          "at": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2017-04-13T15:51:04.0000000Z"
+          },
+          "basedOnRun": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/EngineeringReview.ImpactRuns"
+              }
+            ],
+            "nullable": true
+          },
+          "basedOnRun_ID": {
+            "type": "string",
+            "format": "uuid",
+            "example": "01234567-89ab-cdef-0123-456789abcdef",
+            "nullable": true
+          },
+          "evidenceStatus": {
+            "type": "string",
+            "maxLength": 24,
+            "nullable": true
+          },
+          "warningsAcknowledged": {
+            "type": "boolean",
+            "nullable": true
           }
         }
       },
@@ -4461,6 +6302,68 @@
           }
         }
       },
+      "EngineeringReview.ImpactExplanation": {
+        "title": "ImpactExplanation",
+        "type": "object",
+        "properties": {
+          "runID": {
+            "type": "string",
+            "format": "uuid",
+            "example": "01234567-89ab-cdef-0123-456789abcdef",
+            "nullable": true
+          },
+          "caseNumber": {
+            "type": "string",
+            "maxLength": 20,
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "maxLength": 12,
+            "nullable": true
+          },
+          "text": {
+            "type": "string",
+            "nullable": true
+          },
+          "issues": {
+            "type": "string",
+            "maxLength": 1000,
+            "nullable": true
+          },
+          "citations": {
+            "type": "string",
+            "maxLength": 500,
+            "nullable": true
+          },
+          "generatedBy": {
+            "type": "string",
+            "maxLength": 30,
+            "nullable": true
+          },
+          "model": {
+            "type": "string",
+            "maxLength": 100,
+            "nullable": true
+          },
+          "promptSha256": {
+            "type": "string",
+            "maxLength": 64,
+            "nullable": true
+          },
+          "factCount": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "generatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2017-04-13T15:51:04.0000000Z",
+            "nullable": true
+          }
+        }
+      },
       "EngineeringReview.ImpactMaterialLines": {
         "title": "ImpactMaterialLines",
         "type": "object",
@@ -4557,7 +6460,7 @@
               {
                 "type": "number",
                 "format": "decimal",
-                "multipleOf": 1e-09
+                "multipleOf": 1e-9
               },
               {
                 "type": "string"
@@ -4806,6 +6709,154 @@
           },
           "findings@count": {
             "$ref": "#/components/schemas/count"
+          },
+          "statusText": {
+            "type": "string",
+            "maxLength": 30,
+            "nullable": true
+          }
+        }
+      },
+      "EngineeringReview.ImportMessage": {
+        "title": "ImportMessage",
+        "type": "object",
+        "properties": {
+          "line": {
+            "type": "string",
+            "maxLength": 40,
+            "nullable": true
+          },
+          "field": {
+            "type": "string",
+            "maxLength": 40,
+            "nullable": true
+          },
+          "code": {
+            "type": "string",
+            "maxLength": 60,
+            "nullable": true
+          },
+          "message": {
+            "type": "string",
+            "maxLength": 300,
+            "nullable": true
+          }
+        }
+      },
+      "EngineeringReview.ImportPreviewCase": {
+        "title": "ImportPreviewCase",
+        "type": "object",
+        "properties": {
+          "caseNumber": {
+            "type": "string",
+            "maxLength": 20,
+            "nullable": true
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 160,
+            "nullable": true
+          },
+          "assemblyCode": {
+            "type": "string",
+            "maxLength": 40,
+            "nullable": true
+          },
+          "plant": {
+            "type": "string",
+            "maxLength": 4,
+            "nullable": true
+          },
+          "fromRevision": {
+            "type": "string",
+            "maxLength": 10,
+            "nullable": true
+          },
+          "toRevision": {
+            "type": "string",
+            "maxLength": 10,
+            "nullable": true
+          },
+          "productionQuantity": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "fromItems": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "toItems": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          }
+        }
+      },
+      "EngineeringReview.ImportResult": {
+        "title": "ImportResult",
+        "type": "object",
+        "properties": {
+          "importId": {
+            "type": "string",
+            "format": "uuid",
+            "example": "01234567-89ab-cdef-0123-456789abcdef",
+            "nullable": true
+          },
+          "dryRun": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "accepted": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "plant": {
+            "type": "string",
+            "maxLength": 4,
+            "nullable": true
+          },
+          "checksum": {
+            "type": "string",
+            "maxLength": 71,
+            "nullable": true
+          },
+          "counts": {
+            "type": "string",
+            "maxLength": 500,
+            "nullable": true
+          },
+          "errors": {
+            "type": "array",
+            "items": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/EngineeringReview.ImportMessage"
+                }
+              ],
+              "nullable": true
+            }
+          },
+          "preview": {
+            "type": "array",
+            "items": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/EngineeringReview.ImportPreviewCase"
+                }
+              ],
+              "nullable": true
+            }
+          },
+          "caseIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid",
+              "example": "01234567-89ab-cdef-0123-456789abcdef",
+              "nullable": true
+            }
           }
         }
       },
@@ -4927,6 +6978,11 @@
           },
           "references@count": {
             "$ref": "#/components/schemas/count"
+          },
+          "assemblyCode": {
+            "type": "string",
+            "maxLength": 40,
+            "nullable": true
           }
         }
       },
@@ -5003,6 +7059,21 @@
             "maxLength": 200,
             "nullable": true
           },
+          "statusText": {
+            "type": "string",
+            "maxLength": 20,
+            "nullable": true
+          },
+          "sourceTypeText": {
+            "type": "string",
+            "maxLength": 30,
+            "nullable": true
+          },
+          "assemblyDescription": {
+            "type": "string",
+            "maxLength": 160,
+            "nullable": true
+          },
           "createdAt": {
             "type": "string",
             "format": "date-time",
@@ -5037,6 +7108,62 @@
           },
           "runs@count": {
             "$ref": "#/components/schemas/count"
+          },
+          "decisions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EngineeringReview.DecisionEvents"
+            }
+          },
+          "decisions@count": {
+            "$ref": "#/components/schemas/count"
+          },
+          "sourceImport": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/EngineeringReview.DataImports"
+              }
+            ],
+            "nullable": true
+          },
+          "sourceImport_ID": {
+            "type": "string",
+            "format": "uuid",
+            "example": "01234567-89ab-cdef-0123-456789abcdef",
+            "nullable": true
+          },
+          "fromState": {
+            "$ref": "#/components/schemas/EngineeringReview.BOMStates"
+          },
+          "fromState_ID": {
+            "type": "string",
+            "format": "uuid",
+            "example": "01234567-89ab-cdef-0123-456789abcdef"
+          },
+          "toState": {
+            "$ref": "#/components/schemas/EngineeringReview.BOMStates"
+          },
+          "toState_ID": {
+            "type": "string",
+            "format": "uuid",
+            "example": "01234567-89ab-cdef-0123-456789abcdef"
+          },
+          "canRunImpact": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "canSubmit": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "canDecide": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "submittedBy": {
+            "type": "string",
+            "maxLength": 255,
+            "nullable": true
           }
         }
       },
