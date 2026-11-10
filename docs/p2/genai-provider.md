@@ -109,6 +109,18 @@ Studio controller) cover:
 - data from a non-approved source (no request sent)
 - the production profile, and that no key is committed
 
+## Browser check (BAS, 2026-11-10)
+
+I used an isolated checkout of this branch (`ai-pr21-review`), ran `cds serve` on port 4105 and opened it with the
+UI5 1.149 CDN. Case EC-000485 was checked in the Investigation Studio's AI Explanation tab:
+
+- **Test profile (fixture provider):** "Generate explanation" shows the deterministic panel, the label "Canned test
+  answer (fixture), not a live model", all section headings, next actions, warnings, evidence references and the
+  source line. Screenshot: `docs/evidence/p2-gemini-ui/01-structured-fixture-answer.jpg`.
+- **Development profile (no provider):** "Live AI explanations are not configured. The deterministic impact
+  calculation … is unaffected." No dialog appears and the calculated figures stay visible. Screenshot:
+  `docs/evidence/p2-gemini-ui/02-not-configured.jpg`.
+
 ## Live test record
 
 None. A real test needs a key from the owner, set in the CF environment as above. Until then the P2 provider status
