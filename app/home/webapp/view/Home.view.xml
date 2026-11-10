@@ -1,24 +1,21 @@
 <mvc:View controllerName="assemblyimpact.home.controller.Home" displayBlock="true"
-	xmlns:mvc="sap.ui.core.mvc" xmlns="sap.m" xmlns:f="sap.f" xmlns:core="sap.ui.core" xmlns:cssgrid="sap.ui.layout.cssgrid">
-	<f:DynamicPage id="homePage" busy="{home>/busy}" busyIndicatorDelay="0" headerExpanded="true" toggleHeaderOnTitleClick="false" class="aiHome">
-		<f:title>
-			<f:DynamicPageTitle>
-				<f:heading>
-					<Title text="AssemblyImpact AI" level="H1" wrapping="true"/>
-				</f:heading>
-				<f:expandedContent>
-					<Text wrapping="true" class="aiHomeLead"
-						text="Engineering change impact for assemblies: compares BOM revisions, checks stock, cost and work instructions with a deterministic CAP ruleset, and supports a separated review and approval workflow."/>
-				</f:expandedContent>
-				<f:actions>
-					<Button id="btnCreate" text="Create Scenario" icon="sap-icon://add-document" type="Emphasized" press=".onOpenCreate" visible="{home>/caps/canImport}"/>
-					<Button text="Refresh" icon="sap-icon://refresh" press=".onRefresh" tooltip="Reload the figures"/>
-				</f:actions>
-			</f:DynamicPageTitle>
-		</f:title>
-		<f:header>
-			<f:DynamicPageHeader pinnable="false">
-				<cssgrid:CSSGrid gridTemplateColumns="repeat(auto-fit, minmax(13rem, 1fr))" gridGap="0.75rem 1.5rem" class="aiStatusGrid">
+	xmlns:mvc="sap.ui.core.mvc" xmlns="sap.m" xmlns:core="sap.ui.core" xmlns:cssgrid="sap.ui.layout.cssgrid">
+	<!-- sap.m.Page instead of sap.f.DynamicPage: DynamicPage's content-fit logic switched its content container between
+	     absolute and static positioning every ~0.3 s when this page's height was close to the window height (measured in
+	     Chrome at 1848x1180: content 954 px <-> 16 px), which made the whole page flicker. -->
+	<Page id="homePage" showHeader="false" busy="{home>/busy}" busyIndicatorDelay="0" enableScrolling="true" class="aiHome sapUiResponsivePadding--content">
+		<content>
+			<VBox class="aiHomeHeader">
+				<HBox justifyContent="SpaceBetween" alignItems="Start" wrap="Wrap">
+					<Title text="AssemblyImpact AI" level="H1" wrapping="true" class="sapUiTinyMarginBottom aiHomeTitle"/>
+					<HBox wrap="Wrap" renderType="Bare" class="aiHomeActions">
+						<Button id="btnCreate" text="Create Scenario" icon="sap-icon://add-document" type="Emphasized" press=".onOpenCreate" visible="{home>/caps/canImport}"/>
+						<Button text="Refresh" icon="sap-icon://refresh" type="Transparent" press=".onRefresh" tooltip="Reload the figures"/>
+					</HBox>
+				</HBox>
+				<Text wrapping="true" class="aiHomeLead"
+					text="Engineering change impact for assemblies: compares BOM revisions, checks stock, cost and work instructions with a deterministic CAP ruleset, and supports a separated review and approval workflow."/>
+				<cssgrid:CSSGrid gridTemplateColumns="repeat(auto-fit, minmax(13rem, 1fr))" gridGap="0.75rem 1.5rem" class="aiStatusGrid sapUiSmallMarginTop">
 					<VBox class="aiStatusItem">
 						<Label text="Data source mode" labelFor="stDataSource"/>
 						<ObjectStatus id="stDataSource" text="{home>/status/dataSource/text}" state="{home>/status/dataSource/state}" inverted="true" icon="sap-icon://database"/>
@@ -40,9 +37,7 @@
 						<Text text="{home>/status/auth/description}" wrapping="true" class="aiStatusNote"/>
 					</VBox>
 				</cssgrid:CSSGrid>
-			</f:DynamicPageHeader>
-		</f:header>
-		<f:content>
+			</VBox>
 			<VBox class="aiHomeContent">
 				<MessageStrip visible="{= !!${home>/error} }" text="{home>/error}" type="Error" showIcon="true" class="sapUiSmallMarginBottom"/>
 				<MessageStrip visible="{= !${home>/busy} &amp;&amp; !${home>/error} &amp;&amp; ${home>/realRecords} === 0 }" type="Information" showIcon="true" class="sapUiSmallMarginBottom"
@@ -117,6 +112,7 @@
 					</VBox>
 				</cssgrid:CSSGrid>
 			</VBox>
-		</f:content>
-	</f:DynamicPage>
+		
+		</content>
+	</Page>
 </mvc:View>

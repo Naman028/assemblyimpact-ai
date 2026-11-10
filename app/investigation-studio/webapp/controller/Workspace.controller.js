@@ -473,7 +473,7 @@ sap.ui.define([
         new Label({ text: "Reason for rejection", labelFor: reason, required: true }), reason
       ], "Reject", "Reject", function () {
         if (!reason.getValue().trim()) { reason.setValueState("Error"); reason.setValueStateText("A reason is required."); return false; }
-        this._execute("reject", { comment: reason.getValue(), basedOnRun: run ? run.ID : undefined }, "Case rejected.");
+        this._execute("rejectCase", { comment: reason.getValue(), basedOnRun: run ? run.ID : undefined }, "Case rejected.");
       }.bind(this));
     }
   });

@@ -90,7 +90,7 @@ annotate service.ReviewCases with @(
         },
         {
             $Type      : 'UI.DataFieldForAction',
-            Action     : 'EngineeringReview.reject',
+            Action     : 'EngineeringReview.rejectCase',
             Label      : 'Reject',
             Criticality: #Negative
         }
@@ -190,7 +190,7 @@ annotate service.ReviewCases actions {
         TargetEntities  : ['in/decisions']
     }
     @Core.OperationAvailable: {$edmJson: {$Path: 'in/canDecide'}}
-    reject(comment @title: 'Reason for Rejection' @UI.MultiLineText,
+    rejectCase(comment @title: 'Reason for Rejection' @UI.MultiLineText,
            basedOnRun @title: 'Evaluated Impact Run' @UI.ParameterDefaultValue: {$edmJson: {$Path: 'in/latestRun_ID'}})
 };
 

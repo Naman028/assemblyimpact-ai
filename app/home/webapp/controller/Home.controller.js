@@ -21,7 +21,7 @@ sap.ui.define([
     _get: function (path, asText) {
       return fetch(this._url(path), { credentials: "same-origin", headers: { Accept: asText ? "text/plain" : "application/json" } })
         .then(function (r) {
-          if (!r.ok) { throw new Error("HTTP " + r.status + " for " + path.split("?")[0]); }
+          if (!r.ok) { var e = new Error("HTTP " + r.status + " for " + path.split("?")[0]); e.status = r.status; throw e; }
           return asText ? r.text().then(Number) : r.json();
         });
     },
@@ -32,13 +32,17 @@ sap.ui.define([
       var countKeys = Object.keys(overview.COUNTS), sourceKeys = overview.SOURCES.map(function (s) { return s.key; });
       model.setProperty("/busy", true);
       model.setProperty("/error", "");
-      return Promise.all([
-        Promise.all(countKeys.map(function (k) { return that._get(overview.countPath(overview.COUNTS[k]), true); })),
-        Promise.all(sourceKeys.map(function (k) { return that._get(overview.sourcePath(k), true); })),
-        this._get(overview.RECENT_PATH),
-        this._get("systemStatus()"),
-        this._get("myCapabilities()").catch(function () { return { canImport: false }; })
-      ]).then(function (res) {
+      // One request first: without a valid sign-in it is the only one that can trigger the browser's login dialog.
+      // Firing all queries at once made a cancelled dialog reappear once per request.
+      return this._get("systemStatus()").then(function (status) {
+        return Promise.all([
+          Promise.all(countKeys.map(function (k) { return that._get(overview.countPath(overview.COUNTS[k]), true); })),
+          Promise.all(sourceKeys.map(function (k) { return that._get(overview.sourcePath(k), true); })),
+          that._get(overview.RECENT_PATH),
+          status,
+          that._get("myCapabilities()").catch(function () { return { canImport: false }; })
+        ]);
+      }).then(function (res) {
         var counts = {}, bySource = {};
         countKeys.forEach(function (k, i) { counts[k] = res[0][i]; });
         sourceKeys.forEach(function (k, i) { bySource[k] = res[1][i]; });
@@ -54,7 +58,7 @@ sap.ui.define([
         });
       }).catch(function (error) {
         model.setProperty("/busy", false);
-        model.setProperty("/error", "The overview could not be loaded (" + error.message + "). The apps below still work.");
+        model.setProperty("/error", overview.loadError(error));
       });
     },
 

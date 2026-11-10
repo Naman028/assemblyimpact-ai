@@ -11,6 +11,9 @@ import { MappingError } from './integration/erp/s4-mapping.js';
 import { explain, providerFor, GenAiConfigError, GenAiTransportError } from './integration/genai/impact-explanation.js';
 
 // Calculations are deterministic server-side (lib/impact-calculator.js); no LLM is involved.
+/** OData action name -> review transition. The rejection action is 'rejectCase' (see engineering-review.cds). */
+export const DECISION_ACTIONS = Object.freeze({ submitForReview: TRANSITIONS.submitForReview, approve: TRANSITIONS.approve, rejectCase: TRANSITIONS.reject });
+
 export default class EngineeringReview extends cds.ApplicationService {
   init() {
     // Malformed or missing plant memberships never grant access (same rule as M03).
@@ -47,7 +50,7 @@ export default class EngineeringReview extends cds.ApplicationService {
       return SELECT.one.from(this.entities.ReviewCases, caseID);
     });
     this.on('explainImpact', 'ReviewCases', req => this.#explainImpact(req));
-    for (const action of Object.keys(TRANSITIONS)) this.on(action, 'ReviewCases', req => this.#decide(req, TRANSITIONS[action]));
+    for (const [action, transition] of Object.entries(DECISION_ACTIONS)) this.on(action, 'ReviewCases', req => this.#decide(req, transition));
     return super.init();
   }
 

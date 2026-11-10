@@ -123,7 +123,7 @@ test('Joule identity (ChangeViewer + ImpactRunner): reads and runs impact in its
   assert.equal(run.status, 200, JSON.stringify(run.data));
   assert.equal(run.data.computedBy, 'joule', 'attributed to the calling identity');
   assert.equal((await call('GET', `/ReviewCases(${CASE})?$select=canRunImpact,canSubmit,canDecide`, { user: 'joule' })).data.canSubmit, false);
-  for (const action of ['submitForReview', 'approve', 'reject']) {
+  for (const action of ['submitForReview', 'approve', 'rejectCase']) {
     const r = await call('POST', `/ReviewCases(${CASE})/EngineeringReview.${action}`, { user: 'joule', body: { comment: 'x', basedOnRun: run.data.ID } });
     assert.equal(r.status, 403, action);
   }
@@ -165,7 +165,7 @@ test('GetDecisionHistory conforms to the spec and is plant-restricted', async ()
 
 test('Joule reader identity (ChangeViewer only) cannot run impact or decide', async () => {
   assert.equal((await call('POST', `/ReviewCases(${CASE})/EngineeringReview.runImpact`, { user: 'joulereader', body: {} })).status, 403);
-  for (const action of ['submitForReview', 'approve', 'reject'])
+  for (const action of ['submitForReview', 'approve', 'rejectCase'])
     assert.equal((await call('POST', `/ReviewCases(${CASE})/EngineeringReview.${action}`, { user: 'joulereader', body: { comment: 'x' } })).status, 403, action);
 });
 

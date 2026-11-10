@@ -61,7 +61,7 @@ test('INCOMPLETE evidence: approval is refused with 409 EVIDENCE_INCOMPLETE and 
   assert.equal(await statusOf(COPY.INC), 'IN_REVIEW');
   assert.deepEqual((await eventsOf(COPY.INC)).map(e => e.action), ['SUBMIT']);
   // Rejection on incomplete evidence stays possible (it is the safe outcome) and records the run status.
-  const rejected = await act(COPY.INC, 'reject', 'approver', { comment: 'Prices missing', basedOnRun: evaluated.ID });
+  const rejected = await act(COPY.INC, 'rejectCase', 'approver', { comment: 'Prices missing', basedOnRun: evaluated.ID });
   assert.equal(rejected.status, 200, JSON.stringify(rejected.data));
   const last = (await eventsOf(COPY.INC)).at(-1);
   assert.equal(last.evidenceStatus, 'INCOMPLETE');
@@ -163,6 +163,6 @@ test('submitter rule is shared: a case in review without a submit event falls ba
   await INSERT.into(ReviewCases).entries({ ...SEEDED, ID: id, caseNumber: 'EC-T5A-NOEV', status: 'IN_REVIEW', createdBy: 'approver', version: cds.utils.uuid() });
   const r = await request(`/ReviewCases(${id})?$select=canDecide,submittedBy`, { user: 'approver' });
   assert.deepEqual([r.data.canDecide, r.data.submittedBy], [false, 'approver']);
-  const refused = await act(id, 'reject', 'approver', { comment: 'x' });
+  const refused = await act(id, 'rejectCase', 'approver', { comment: 'x' });
   assert.equal(refused.status, 403);
 });

@@ -1,4 +1,6 @@
 /* AssemblyImpact AI landing page — spacing only; colours come from the theme. */
+.aiHomeHeader { padding: 0.5rem 0 1rem; border-bottom: 1px solid var(--sapGroup_TitleBorderColor); margin-bottom: 1rem; }
+.aiHomeActions { gap: 0.5rem; }
 .aiHomeLead { max-width: 60rem; }
 .aiStatusItem { min-width: 0; }
 .aiStatusItem .sapMObjectStatus { margin: 0.25rem 0; }

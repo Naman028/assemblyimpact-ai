@@ -14,7 +14,9 @@
   "scripts": {
     "start": "cds-serve",
     "dev": "cds watch",
-    "test": "node --test test/assembly-service.test.js test/impact-calculator.test.js test/engineering-review.test.js test/seed-data.test.js test/case-worklist-app.test.js test/m05-run-impact-ui.test.js test/assembly-visuals.test.js test/m04-review-decisions.test.js test/m05-review-workflow.test.js test/m05-scenarios.test.js test/m05-import.test.js test/m05-investigation-studio.test.js test/p2-erp-adapter.test.js test/p2-genai-explanation.test.js test/p1-actions-contract.test.js test/btp-deployment-config.test.js test/demo-data.test.js test/ui-landing-startup.test.js",
+    "demo:init": "cds deploy --to sqlite:db/demo.sqlite --no-save",
+    "demo": "cds-serve --profile demo",
+    "test": "node --test test/assembly-service.test.js test/impact-calculator.test.js test/engineering-review.test.js test/seed-data.test.js test/case-worklist-app.test.js test/m05-run-impact-ui.test.js test/assembly-visuals.test.js test/m04-review-decisions.test.js test/m05-review-workflow.test.js test/m05-scenarios.test.js test/m05-import.test.js test/m05-investigation-studio.test.js test/p2-erp-adapter.test.js test/p2-genai-explanation.test.js test/p1-actions-contract.test.js test/btp-deployment-config.test.js test/demo-data.test.js test/ui-landing-startup.test.js test/runtime-contract.test.js",
     "lint": "eslint srv test --max-warnings=0",
     "build:btp": "mbt build -t mta_archives"
   },
@@ -109,6 +111,14 @@
                 ]
               }
             }
+          }
+        }
+      },
+      "[demo]": {
+        "db": {
+          "kind": "sqlite",
+          "credentials": {
+            "url": "db/demo.sqlite"
           }
         }
       },

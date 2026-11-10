@@ -53,6 +53,13 @@ sap.ui.define([], function () {
     joule: function (key) { return pick(JOULE, key); },
     auth: function (key) { return pick(AUTH, key); },
 
+    /** Message for a failed load; the page stays visible (no reload, no hidden content). */
+    loadError: function (error) {
+      if (error && error.status === 401) { return "Sign-in required: reload the page and sign in (development: a user from package.json, e.g. analyst)."; }
+      if (error && error.status === 403) { return "Your user has no role for engineering cases (ChangeViewer, ChangeAnalyst or ChangeApprover)."; }
+      return "The overview could not be loaded (" + (error && error.message) + "). The apps below still work.";
+    },
+
     /** Source rows with counts; S/4HANA is always listed so that "0 real ERP records" is visible. */
     sources: function (counts) {
       return SOURCES.filter(function (s) { return counts[s.key] > 0 || s.key === "S4_IMPORT"; })
