@@ -252,19 +252,27 @@ test('Studio Edit Input: the quantity option lists revision B items and sends th
   class Control { constructor(s) { Object.assign(this, s); } addStyleClass() { return this; } }
   const stubs = { 'sap/ui/core/mvc/Controller': { extend: (n, def) => def }, 'sap/m/Select': Select, 'sap/ui/core/Item': Item, 'sap/m/Input': Input,
     'sap/m/MessageStrip': Control, 'sap/m/Label': Control, 'sap/m/MessageBox': { warning() {} }, 'sap/ui/core/library': { InvisibleMessageMode: {} } };
+  // The real formatter (not a mock): the dialog texts use format.quantity (CI failure on f52ab97 came from a missing injection).
+  let format;
+  vm.runInNewContext(readFileSync(join(import.meta.dirname, '..', 'app', 'investigation-studio', 'webapp', 'lib', 'format.js'), 'utf8'),
+    { sap: { ui: { define: (d, f) => { format = f(); } } } });
+  stubs['assemblyimpact/investigationstudio/lib/format'] = format;
   const ctrl = factory(...deps.map(d => stubs[d] ?? {}));
   let content, ok, executed;
   const self = Object.assign(Object.create(ctrl), {
     getView: () => ({ getModel: () => ({ getProperty: () => [
       { itemNo: '0020', fromMaterial: 'MOT-950', toMaterial: 'MOT-950E', toQuantity: '1', unit: 'PC' },
-      { itemNo: '0030', fromMaterial: 'SEAL-950', toMaterial: 'SEAL-950', toQuantity: '2', unit: 'PC' }] }) }),
+      { itemNo: '0030', fromMaterial: 'SEAL-950', toMaterial: 'SEAL-950', toQuantity: '2', unit: 'PC' },
+      { itemNo: '0040', fromMaterial: 'BLT-950', toMaterial: null, toQuantity: null, unit: 'PC' }] }) }),
     _dialog: (title, c, text, type, onOk) => { content = c; ok = onOk; },
     _execute: (action, params) => { executed = { action, params }; },
   });
   self.onEditInput();
   const [, , kind, , target, , value] = content;
   assert.equal(kind.getSelectedKey(), 'PROPOSED_QUANTITY');
-  assert.deepEqual(target.items.map(i => i.key), ['0020', '0030'], 'revision B item numbers, not materials');
+  assert.deepEqual(target.items.map(i => i.key), ['0020', '0030', '0040'], 'item numbers (B items plus the removed A item), not materials');
+  assert.equal(target.items[1].text, '0030 SEAL-950 (now 2 PC; 0 removes it)');
+  assert.equal(target.items[2].text, '0040 BLT-950 (removed in revision B; a quantity above 0 re-adds it)');
   target.setSelectedKey('0030'); value.setValue('3');
   ok();
   assert.equal(executed.action, 'reviseDemoInput');
