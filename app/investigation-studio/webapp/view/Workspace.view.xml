@@ -302,11 +302,11 @@
 													<Text text="{ws>mediaType}, {= Math.round(${ws>size} / 1024) } KB, by {ws>uploadedBy}, { path: 'ws>uploadedAt', formatter: '.fmt.dateTime' }" class="sapUiTinyMarginTop"/>
 												</VBox>
 												<Button icon="sap-icon://delete" type="Transparent" press=".onAttachDelete" tooltip="Remove image" class="sapUiSmallMarginBegin"
-													visible="{= ${ws>/case/status} !== 'APPROVED' &amp;&amp; ${ws>/case/status} !== 'REJECTED' }"/>
+													visible="{= ${ws>/case/status} === 'OPEN' }"/>
 											</HBox>
 										</CustomListItem>
 									</List>
-									<HBox alignItems="End" wrap="Wrap" class="sapUiSmallMarginTop" visible="{= ${ws>/case/status} !== 'APPROVED' &amp;&amp; ${ws>/case/status} !== 'REJECTED' }">
+									<HBox alignItems="End" wrap="Wrap" class="sapUiSmallMarginTop" visible="{= ${ws>/case/status} === 'OPEN' }">
 										<VBox class="sapUiSmallMarginEnd">
 											<Label text="Image (PNG or JPEG, max. 2 MB)" labelFor="attachFile"/>
 											<u:FileUploader id="attachFile" fileType="png,jpg,jpeg" mimeType="image/png,image/jpeg" maximumFileSize="2" sendXHR="false"

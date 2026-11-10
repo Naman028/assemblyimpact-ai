@@ -88,6 +88,26 @@ test('edits are refused outside their scope', async () => {
   assert.equal((await revise(sub, { kind: 'STOCK', material: 'COIL-800', value: 1 })).data.error?.code, 'CASE_NOT_EDITABLE');
 });
 
+test('stock and price edits are refused when another BOM of the plant uses the material (review finding)', async () => {
+  const id = idOf('EC-000485');
+  const { BOMStates, BOMItems } = cds.entities('assemblyimpact');
+  const rc = seed.ReviewCases.find(c => c.caseNumber === 'EC-000485');
+  const state = await SELECT.one.from(BOMStates).where({ ID: rc.toState_ID });
+  const item = await SELECT.one.from(BOMItems).where({ bomState_ID: rc.toState_ID, material: 'FIT-700' });
+  const otherState = cds.utils.uuid();
+  await INSERT.into(BOMStates).entries({ ...state, ID: otherState, stateKey: `TEST-SHARED-${otherState.slice(0, 8)}` });
+  await INSERT.into(BOMItems).entries({ ...item, ID: cds.utils.uuid(), bomState_ID: otherState });
+  try {
+    for (const kind of ['STOCK', 'PRICE']) {
+      const r = await revise(id, { kind, material: 'FIT-700', value: 5 });
+      assert.equal(r.data.error?.code, 'SHARED_RECORD', kind);
+    }
+  } finally {
+    await DELETE.from(BOMItems).where({ bomState_ID: otherState });
+    await DELETE.from(BOMStates).where({ ID: otherState });
+  }
+});
+
 const PNG = Buffer.from('89504e470d0a1a0a0000000d4948445200000001000000010806000000' + '1f15c4890000000d4944415478da63f8ffff3f0005fe02fea7d6a4b30000000049454e44ae426082', 'hex');
 
 test('supporting image: create, upload once, read back in plant; validated type and size', async () => {
@@ -129,6 +149,8 @@ test('supporting image: refused for viewers, other plants, wrong types, oversize
   const decided = idOf('EC-000483');
   const r = await run(decided);
   assert.equal((await call('POST', `/ReviewCases(${decided})/EngineeringReview.submitForReview`, { user: 'analyst', body: {} })).status, 200);
+  const inReview = await call('POST', '/CaseAttachments', { user: 'analyst', body: { ...body, reviewCase_ID: decided } });
+  assert.equal(inReview.data.error?.code, 'CASE_IN_REVIEW', 'evidence cannot change while the approver reviews it');
   const rej = await call('POST', `/ReviewCases(${decided})/EngineeringReview.reject`, { user: 'approver', body: { comment: 'Seal supplier not qualified', basedOnRun: r.ID } });
   assert.equal(rej.status, 200, JSON.stringify(rej.data));
   const late = await call('POST', '/CaseAttachments', { user: 'analyst', body: { ...body, reviewCase_ID: decided } });

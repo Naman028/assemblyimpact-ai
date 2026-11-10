@@ -55,6 +55,9 @@ async function attachableCase(caseID, plants, { forChange } = {}) {
   if (!rc) fail(404, 'NOT_FOUND', 'Not found.');
   if (forChange && DECIDED.includes(rc.status))
     fail(409, 'CASE_DECIDED', `The case is ${rc.status}; its attachments are part of the decision evidence and cannot change.`);
+  // Evidence under review must not move while the approver looks at it: changes only while OPEN.
+  if (forChange && rc.status !== 'OPEN')
+    fail(409, 'CASE_IN_REVIEW', `The case is ${rc.status}; attachments can only change while it is OPEN.`);
   return rc;
 }
 
@@ -131,17 +134,20 @@ export async function reviseInput({ caseID, kind, itemNo, material, value }, { p
     if (!MATERIAL.test(String(material ?? ''))) fail(400, 'MATERIAL_REQUIRED', 'A material of this case is required.');
     const used = await SELECT.one.from(BOMItems).columns('ID').where({ bomState_ID: { in: states }, material });
     if (!used) fail(400, 'MATERIAL_NOT_IN_CASE', `${material} is not in either BOM revision of this case.`);
+    // Prices and stock are plant-wide records: refuse if another BOM of the plant uses the material.
+    const others = await SELECT.from(BOMStates).columns('ID').where({ plant: rc.plant, ID: { 'not in': states } });
+    const elsewhere = others.length && await SELECT.one.from(BOMItems).columns('ID').where({ material, bomState_ID: { in: others.map(o => o.ID) } });
+    if (elsewhere) fail(409, 'SHARED_RECORD', `${material} is used by other BOMs in plant ${rc.plant}; changing its ${kind === 'PRICE' ? 'price' : 'stock'} would change their results too.`);
     if (kind === 'PRICE') {
-      const others = await SELECT.from(BOMStates).columns('ID').where({ plant: rc.plant, ID: { 'not in': states } });
-      const elsewhere = others.length && await SELECT.one.from(BOMItems).columns('ID').where({ material, bomState_ID: { in: others.map(o => o.ID) } });
-      if (elsewhere) fail(409, 'SHARED_RECORD', `${material} is used by other BOMs in plant ${rc.plant}; its price would change their results too.`);
       const prices = await SELECT.from(CostPrices).where({ material, plant: rc.plant });
       if (prices.length !== 1) fail(409, 'AMBIGUOUS_PRICE', `${material} has ${prices.length} price records; only a single open price can be edited.`);
       if (!SYNTHETIC.includes(prices[0].sourceType)) fail(409, 'NOT_SYNTHETIC', 'Only synthetic prices can be edited.');
       await UPDATE(CostPrices).set({ price: v.toPlain() }).where({ ID: prices[0].ID });
       change = { kind, material, from: plain(prices[0].price), to: v.toPlain(), currency: prices[0].currency };
     } else {
-      const last = await SELECT.one.from(StockSnapshots).where({ material, plant: rc.plant }).orderBy({ snapshotAt: 'desc' });
+      const snapshots = await SELECT.from(StockSnapshots).where({ material, plant: rc.plant }).orderBy({ snapshotAt: 'desc' });
+      if (snapshots.some(s => !SYNTHETIC.includes(s.sourceType))) fail(409, 'NOT_SYNTHETIC', 'Only synthetic stock can be edited.');
+      const last = snapshots[0];
       const ID = cds.utils.uuid();
       await INSERT.into(StockSnapshots).entries({ ID, material, plant: rc.plant, availableQuantity: v.toPlain(), unit: last?.unit ?? 'PC',
         snapshotAt: new Date().toISOString(), sourceType: 'DEMO_IMPORT', evidenceRef: `DEMO-EDIT/${rc.caseNumber}/stock/${material}/${ID}`.slice(0, 200) });
