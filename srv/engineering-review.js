@@ -72,7 +72,7 @@ export default class EngineeringReview extends cds.ApplicationService {
     const APP_ROLES = ['ChangeViewer', 'ChangeAnalyst', 'ChangeApprover', 'ImpactRunner', 'DemoDataImporter', 'ErpExtractor', 'AssemblyViewer', 'AssemblyMaintainer'];
     this.on('whoAmI', req => {
       const kind = cds.env.requires?.auth?.kind;
-      return { id: req.user.id, roles: APP_ROLES.filter(r => req.user.is(r)).join(', '), plants: userPlants(req.user).join(', '),
+      return { id: req.user.id, roles: APP_ROLES.filter(r => req.user.is(r)).join(', '), plants: [...new Set(userPlants(req.user))].join(', '),
         authMode: kind === 'xsuaa' || kind === 'ias' ? 'PRODUCTION' : 'DEVELOPMENT' };
     });
     this.on('searchAssemblies', async req => { try { return await searchAssemblies(unquote(req.data.term), userPlants(req.user)); } catch (e) { return asCoverageReject(req, e); } });
