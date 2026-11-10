@@ -88,6 +88,9 @@ cf set-env assemblyimpact-srv GEMINI_API_KEY '<key from Google AI Studio>'   # d
 cf restart assemblyimpact-srv
 ```
 
+This is needed **once**. `mta.yaml` sets `keep-existing: env: true` on `assemblyimpact-srv`, so later `cf deploy` runs keep
+the variable. Check presence without printing the value: `cf env assemblyimpact-srv | grep -c GEMINI_API_KEY` (expect `1`).
+
 Before doing this, check Google's terms. The Gemini API Additional Terms say only **Paid Services** may be used when
 making API clients available to users in the EEA, Switzerland or the UK. They also say content sent to Unpaid
 Services may be used to improve Google products and reviewed by humans, and must not be sensitive, confidential or
