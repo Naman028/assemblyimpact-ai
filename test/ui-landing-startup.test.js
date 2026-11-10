@@ -49,6 +49,10 @@ test('systemStatus: modes come from configuration; a sandbox without API key is 
   assert.equal(genaiMode({ provider: 'genai-hub' }), 'NOT_CONFIGURED', 'no deployment: every call would fail');
   assert.equal(genaiMode({ provider: 'genai-hub', deploymentId: 'd', resourceGroup: 'g' }), 'GENAI_HUB');
   assert.equal(genaiMode({}), 'NOT_CONFIGURED');
+  // Found on the deployed app: Gemini configured with a key, Home still said "Not configured".
+  assert.equal(genaiMode({ provider: 'gemini', modelId: 'gemini-3.5-flash-lite' }, { GEMINI_API_KEY: 'k' }), 'GEMINI');
+  assert.equal(genaiMode({ provider: 'gemini', modelId: 'gemini-3.5-flash-lite' }, {}), 'NOT_CONFIGURED', 'no key');
+  assert.equal(genaiMode({ provider: 'gemini' }, { GEMINI_API_KEY: 'k' }), 'NOT_CONFIGURED', 'no model id');
   assert.equal(jouleStatus({}), 'NOT_CONNECTED');
   assert.equal(jouleStatus({ actionsReleased: true }), 'CONFIGURED');
   const s = systemStatus({ requires: { 'erp-source': { sandbox: { url: 'https://s', apiKeyEnv: 'PATH' } }, auth: { kind: 'xsuaa' } }, features: {} });

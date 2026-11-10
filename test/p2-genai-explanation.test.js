@@ -194,6 +194,10 @@ test('Studio onExplain behaviour (controller loaded with stubbed UI5 modules): r
   assert.equal(h.data.explainBusy, false);
   h = harness(null, { fail: fail(504, 'GENAI_TIMEOUT', 'No answer in time.') }); h.finish(); await h.done;
   assert.equal(h.data.explanationError.retryable, true);
+  // Production CAP masks 5xx messages ("Bad Gateway", seen on BTP): the UI states the meaning instead.
+  h = harness(null, { fail: fail(502, '502', 'Bad Gateway') }); h.finish(); await h.done;
+  assert.match(h.data.explanationError.message, /^The AI provider did not return an explanation \(HTTP 502\)\. The impact calculation is unaffected/);
+  assert.equal(h.data.explanationError.retryable, true);
   h = harness(null, { fail: fail(409, 'GENAI_NOT_CONFIGURED', 'Live AI explanations are not configured.') }); h.finish(); await h.done;
   assert.equal(h.data.explanationError.code, 'GENAI_NOT_CONFIGURED');
   assert.equal(h.data.explanationError.retryable, false);
