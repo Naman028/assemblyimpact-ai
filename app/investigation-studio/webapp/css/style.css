@@ -47,7 +47,7 @@
 .aiKpiNumber .sapMObjectNumberText, .aiBigNumber .sapMObjectNumberText,
 .aiKpiNumber .sapMObjectNumberUnit, .aiBigNumber .sapMObjectNumberUnit { white-space: normal; overflow-wrap: anywhere; }
 .aiKpiNumber, .aiBigNumber { max-width: 100%; overflow: visible; }
-.aiKpiNumber .sapMObjectNumberText { font-size: clamp(1.125rem, 2.2vw, 1.5rem); }
+.aiKpiNumber .sapMObjectNumberText { font-size: clamp(1.125rem, 2.2vw, 1.5rem); line-height: 1.2; }
 .aiBigNumber .sapMObjectNumberText { font-size: clamp(1.25rem, 2.6vw, 1.75rem); }
 .aiTabs .sapMListTbl .sapMObjectNumber, .aiTabs .sapMListTbl .sapMText { overflow-wrap: anywhere; }
 .aiHints .sapMObjStatus { display: block; margin: 0.125rem 0; white-space: normal; }

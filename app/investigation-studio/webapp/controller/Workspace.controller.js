@@ -393,7 +393,8 @@ sap.ui.define([
     // ------------------------------------------------------------ synthetic input edit (faculty demo, Scenario C)
     onEditInput: function () {
       var ws = this.getView().getModel("ws"), lines = ws.getProperty("/lines") || [];
-      var proposed = lines.filter(function (l) { return l.toMaterial; });
+      // Revision B items plus items only in revision A (removed), so a removed component can be re-added.
+      var proposed = lines.filter(function (l) { return l.toMaterial || l.fromMaterial; });
       var materials = [];
       lines.forEach(function (l) { [l.fromMaterial, l.toMaterial].forEach(function (m) { if (m && materials.indexOf(m) < 0) { materials.push(m); } }); });
       // selectedKey set explicitly: before rendering, getSelectedKey() is "" and the first fill() would list materials
@@ -402,11 +403,15 @@ sap.ui.define([
         new Item({ key: "PROPOSED_QUANTITY", text: "Proposed quantity of a revision B item" }),
         new Item({ key: "PRICE", text: "Unit price of a material" }),
         new Item({ key: "STOCK", text: "Available stock of a material (new snapshot)" })] });
-      var target = new Select({ width: "100%" }), value = new Input({ type: "Number", width: "100%" });
+      var target = new Select({ width: "100%" }), value = new Input({ type: "Number", width: "100%", placeholder: "0 or more; quantities up to 3 decimals, prices up to 4" });
       var fill = function () {
         target.destroyItems();
         if (kind.getSelectedKey() === "PROPOSED_QUANTITY") {
-          proposed.forEach(function (l) { target.addItem(new Item({ key: l.itemNo, text: l.itemNo + " " + l.toMaterial + " (now " + l.toQuantity + " " + (l.unit || "") + ")" })); });
+          proposed.forEach(function (l) {
+            target.addItem(new Item({ key: l.itemNo, text: l.toMaterial
+              ? l.itemNo + " " + l.toMaterial + " (now " + format.quantity(l.toQuantity) + " " + (l.unit || "") + "; 0 removes it)"
+              : l.itemNo + " " + l.fromMaterial + " (removed in revision B; a quantity above 0 re-adds it)" }));
+          });
         } else {
           materials.forEach(function (m) { target.addItem(new Item({ key: m, text: m })); });
         }
