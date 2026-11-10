@@ -236,7 +236,7 @@
 						</HBox>
 						<Table id="coverageTable" items="{ws>/cov/rows}" noDataText="Choose a start date and horizon, then project coverage." fixedLayout="false">
 							<columns>
-								<Column><Text text="Material"/></Column>
+								<Column width="8rem"><Text text="Material"/></Column>
 								<Column><Text text="Status"/></Column>
 								<Column hAlign="End"><Text text="Opening stock"/></Column>
 								<Column hAlign="End" minScreenWidth="Tablet" demandPopin="true"><Text text="Rate per day at start"/></Column>
@@ -254,9 +254,9 @@
 											state="{= ${ws>status} === 'COVERED' ? 'Success' : ${ws>status} === 'SHORTAGE' ? 'Error' : 'Warning' }"
 											tooltip="{= ${ws>missingRanges} ? 'No consumption rate for: ' + ${ws>missingRanges} : '' }"/>
 										<Text text="{ path: 'ws>openingStock', formatter: '.fmt.quantity' }"/>
-										<Text text="{= ${ws>dailyRateAtStart} === null || ${ws>dailyRateAtStart} === undefined ? 'no rate' : ${ws>dailyRateAtStart} }"/>
-										<Text text="{= ${ws>caseRequirement} + (${ws>requirementInHorizon} ? ' on ' + ${ws>effectiveDate} : ' (outside horizon)') }"/>
-										<Text text="{= (${ws>demandComplete} === false ? 'at least ' : '') + (${ws>expectedDemand} === null || ${ws>expectedDemand} === undefined ? '—' : ${ws>expectedDemand}) }"/>
+										<Text text="{ path: 'ws>dailyRateAtStart', formatter: '.fmtRate' }"/>
+										<Text text="{ parts: ['ws>caseRequirement', 'ws>requirementInHorizon', 'ws>effectiveDate'], formatter: '.fmtRequirement' }"/>
+										<Text text="{ parts: ['ws>expectedDemand', 'ws>demandComplete'], formatter: '.fmtDemand' }"/>
 										<ObjectNumber number="{ path: 'ws>projectedEndStock', formatter: '.fmt.quantity' }" state="{= ${ws>status} === 'SHORTAGE' ? 'Error' : 'None' }"/>
 										<Text text="{= ${ws>exhaustionDate} ? (${ws>exhaustionIsLatestPossible} ? 'short on or before ' : 'short from ') + ${ws>exhaustionDate} : (${ws>status} === 'COVERED' ? 'beyond ' + ${ws>endDate} : ${ws>status} === 'INCOMPLETE' ? 'unknown' : '—') }"/>
 										<Text text="{= ${ws>noRateDays} > 0 ? ${ws>noRateDays} + ' (' + ${ws>missingRanges} + ')' : (${ws>noRateDays} === 0 ? '0' : '—') }" wrapping="true"/>

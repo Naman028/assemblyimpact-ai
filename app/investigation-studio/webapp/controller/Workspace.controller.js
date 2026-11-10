@@ -446,6 +446,17 @@ sap.ui.define([
     },
 
     // ------------------------------------------------------------ consumption planning (lib: srv/lib/coverage.js)
+    // Same number format as the other quantity columns (found in the BAS walkthrough: "100.000" next to "80").
+    fmtDemand: function (value, complete) {
+      if (value === null || value === undefined) { return "—"; }
+      return (complete === false ? "at least " : "") + format.quantity(value);
+    },
+    fmtRequirement: function (value, inHorizon, date) {
+      if (value === null || value === undefined) { return "—"; }
+      return format.quantity(value) + (inHorizon ? " on " + date : " (outside horizon)");
+    },
+    fmtRate: function (value) { return value === null || value === undefined ? "no rate" : format.quantity(value); },
+
     _loadRates: function () {
       var ws = this.getView().getModel("ws"), c = ws.getProperty("/case"), model = this.getView().getModel();
       var mats = {};
