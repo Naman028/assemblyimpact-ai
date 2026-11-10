@@ -11,7 +11,7 @@
 					<HBox wrap="Wrap" alignItems="Center" class="sapUiTinyMarginTopBottom">
 						<SearchField id="assemblySearch" width="18rem" placeholder="Search assembly, e.g. PUMP-450" search=".onAssemblySearch" class="sapUiTinyMarginEnd"/>
 						<Button text="New assembly" icon="sap-icon://add" type="Transparent" press=".onAssemblyNew" tooltip="Enter an assembly that does not exist yet"/>
-						<ObjectStatus class="sapUiSmallMarginBegin" text="{= ${form>/existingAssembly} ? 'Existing assembly ' + ${form>/assemblyCode} + ' (revisions: ' + ${form>/existingRevisions}.join(', ') + ')' : 'New assembly' }"
+						<ObjectStatus class="sapUiSmallMarginBegin" text="{= ${form>/existingAssembly} ? 'Existing assembly ' + ${form>/assemblyCode} + ' (revisions: ' + ${form>/existingRevisions}.join(', ') + ')' : 'Entering a new assembly' }"
 							state="{= ${form>/existingAssembly} ? 'Information' : 'None' }" icon="{= ${form>/existingAssembly} ? 'sap-icon://accept' : 'sap-icon://add-product' }"/>
 					</HBox>
 					<List id="assemblyHits" items="{form>/assemblyHits}" visible="{= ${form>/assemblySearched} === true }" mode="SingleSelectMaster" selectionChange=".onAssemblyPick"

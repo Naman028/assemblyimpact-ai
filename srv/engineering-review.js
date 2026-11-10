@@ -70,7 +70,7 @@ export default class EngineeringReview extends cds.ApplicationService {
       try { return (await deactivateRate(ID, req.data.reason, userPlants(req.user), req.user.id)) ?? req.reject(404); } catch (e) { return asCoverageReject(req, e); }
     });
     this.on('searchAssemblies', async req => { try { return await searchAssemblies(unquote(req.data.term), userPlants(req.user)); } catch (e) { return asCoverageReject(req, e); } });
-    this.on('nextCaseNumber', async req => { try { return await nextCaseNumber(); } catch (e) { return asCoverageReject(req, e); } });
+    this.on('nextCaseNumber', async req => { try { return await nextCaseNumber(userPlants(req.user)); } catch (e) { return asCoverageReject(req, e); } });
     for (const [action, transition] of Object.entries(DECISION_ACTIONS)) this.on(action, 'ReviewCases', req => this.#decide(req, transition));
     return super.init();
   }
@@ -172,7 +172,7 @@ export default class EngineeringReview extends cds.ApplicationService {
       if (error instanceof ImportConflictError || /UNIQUE|unique constraint/i.test(error.message)) {
         // A concurrent import took a key of this file (case number, BOM state, snapshot) between validation and commit.
         // The database unique constraint is the authority; the whole transaction is rolled back.
-        const suggestion = await nextCaseNumber().catch(() => null);
+        const suggestion = await nextCaseNumber(userPlants(req.user)).catch(() => null);
         return req.reject({ status: 409, code: 'IMPORT_CONFLICT', message: 'A concurrent import used an identifier of this file; nothing was imported. ' +
           (suggestion ? `The next free case number is now ${suggestion}. ` : '') + 'Validate again.' });
       }

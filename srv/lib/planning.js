@@ -74,13 +74,20 @@ export async function searchAssemblies(term, plants) {
     cases: cases.filter(c => c.assembly_ID === a.ID).length }));
 }
 
-/** Next unused case number EC-nnnnnn (global, because case numbers are unique across plants). */
-export async function nextCaseNumber() {
+/**
+ * Proposes the next case number EC-nnnnnn: one above the highest number in the caller's plants, skipping numbers
+ * used anywhere (case numbers are unique across plants). A proposal only: the database unique constraint on
+ * ReviewCases.caseNumber decides at import time (409 IMPORT_CONFLICT for a concurrent import).
+ */
+export async function nextCaseNumber(plants = []) {
   const { ReviewCases } = E();
-  const rows = await SELECT.from(ReviewCases).columns('caseNumber');
-  const max = rows.map(r => /^EC-(\d{6})$/.exec(r.caseNumber)?.[1]).filter(Boolean).map(Number).reduce((a, b) => Math.max(a, b), 0);
-  if (max >= 999999) throw new CoverageRejection('NUMBER_RANGE_EXHAUSTED', 'No case number is left in the EC-nnnnnn range.');
-  return `EC-${String(max + 1).padStart(6, '0')}`;
+  const num = c => Number(/^EC-(\d{6})$/.exec(c)?.[1] ?? NaN);
+  const all = await SELECT.from(ReviewCases).columns('caseNumber', 'plant');
+  const used = new Set(all.map(r => num(r.caseNumber)).filter(Number.isFinite));
+  let n = all.filter(r => plants.includes(r.plant)).map(r => num(r.caseNumber)).filter(Number.isFinite).reduce((a, b) => Math.max(a, b), 0) + 1;
+  while (used.has(n) && n <= 999999) n++;
+  if (n > 999999) throw new CoverageRejection('NUMBER_RANGE_EXHAUSTED', 'No case number is left in the EC-nnnnnn range.');
+  return `EC-${String(n).padStart(6, '0')}`;
 }
 
 export { CoverageRejection };

@@ -173,7 +173,7 @@ test('Scenario B: the Create Scenario form bundle passes server validation, impo
   assert(builder.check(form).includes('caseNumber is required'));
   const next = await call('GET', '/nextCaseNumber()');
   assert.equal(next.status, 200, JSON.stringify(next.data));
-  assert.match(next.data.value, /^EC-\d{6}$/);
+  assert.equal(next.data.value, 'EC-000487', 'next after the highest number of the caller\'s plants (not after the plant-2000 mirror EC-2004xx)');
   form.caseNumber = next.data.value;
   assert.equal((await call('GET', '/nextCaseNumber()', { user: 'analyst' })).status, 403, 'only importers create cases');
   assert.equal(builder.check(form).length, 0, JSON.stringify(builder.check(form)));
