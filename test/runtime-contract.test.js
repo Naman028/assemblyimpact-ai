@@ -79,7 +79,7 @@ test('mocked users exist only in development and test; documented development us
 
 test('landing page: sap.m.Page (no DynamicPage content-fit oscillation); one request before the rest; auth errors keep the page', () => {
   const view = read('app/home/webapp/view/Home.view.xml');
-  assert.match(view, /<Page id="homePage" showHeader="false"/);
+  assert.match(view, /<App id="homeApp"[^>]*>\s*<pages>\s*<Page id="homePage" showHeader="false"/, 'Page inside App (a Page alone had 0 px height)');
   assert.doesNotMatch(view, /<f:DynamicPage/);
   const ctrl = read('app/home/webapp/controller/Home.controller.js');
   const first = ctrl.indexOf('return this._get("systemStatus()").then(function (status) {');

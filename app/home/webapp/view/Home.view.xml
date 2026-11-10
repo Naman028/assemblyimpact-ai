@@ -2,7 +2,9 @@
 	xmlns:mvc="sap.ui.core.mvc" xmlns="sap.m" xmlns:core="sap.ui.core" xmlns:cssgrid="sap.ui.layout.cssgrid">
 	<!-- sap.m.Page instead of sap.f.DynamicPage: DynamicPage's content-fit logic switched its content container between
 	     absolute and static positioning every ~0.3 s when this page's height was close to the window height (measured in
-	     Chrome at 1848x1180: content 954 px <-> 16 px), which made the whole page flicker. -->
+	     Chrome at 1848x1180: content 954 px <-> 16 px), which made the whole page flicker. sap.m.App gives the Page its full height (a Page alone in the view had 0 px). -->
+	<App id="homeApp" autoFocus="false">
+	<pages>
 	<Page id="homePage" showHeader="false" busy="{home>/busy}" busyIndicatorDelay="0" enableScrolling="true" class="aiHome sapUiResponsivePadding--content">
 		<content>
 			<VBox class="aiHomeHeader">
@@ -115,4 +117,6 @@
 		
 		</content>
 	</Page>
+	</pages>
+	</App>
 </mvc:View>
