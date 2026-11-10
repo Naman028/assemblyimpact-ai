@@ -12,6 +12,14 @@
        so the selected case stays open when switching. For a productive landscape, the same intents are configured
        in SAP Build Work Zone instead of this sandbox. -->
   <script>
+    // The landing page replaces the sandbox tile page, also for bookmarked or typed #Shell-home links.
+    (function () {
+      function toOverview() { if (/^#?(Shell-home)?$/.test(window.location.hash)) { window.location.replace("#AssemblyImpact-overview"); } }
+      toOverview();
+      window.addEventListener("hashchange", toOverview);
+    }());
+  </script>
+  <script>
     window["sap-ushell-config"] = {
       defaultRenderer: "fiori2",
       renderers: { fiori2: { componentData: { config: { enableSearch: false, rootIntent: "AssemblyImpact-overview" } } } },

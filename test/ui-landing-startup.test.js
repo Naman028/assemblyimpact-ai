@@ -110,6 +110,7 @@ test('development root URL opens the launchpad; production keeps the app router 
   assert.match(html, /location\.replace\("launchpad\.html"/);
   assert.equal(JSON.parse(read('app/router/xs-app.json')).welcomeFile, '/launchpad.html');
   assert.doesNotMatch(read('tools/btp/stage-ui.mjs'), /'index\.html'/, 'not shipped');
+  assert.match(read('app/launchpad.html'), /\^#\?\(Shell-home\)\?\$\/\.test\(window\.location\.hash\)[^\n]*replace\("#AssemblyImpact-overview"\)/, 'tile page replaced');
   const pkg = JSON.parse(read('package.json'));
   assert.equal(pkg.scripts.dev, 'cds watch');
   assert.equal(pkg.scripts.start, 'cds-serve');
