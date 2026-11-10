@@ -2,8 +2,9 @@
 // The language model never calculates. It receives only the immutable run (figures, findings, shortages,
 // BOM changes) as numbered facts and must cite them. Its answer is checked before it is returned:
 // every citation must exist and every number must appear in the evidence; otherwise the text is withheld.
-// Providers: SAP Generative AI Hub (SAP AI Core, via a BTP destination) or a labelled fixture for tests.
-// An unconfigured provider is refused (409), never replaced by a silent stand-in.
+// Providers: Google Gemini API (structured JSON output, backend only), SAP Generative AI Hub (SAP AI Core,
+// via a BTP destination) or a labelled fixture for tests. An unconfigured provider is refused (409), never
+// replaced by a silent stand-in. The model never approves, rejects, changes a BOM or stock, or writes data.
 import cds from '@sap/cds';
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
@@ -11,8 +12,12 @@ import { join } from 'node:path';
 
 export class GenAiConfigError extends Error {}
 export class GenAiTransportError extends Error {
-  constructor(message, status) { super(message); this.status = status; }
+  constructor(message, status, retryAfter) { super(message); this.status = status; this.retryAfter = retryAfter ?? null; }
 }
+export class GenAiTimeoutError extends GenAiTransportError {}
+/** The case's data may not be sent to this provider (only approved synthetic/demo data goes to external models). */
+export class GenAiDataNotApprovedError extends Error {}
+export const NOT_CONFIGURED_MESSAGE = 'Live AI explanations are not configured.';
 
 const MAX_FACTS = 40;
 const num = v => (v === null || v === undefined ? null : Number(v));
@@ -28,7 +33,7 @@ export function evidenceOf(reviewCase, run) {
   run.comparisonLines.filter(c => c.change !== 'UNCHANGED').sort((a, b) => a.itemNo.localeCompare(b.itemNo))
     .forEach((c, i) => facts.push({ id: `B${i + 1}`, kind: 'bom-change', itemNo: c.itemNo, change: c.change, fromMaterial: c.fromMaterial ?? null, fromQuantity: num(c.fromQuantity), toMaterial: c.toMaterial ?? null, toQuantity: num(c.toQuantity), unit: c.unit }));
   return {
-    case: { caseNumber: reviewCase.caseNumber, assemblyCode: reviewCase.assemblyCode, plant: reviewCase.plant, sourceType: reviewCase.sourceType, status: reviewCase.status },
+    case: { caseNumber: reviewCase.caseNumber, assemblyCode: reviewCase.assemblyCode, sourceType: reviewCase.sourceType, status: reviewCase.status },
     run: { id: 'RUN', status: run.status, flags: run.flags ?? null, asOfDate: run.asOfDate, currency: run.currency,
       productionQuantity: run.productionQuantity, fromRevision: run.fromRevision, toRevision: run.toRevision,
       fromCostPerAssembly: num(run.fromCostPerAssembly), toCostPerAssembly: num(run.toCostPerAssembly), deltaPerAssembly: num(run.deltaPerAssembly),
@@ -106,6 +111,134 @@ export function validateExplanation(text, evidence) {
   return { ok: issues.length === 0, issues: [...new Set(issues)], citations };
 }
 
+// ------------------------------------------------------------------ structured explanation (Gemini)
+// The model returns JSON with fixed sections. Calculated figures stay in the run; the model only explains them.
+// Facts sections must cite evidence; next actions are proposals (never approve/reject); warnings carry limitations.
+export const FACT_SECTIONS = ['summary', 'verifiedImpact', 'shortageAnalysis', 'workInstructionImplications'];
+export const LIST_SECTIONS = ['nextActions', 'warnings'];
+export const RESPONSE_SCHEMA = {
+  type: 'OBJECT',
+  properties: {
+    summary: { type: 'STRING' }, verifiedImpact: { type: 'STRING' }, shortageAnalysis: { type: 'STRING' },
+    workInstructionImplications: { type: 'STRING' },
+    nextActions: { type: 'ARRAY', items: { type: 'STRING' } }, warnings: { type: 'ARRAY', items: { type: 'STRING' } },
+    references: { type: 'ARRAY', items: { type: 'STRING' } },
+  },
+  required: [...FACT_SECTIONS, ...LIST_SECTIONS, 'references'],
+  propertyOrdering: [...FACT_SECTIONS, ...LIST_SECTIONS, 'references'],
+};
+
+export const STRUCTURED_PROMPT = [
+  SYSTEM_PROMPT.split('\n').filter(l => !/^Cover:|^Do not recommend approving|^At most/.test(l)).join('\n'),
+  'Answer as JSON with these fields:',
+  'summary: two or three sentences on run status, cost delta and shortages, with citations.',
+  'verifiedImpact: the cost figures exactly as calculated in the run (per assembly and total, percent, currency) with [RUN].',
+  'shortageAnalysis: each short or unknown material with required, available and gap, citing its M or F fact; say clearly if none are short.',
+  'workInstructionImplications: work instructions and steps that must be updated, citing findings; say clearly if none.',
+  'nextActions: up to 4 proposed follow-up checks for the engineer (for example confirm supplier lead time, update a work instruction). Proposals only; never approve, reject or release the change, and never propose changing the BOM, stock or prices yourself.',
+  'warnings: limitations, missing inputs (INCOMPLETE run, materialsUnknown, flags, stale stock, truncated evidence) and the data source; empty only if there are none.',
+  'references: every fact id you cited, such as RUN, F1, M2, B3.',
+  'Each text field at most 90 words. Plain text inside the fields, no markdown.',
+].join('\n');
+
+export function structuredMessagesFor(evidence) {
+  return [{ role: 'system', content: STRUCTURED_PROMPT }, { role: 'user', content: `Evidence:\n${JSON.stringify(evidence)}` }];
+}
+
+/** Parses a model's JSON text into sections; null when it is not the agreed structure. */
+export function parseSections(raw) {
+  let value = raw;
+  if (typeof raw === 'string') {
+    const trimmed = raw.trim().replace(/^```(?:json)?\s*|\s*```$/g, '');
+    if (!trimmed) return null;
+    try { value = JSON.parse(trimmed); } catch { return null; }
+  }
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+  for (const k of FACT_SECTIONS) if (typeof value[k] !== 'string') return null;
+  for (const k of [...LIST_SECTIONS, 'references']) if (!Array.isArray(value[k]) || value[k].some(v => typeof v !== 'string')) return null;
+  const pick = {};
+  for (const k of [...FACT_SECTIONS, ...LIST_SECTIONS, 'references']) pick[k] = value[k];
+  return pick;
+}
+
+/** Validates every section with the grounding rules. Returns { ok, issues, citations }. */
+export function validateSections(sections, evidence) {
+  if (!sections) return { ok: false, issues: ['INVALID_STRUCTURED_OUTPUT'], citations: [] };
+  const issues = [], citations = new Set();
+  const ids = new Set(['RUN', ...evidence.facts.map(f => f.id)]);
+  const check = (name, text, needsCitation) => {
+    const r = validateExplanation(text, evidence);
+    r.citations.forEach(c => citations.add(c));
+    for (const issue of r.issues) if (needsCitation || issue !== 'NO_CITATIONS') issues.push(`${name}:${issue}`);
+  };
+  for (const k of FACT_SECTIONS) check(k, sections[k], true);
+  if (sections.nextActions.length > 4) issues.push('nextActions:TOO_MANY');
+  sections.nextActions.forEach((a, i) => check(`nextActions[${i}]`, a, false));
+  sections.warnings.forEach((w, i) => check(`warnings[${i}]`, w, false));
+  for (const ref of sections.references) if (!ids.has(ref)) issues.push(`references:UNKNOWN_CITATION:${ref}`);
+  const needsWarning = evidence.run.status !== 'COMPLETE' || Number(evidence.run.materialsUnknown) > 0 || evidence.truncated
+    || evidence.facts.some(f => f.stale);
+  if (needsWarning && !sections.warnings.length) issues.push('warnings:MISSING_LIMITATION_WARNING');
+  return { ok: issues.length === 0, issues: [...new Set(issues)], citations: [...citations] };
+}
+
+/** Plain-text rendering of validated sections (for screen readers, exports and older clients). */
+export function sectionsText(sections) {
+  const lines = [sections.summary, `Verified impact: ${sections.verifiedImpact}`, `Shortages: ${sections.shortageAnalysis}`,
+    `Work instructions: ${sections.workInstructionImplications}`];
+  if (sections.nextActions.length) lines.push(`Proposed next actions (not decisions): ${sections.nextActions.join(' ')}`);
+  if (sections.warnings.length) lines.push(`Warnings: ${sections.warnings.join(' ')}`);
+  return lines.join('\n');
+}
+
+/**
+ * Google Gemini API (generateContent with a JSON response schema). Called from the CAP backend only; the API key
+ * comes from an environment variable named in the configuration and is sent as a header, never logged or returned.
+ * Only cases whose data is synthetic/demo are sent (allowedSourceTypes).
+ */
+export function geminiProvider(env, environment = process.env, fetchImpl = globalThis.fetch) {
+  const keyName = env.apiKeyEnv ?? 'GEMINI_API_KEY';
+  const apiKey = environment[keyName];
+  if (!apiKey || !env.model) throw new GenAiConfigError(NOT_CONFIGURED_MESSAGE);
+  const endpoint = (env.endpoint ?? 'https://generativelanguage.googleapis.com/v1beta').replace(/\/$/, '');
+  const timeoutMs = Number(env.timeoutMs ?? 20000);
+  const provider = async messages => {
+    const system = messages.find(m => m.role === 'system')?.content ?? '';
+    const user = messages.filter(m => m.role !== 'system').map(m => m.content).join('\n');
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+    let response;
+    try {
+      response = await fetchImpl(`${endpoint}/models/${encodeURIComponent(env.model)}:generateContent`, {
+        method: 'POST', signal: controller.signal,
+        headers: { 'content-type': 'application/json', 'x-goog-api-key': apiKey },
+        body: JSON.stringify({
+          systemInstruction: { parts: [{ text: system }] },
+          contents: [{ role: 'user', parts: [{ text: user }] }],
+          generationConfig: { temperature: 0, maxOutputTokens: 1500, responseMimeType: 'application/json', responseSchema: RESPONSE_SCHEMA,
+            ...(env.thinkingBudget === undefined ? {} : { thinkingConfig: { thinkingBudget: env.thinkingBudget } }) },
+        }),
+      });
+    } catch (error) {
+      if (error?.name === 'AbortError') throw new GenAiTimeoutError(`The Gemini API did not answer within ${timeoutMs} ms.`, 504);
+      throw new GenAiTransportError('The Gemini API could not be reached.', 502);
+    } finally { clearTimeout(timer); }
+    if (response.status === 429) {
+      const retryAfter = Number(response.headers?.get?.('retry-after')) || null;
+      throw new GenAiTransportError('The Gemini API rate limit or free-tier quota was reached. Try again later.', 429, retryAfter);
+    }
+    if (!response.ok) throw new GenAiTransportError(`The Gemini API answered HTTP ${response.status}.`, response.status);
+    const body = await response.json().catch(() => null);
+    const candidate = body?.candidates?.[0];
+    const raw = (candidate?.content?.parts ?? []).map(p => p?.text ?? '').join('');
+    return { raw, sections: parseSections(raw), model: body?.modelVersion ?? env.model, generatedBy: 'GOOGLE_GEMINI_API',
+      finishReason: candidate?.finishReason ?? null };
+  };
+  provider.structured = true;
+  provider.allowedSourceTypes = env.allowedSourceTypes ?? ['SYNTHETIC_FIXTURE', 'DEMO_IMPORT'];
+  return provider;
+}
+
 /** SAP Generative AI Hub (SAP AI Core) chat completion through a CAP remote service bound to a BTP destination. */
 export function genAiHubProvider(env) {
   if (!env.deploymentId || !env.resourceGroup) throw new GenAiConfigError('SAP Generative AI Hub is not configured (deployment ID and resource group).');
@@ -129,30 +262,43 @@ export function fixtureProvider(file) {
     const answers = JSON.parse(readFileSync(file, 'utf8'));
     const answer = answers[evidence.case.caseNumber];
     if (!answer) throw new GenAiTransportError(`No fixture answer for ${evidence.case.caseNumber}.`, 404);
+    if (typeof answer === 'object') return { raw: JSON.stringify(answer), sections: parseSections(answer), model: 'fixture', generatedBy: 'FIXTURE_LLM_RESPONSE' };
     return { text: answer, model: 'fixture', generatedBy: 'FIXTURE_LLM_RESPONSE' };
   };
 }
 
 /** Provider for the configured mode; refuses an unconfigured one. */
-export function providerFor(env = cds.env.requires?.genai ?? {}) {
+export function providerFor(env = cds.env.requires?.genai ?? {}, environment = process.env) {
+  if (env.provider === 'gemini') return geminiProvider(env, environment);
   if (env.provider === 'genai-hub') return genAiHubProvider(env);
   if (env.provider === 'fixture') {
     if (!env.fixture) throw new GenAiConfigError('The GenAI fixture provider needs genai.fixture.');
     return fixtureProvider(join(cds.root, env.fixture));
   }
-  throw new GenAiConfigError('No GenAI provider is configured (cds.requires.genai.provider).');
+  throw new GenAiConfigError(NOT_CONFIGURED_MESSAGE);
 }
 
 /** Builds the evidence, calls the provider and validates the answer. Ungrounded text is never returned. */
 export async function explain(reviewCase, run, provider) {
   const evidence = evidenceOf(reviewCase, run);
-  const messages = messagesFor(evidence);
+  if (provider.allowedSourceTypes && !provider.allowedSourceTypes.includes(evidence.case.sourceType))
+    throw new GenAiDataNotApprovedError(`Case data of source ${evidence.case.sourceType} is not approved for the external model; only synthetic demo data is sent.`);
+  const messages = provider.structured ? structuredMessagesFor(evidence) : messagesFor(evidence);
   const promptSha256 = createHash('sha256').update(JSON.stringify(messages)).digest('hex');
   const answer = await provider(messages, evidence);
-  const check = validateExplanation(answer.text, evidence);
+  const structured = provider.structured || answer.sections !== undefined;
+  let check, text = null, sections = null;
+  if (structured) {
+    check = (answer.raw ?? '').trim() || answer.sections ? validateSections(answer.sections ?? null, evidence) : { ok: false, issues: ['EMPTY_ANSWER'], citations: [] };
+    if (check.ok) { sections = answer.sections; text = sectionsText(sections); }
+  } else {
+    check = validateExplanation(answer.text, evidence);
+    if (check.ok) text = answer.text.trim();
+  }
   return {
     runID: run.ID, caseNumber: reviewCase.caseNumber, status: check.ok ? 'GROUNDED' : 'WITHHELD',
-    text: check.ok ? answer.text.trim() : null, issues: check.issues.join(';') || null, citations: check.citations.join(',') || null,
+    text, sections: sections ? JSON.stringify(sections) : null,
+    issues: check.issues.join(';').slice(0, 1000) || null, citations: check.citations.join(',').slice(0, 500) || null,
     generatedBy: answer.generatedBy, model: answer.model, promptSha256, factCount: evidence.facts.length, generatedAt: new Date().toISOString(),
   };
 }

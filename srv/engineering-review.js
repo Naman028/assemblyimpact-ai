@@ -9,7 +9,7 @@ import { decide, DecisionError, TRANSITIONS, submittersOf, availabilityFor } fro
 import { parseImport, validateBundle, commitBundle, checksum, ImportFormatError, ImportConflictError } from './lib/scenario-import.js';
 import { extract, transportFor, ErpConfigError, ErpTransportError, MODE_SOURCE_TYPE } from './integration/erp/erp-source.js';
 import { MappingError } from './integration/erp/s4-mapping.js';
-import { explain, providerFor, GenAiConfigError, GenAiTransportError } from './integration/genai/impact-explanation.js';
+import { explain, providerFor, GenAiConfigError, GenAiTransportError, GenAiTimeoutError, GenAiDataNotApprovedError } from './integration/genai/impact-explanation.js';
 
 // Calculations are deterministic server-side (lib/impact-calculator.js); no LLM is involved.
 /** OData action name -> review transition. The rejection action is 'rejectCase' (see engineering-review.cds). */
@@ -101,6 +101,12 @@ export default class EngineeringReview extends cds.ApplicationService {
     try {
       return await explain({ ...rc, assemblyCode: rc.assembly?.assemblyCode }, run, provider);
     } catch (error) {
+      if (error instanceof GenAiDataNotApprovedError) return req.reject({ status: 409, code: 'GENAI_DATA_NOT_APPROVED', message: error.message });
+      if (error instanceof GenAiTimeoutError) return req.reject({ status: 504, code: 'GENAI_TIMEOUT', message: error.message });
+      if (error instanceof GenAiTransportError && error.status === 429) {
+        const wait = error.retryAfter ? ` Retry after ${error.retryAfter} s.` : '';
+        return req.reject({ status: 429, code: 'GENAI_RATE_LIMITED', message: error.message + wait });
+      }
       if (error instanceof GenAiTransportError) return req.reject({ status: 502, code: 'GENAI_UNAVAILABLE', message: error.message });
       throw error;
     }

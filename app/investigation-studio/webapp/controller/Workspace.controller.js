@@ -21,7 +21,7 @@ sap.ui.define([
 
   function empty() {
     return { busy: false, tab: "assembly", view: "B", selected: null, detail: null, case: {}, run: null, lines: [], allMaterials: [],
-      materials: [], findings: [], decisions: [], runs: [], instructions: [], visualNote: "", explanation: null,
+      materials: [], findings: [], decisions: [], runs: [], instructions: [], visualNote: "", explanation: null, explanationSections: null, explanationReferences: "", explanationError: null, explainBusy: false,
       cov: { startDate: new Date().toISOString().slice(0, 10), horizonDays: 30, rows: [], rates: [], materials: [], canEdit: false,
         new: { material: "", period: "WEEK", quantity: "", validFrom: new Date().toISOString().slice(0, 10), validTo: new Date().getUTCFullYear() + "-12-31" } } };
   }
@@ -73,7 +73,7 @@ sap.ui.define([
         ws.setProperty("/case", data);
         ws.setProperty("/run", run);
         // An explanation belongs to one run; drop it when the latest run changes.
-        if (ws.getProperty("/explanation") && (!run || ws.getProperty("/explanation/runID") !== run.ID)) { ws.setProperty("/explanation", null); }
+        if (ws.getProperty("/explanation") && (!run || ws.getProperty("/explanation/runID") !== run.ID)) { ws.setProperty("/explanation", null); ws.setProperty("/explanationSections", null); }
         ws.setProperty("/lines", lines);
         ws.setProperty("/allMaterials", materials);
         ws.setProperty("/materials", that.byId("shortOnly") && that.byId("shortOnly").getPressed() ? materials.filter(function (m) { return m.status === "SHORT"; }) : materials);
@@ -305,7 +305,8 @@ sap.ui.define([
       var ws = this.getView().getModel("ws"), that = this;
       var caseId = this._caseId, runId = ws.getProperty("/run/ID");
       var operation = this.getView().getModel().bindContext("EngineeringReview.explainImpact(...)", this._binding.getBoundContext());
-      ws.setProperty("/busy", true);
+      ws.setProperty("/explainBusy", true);
+      ws.setProperty("/explanationError", null);
       return operation.execute().then(function () {
         if (caseId !== that._caseId) { return; }
         var result = operation.getBoundContext().getObject();
@@ -313,14 +314,28 @@ sap.ui.define([
           MessageToast.show("A newer impact run exists. The workspace was reloaded; request the explanation again.");
           return that._load(true);
         }
+        var sections = null;
+        try { sections = result.sections ? JSON.parse(result.sections) : null; } catch (e) { sections = null; }
         ws.setProperty("/explanation", result);
+        ws.setProperty("/explanationSections", sections);
+        ws.setProperty("/explanationReferences", sections && sections.references ? sections.references.join(", ") : "");
         InvisibleMessage.getInstance().announce(result.status === "GROUNDED"
           ? "AI explanation generated." : "AI explanation withheld because it did not match the run evidence.", InvisibleMessageMode.Polite);
       }).catch(function (error) {
-        if (caseId === that._caseId) { MessageBox.error(error.message || "The explanation is not available.", { title: "AI explanation" }); }
+        if (caseId !== that._caseId) { return; }
+        var code = (error && error.error && error.error.code) || "";
+        var status = error && error.status;
+        var retryable = status === 429 || status === 502 || status === 503 || status === 504
+          || code === "GENAI_RATE_LIMITED" || code === "GENAI_TIMEOUT" || code === "GENAI_UNAVAILABLE";
+        var message = ((error && error.message) || "The explanation is not available.")
+          + (retryable ? " The impact calculation is unaffected; you can retry." : "");
+        ws.setProperty("/explanation", null);
+        ws.setProperty("/explanationSections", null);
+        ws.setProperty("/explanationError", { code: code || "GENAI_ERROR", message: message, retryable: retryable });
+        InvisibleMessage.getInstance().announce(code === "GENAI_NOT_CONFIGURED" ? "Live AI explanations are not configured." : message, InvisibleMessageMode.Polite);
       }).finally(function () {
         operation.destroy();
-        if (caseId === that._caseId) { ws.setProperty("/busy", false); that.byId("btnExplain").focus(); }
+        if (caseId === that._caseId) { ws.setProperty("/explainBusy", false); that.byId("btnExplain").focus(); }
       });
     },
 

@@ -171,9 +171,10 @@ service EngineeringReview {
         caseNumber   : String(20);
         status       : String(12);   // GROUNDED | WITHHELD
         text         : LargeString;  // null when WITHHELD
+        sections     : LargeString;  // JSON {summary, verifiedImpact, shortageAnalysis, workInstructionImplications, nextActions[], warnings[], references[]}; null when WITHHELD or unstructured
         issues       : String(1000); // validation findings, ';'-separated
         citations    : String(500);  // fact ids cited by the answer
-        generatedBy  : String(30);   // SAP_GENAI_HUB | FIXTURE_LLM_RESPONSE
+        generatedBy  : String(30);   // GOOGLE_GEMINI_API | SAP_GENAI_HUB | FIXTURE_LLM_RESPONSE
         model        : String(100);
         promptSha256 : String(64);
         factCount    : Integer;

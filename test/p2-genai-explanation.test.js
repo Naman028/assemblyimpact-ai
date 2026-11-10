@@ -120,9 +120,15 @@ test('Investigation Studio: AI Explanation tab calls explainImpact and shows wit
   const view = readFileSync(join(web, 'view', 'Workspace.view.xml'), 'utf8');
   const ctrl = readFileSync(join(web, 'controller', 'Workspace.controller.js'), 'utf8');
   assert.match(view, /<IconTabFilter key="explain" text="AI Explanation"/);
-  assert.match(view, /id="btnExplain"[^>]*press="\.onExplain"[^>]*enabled="\{= !!\$\{ws>\/run\} \}"/, 'enabled only with a run');
+  assert.match(view, /id="btnExplain"[^>]*press="\.onExplain"[^>]*enabled="\{= !!\$\{ws>\/run\} &amp;&amp; !\$\{ws>\/explainBusy\} \}"/, 'enabled only with a run, not while busy');
   assert.match(view, /visible="\{= \$\{ws>\/explanation\/status\} === 'WITHHELD' \}"/);
   assert.match(view, /generatedBy/, 'provenance is shown');
+  assert.match(view, /text="Generate explanation"/);
+  assert.match(view, /Live AI explanations are not configured\. The deterministic impact calculation/);
+  assert.match(view, /Calculated by the CAP impact engine \(deterministic, not AI\)/, 'calculation separated from AI text');
+  assert.match(view, /Proposed next actions \(recommendations, not decisions\)/);
+  assert.match(view, /id="btnExplainRetry"[^>]*visible="\{= !!\$\{ws>\/explanationError\/retryable\} \}"/);
+  assert.match(view, /Canned test answer \(fixture\), not a live model/);
   assert.match(ctrl, /bindContext\("EngineeringReview\.explainImpact\(\.\.\.\)", this\._binding\.getBoundContext\(\)\)/);
   assert.match(ctrl, /explanation\/runID"\) !== run\.ID/, 'stale explanation is cleared when the run changes');
 });
@@ -144,7 +150,7 @@ test('Studio onExplain behaviour (controller loaded with stubbed UI5 modules): r
   };
   const ctrl = factory(...deps.map(d => stubs[d] ?? {}));
   const harness = (result, { fail } = {}) => {
-    const data = { run: { ID: 'run-1' }, explanation: null, busy: false };
+    const data = { run: { ID: 'run-1' }, explanation: null, explanationSections: null, explanationError: null, explainBusy: false };
     const get = path => path.split('/').filter(Boolean).reduce((o, k) => (o == null ? undefined : o[k]), data);
     const set = (path, v) => { const ks = path.split('/').filter(Boolean); ks.slice(0, -1).reduce((o, k) => o[k], data)[ks.at(-1)] = v; };
     let resolve, reject;
@@ -157,7 +163,7 @@ test('Studio onExplain behaviour (controller loaded with stubbed UI5 modules): r
         : { bindContext: () => ({ execute: () => exec, getBoundContext: () => ({ getObject: () => result }), destroy() {} }) }) }),
     });
     const done = self.onExplain();
-    return { self, data, done, finish: () => (fail ? reject(new Error('GENAI_UNAVAILABLE')) : resolve()) };
+    return { self, data, done, finish: () => (fail ? reject(fail) : resolve()) };
   };
   // 1. User switches to another case before the answer arrives: the answer is discarded.
   let h = harness({ runID: 'run-1', status: 'GROUNDED', text: 'x [RUN]' });
@@ -169,14 +175,30 @@ test('Studio onExplain behaviour (controller loaded with stubbed UI5 modules): r
   assert.equal(h.self.reloads, 1);
   assert.match(toasts.at(-1), /newer impact run/);
   // 3. Matching run: shown and announced; busy reset.
-  h = harness({ runID: 'run-1', status: 'WITHHELD', text: null }); h.finish(); await h.done;
+  h = harness({ runID: 'run-1', status: 'WITHHELD', text: null, sections: null }); h.finish(); await h.done;
   assert.equal(h.data.explanation.status, 'WITHHELD');
+  assert.equal(h.data.explanationSections, null);
   assert.match(announced.at(-1), /withheld/);
-  assert.equal(h.data.busy, false);
-  // 4. Error: message box, busy reset.
-  h = harness(null, { fail: true }); h.finish(); await h.done;
-  assert.equal(errors.at(-1), 'GENAI_UNAVAILABLE');
-  assert.equal(h.data.busy, false);
+  assert.equal(h.data.explainBusy, false);
+  // 4. Structured answer: sections parsed for the section layout, references joined.
+  h = harness({ runID: 'run-1', status: 'GROUNDED', text: 'x', sections: JSON.stringify({ summary: 's [RUN]', nextActions: [], warnings: [], references: ['RUN', 'M1'] }) });
+  h.finish(); await h.done;
+  assert.equal(h.data.explanationSections.summary, 's [RUN]');
+  assert.equal(h.data.explanationReferences, 'RUN, M1');
+  // 5. Provider errors are shown inline (no modal); rate limit and timeout offer a retry; not configured does not.
+  const fail = (status, code, message) => Object.assign(new Error(message), { status, error: { code, message } });
+  h = harness(null, { fail: fail(429, 'GENAI_RATE_LIMITED', 'Rate limit reached.') }); h.finish(); await h.done;
+  assert.equal(h.data.explanationError.code, 'GENAI_RATE_LIMITED');
+  assert.equal(h.data.explanationError.retryable, true);
+  assert.match(h.data.explanationError.message, /Rate limit reached\. The impact calculation is unaffected/);
+  assert.equal(h.data.explainBusy, false);
+  h = harness(null, { fail: fail(504, 'GENAI_TIMEOUT', 'No answer in time.') }); h.finish(); await h.done;
+  assert.equal(h.data.explanationError.retryable, true);
+  h = harness(null, { fail: fail(409, 'GENAI_NOT_CONFIGURED', 'Live AI explanations are not configured.') }); h.finish(); await h.done;
+  assert.equal(h.data.explanationError.code, 'GENAI_NOT_CONFIGURED');
+  assert.equal(h.data.explanationError.retryable, false);
+  assert.match(announced.at(-1), /Live AI explanations are not configured\./);
+  assert.equal(errors.length, 0, 'no modal error dialogs for provider errors');
 });
 
 test('review findings: invented, inverted or steering answers are withheld; legitimate formats pass', () => {

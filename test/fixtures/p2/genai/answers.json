@@ -1,6 +1,32 @@
 {
-  "_note": "Canned model answers for tests and offline demos only (provider 'fixture', labelled FIXTURE_LLM_RESPONSE). Not produced by a live model. EC-000485 is grounded; EC-000484 contains an invented figure; EC-000483 recommends a decision. Both must be withheld.",
-  "EC-000485": "The impact run for EC-000485 (HYD-700, revision A to B) is COMPLETE as of 2026-11-08 [RUN]. The material cost rises by 6756.00 EUR for 60 assemblies, 35.49 % more than revision A [RUN][F8]. Two materials are short: FIT-700 needs 360 PC with 250 available, a gap of 110 [M1][F4], and VALVE-CV7B needs 120 PC with 40 available, a gap of 80 [M2][F5]. On the BOM, VALVE-CV7 is replaced by VALVE-CV7B at item 0020 [B1], PLUG-700 is removed at item 0030 [B2], and FIT-700 rises from 4 to 6 at item 0040 [B3]. Work instructions WI-HYD-700-ASM v5 and WI-HYD-700-PRS v2 still reference removed or replaced parts [F1][F2][F3]. This is fictional synthetic demo data [RUN].",
+  "_note": "Canned model answers for tests and offline demos only (provider 'fixture', labelled FIXTURE_LLM_RESPONSE). Not produced by a live model. EC-000485 is a grounded structured answer (same JSON sections as the Gemini provider); EC-000484 contains an invented figure; EC-000483 recommends a decision. Both must be withheld.",
+  "EC-000485": {
+    "summary": "The impact run for EC-000485 (HYD-700, revision A to B) is COMPLETE as of 2026-11-08 [RUN]. The material cost rises by 6756.00 EUR for 60 assemblies and two materials are short [RUN][F8].",
+    "verifiedImpact": "Cost per assembly rises from 317.28 EUR to 429.88 EUR, a delta of 112.60 EUR [RUN]. For 60 assemblies the total delta is 6756.00 EUR, 35.49 % more than revision A [RUN]. On the BOM, VALVE-CV7 is replaced by VALVE-CV7B at item 0020 [B1], PLUG-700 is removed at item 0030 [B2], and FIT-700 rises from 4 to 6 at item 0040 [B3].",
+    "shortageAnalysis": "FIT-700 needs 360 PC with 250 available, a gap of 110 [M1][F4]. VALVE-CV7B needs 120 PC with 40 available, a gap of 80 [M2][F5].",
+    "workInstructionImplications": "Work instructions WI-HYD-700-ASM v5 and WI-HYD-700-PRS v2 still reference removed or replaced parts and need an update [F1][F2][F3].",
+    "nextActions": [
+      "Confirm with purchasing when the missing FIT-700 and VALVE-CV7B quantities can arrive [M1][M2].",
+      "Update the steps of WI-HYD-700-ASM v5 and WI-HYD-700-PRS v2 that reference replaced or removed parts [F1][F2][F3]."
+    ],
+    "warnings": [
+      "This is fictional synthetic demo data [RUN]."
+    ],
+    "references": [
+      "RUN",
+      "F1",
+      "F2",
+      "F3",
+      "F4",
+      "F5",
+      "F8",
+      "M1",
+      "M2",
+      "B1",
+      "B2",
+      "B3"
+    ]
+  },
   "EC-000484": "The run for EC-000484 is complete and the cost rises by 99999.00 EUR [RUN].",
   "EC-000483": "The run for EC-000483 is complete [RUN]. The reviewer should approve this change."
 }

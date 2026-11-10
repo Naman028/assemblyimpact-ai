@@ -295,11 +295,39 @@
 						</Panel>
 					</IconTabFilter>
 					<IconTabFilter key="explain" text="AI Explanation" icon="sap-icon://ai">
-						<VBox class="sapUiSmallMargin">
-							<MessageStrip type="Information" showIcon="true" text="P2 GenAI: SAP Generative AI Hub explains the latest impact run using only that run's figures, findings, shortages and BOM changes. The server checks citations, figures, cost direction and decision wording against the run and withholds answers that fail; this is a safeguard, not proof of correctness. Read it together with the BOM, Materials and Findings tabs. The model does not calculate or decide."/>
-							<Button id="btnExplain" text="Explain latest run" icon="sap-icon://ai" type="Emphasized" press=".onExplain" enabled="{= !!${ws>/run} }" class="sapUiSmallMarginTop"/>
+						<VBox class="sapUiSmallMargin" busy="{ws>/explainBusy}" busyIndicatorDelay="0">
+							<MessageStrip type="Information" showIcon="true" text="P2 GenAI: the CAP backend asks the configured model (Google Gemini API) to explain the latest impact run using only that run's figures, findings, shortages, BOM changes and coverage flags; the browser never calls the model. The server checks citations, figures, cost direction, contradictions and decision wording against the run and withholds answers that fail; this is a safeguard, not proof of correctness. The model does not calculate, approve, reject or change any data."/>
+							<Panel headerText="Calculated by the CAP impact engine (deterministic, not AI)" class="sapUiSmallMarginTop" visible="{= !!${ws>/run} }">
+								<Text id="explainCalc" wrapping="true" text="{= 'Run ' + ${ws>/run/status} + ' as of ' + ${ws>/run/asOfDate} + ': cost delta ' + (${ws>/run/costDeltaTotal} === null ? 'not calculable' : ${ws>/run/costDeltaTotal} + ' ' + ${ws>/run/currency}) + ', ' + ${ws>/run/materialsShort} + ' material(s) short, ' + ${ws>/run/materialsUnknown} + ' with unknown stock, ' + ${ws>/run/instructionsToUpdate} + ' work instruction(s) to update.' }"/>
+							</Panel>
+							<Button id="btnExplain" text="Generate explanation" icon="sap-icon://ai" type="Emphasized" press=".onExplain" enabled="{= !!${ws>/run} &amp;&amp; !${ws>/explainBusy} }" class="sapUiSmallMarginTop"/>
+							<MessageStrip id="explainNotConfigured" type="Information" showIcon="true" visible="{= ${ws>/explanationError/code} === 'GENAI_NOT_CONFIGURED' }" class="sapUiSmallMarginTop"
+								text="Live AI explanations are not configured. The deterministic impact calculation above and in the BOM, Materials and Findings tabs is unaffected."/>
+							<MessageStrip id="explainError" type="Warning" showIcon="true" visible="{= !!${ws>/explanationError} &amp;&amp; ${ws>/explanationError/code} !== 'GENAI_NOT_CONFIGURED' }" class="sapUiSmallMarginTop"
+								text="{ws>/explanationError/message}"/>
+							<Button id="btnExplainRetry" text="Retry" icon="sap-icon://refresh" press=".onExplain" visible="{= !!${ws>/explanationError/retryable} }" enabled="{= !${ws>/explainBusy} }" class="sapUiTinyMarginTop"/>
 							<MessageStrip type="Warning" showIcon="true" visible="{= ${ws>/explanation/status} === 'WITHHELD' }" text="The model's answer was withheld because it did not match the run evidence ({ws>/explanation/issues})." class="sapUiSmallMarginTop"/>
-							<Text text="{ws>/explanation/text}" visible="{= !!${ws>/explanation/text} }" wrapping="true" class="sapUiSmallMarginTop"/>
+							<VBox id="explainSections" visible="{= !!${ws>/explanationSections} }" class="sapUiSmallMarginTop">
+								<ObjectStatus text="{= ${ws>/explanation/generatedBy} === 'FIXTURE_LLM_RESPONSE' ? 'Canned test answer (fixture), not a live model' : 'AI-generated text, checked against the run evidence' }" state="Information" icon="sap-icon://ai" inverted="true"/>
+								<Title text="Summary" level="H4" class="sapUiSmallMarginTop"/>
+								<Text text="{ws>/explanationSections/summary}" wrapping="true"/>
+								<Title text="Verified impact (figures from the run)" level="H4" class="sapUiSmallMarginTop"/>
+								<Text text="{ws>/explanationSections/verifiedImpact}" wrapping="true"/>
+								<Title text="Shortage analysis" level="H4" class="sapUiSmallMarginTop"/>
+								<Text text="{ws>/explanationSections/shortageAnalysis}" wrapping="true"/>
+								<Title text="Work-instruction implications" level="H4" class="sapUiSmallMarginTop"/>
+								<Text text="{ws>/explanationSections/workInstructionImplications}" wrapping="true"/>
+								<Title text="Proposed next actions (recommendations, not decisions)" level="H4" class="sapUiSmallMarginTop"/>
+								<List items="{ws>/explanationSections/nextActions}" showNoData="true" noDataText="No actions proposed.">
+									<StandardListItem title="{ws>}" wrapping="true"/>
+								</List>
+								<Title text="Warnings and limitations" level="H4" class="sapUiSmallMarginTop"/>
+								<List items="{ws>/explanationSections/warnings}" showNoData="true" noDataText="No limitations reported by the model.">
+									<StandardListItem title="{ws>}" wrapping="true" icon="sap-icon://message-warning"/>
+								</List>
+								<Text class="sapUiTinyMarginTop" wrapping="true" text="Evidence references: {ws>/explanationReferences}"/>
+							</VBox>
+							<Text text="{ws>/explanation/text}" visible="{= !!${ws>/explanation/text} &amp;&amp; !${ws>/explanationSections} }" wrapping="true" class="sapUiSmallMarginTop"/>
 							<Text visible="{= !!${ws>/explanation} }" class="sapUiTinyMarginTop" wrapping="true"
 								text="{= 'Source: ' + ${ws>/explanation/generatedBy} + ' (' + ${ws>/explanation/model} + '), cites: ' + (${ws>/explanation/citations} || 'none') + '. Fact ids refer to the BOM, Materials and Findings of run ' + ${ws>/explanation/runID} + '.' }"/>
 						</VBox>
