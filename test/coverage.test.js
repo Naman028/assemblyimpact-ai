@@ -1,7 +1,7 @@
 // Time-based consumption planning (pure rules R1..R7 of srv/lib/coverage.js).
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { projectCoverage, dailyQuantity, validateRate, CoverageRejection, MAX_HORIZON_DAYS } from '../srv/lib/coverage.js';
+import { projectCoverage, dailyQuantity, validateRate, isCalendarDate, CoverageRejection, MAX_HORIZON_DAYS } from '../srv/lib/coverage.js';
 
 const stock = (q, at = '2026-01-01T08:00:00Z', unit = 'PC') => ({ material: 'M1', unit, availableQuantity: q, snapshotAt: at });
 const rate = (period, quantity, validFrom = '2026-01-01', validTo = '2026-12-31', unit = 'PC') => ({ material: 'M1', unit, period, quantity, validFrom, validTo });
@@ -46,16 +46,38 @@ test('R5 case requirement is consumed once on the effective date inside the hori
   assert.equal(outside.expectedDemand, '100.000');
 });
 
-test('R3 days without a rate consume nothing and are reported', () => {
+test('R3 days without a rate are unknown demand: INCOMPLETE, never COVERED (review finding)', () => {
   const r = run({ rates: [rate('DAY', '10', '2026-01-06', '2026-01-31')] });
+  assert.equal(r.status, 'INCOMPLETE');
+  assert.equal(r.demandComplete, false);
   assert.equal(r.noRateDays, 5);
-  assert.equal(r.expectedDemand, '50.000');
+  assert.equal(r.missingRanges, '2026-01-01..2026-01-05');
+  assert.equal(r.expectedDemand, '50.000', 'known part only: a lower bound');
+  assert.equal(r.coveredDays, 0, 'no day counts as covered before the unknown days');
   assert.equal(r.dailyRateAtStart, null);
+  const gaps = run({ rates: [rate('DAY', '1', '2026-01-02', '2026-01-03'), rate('DAY', '1', '2026-01-06', '2026-01-08')] });
+  assert.equal(gaps.missingRanges, '2026-01-01, 2026-01-04..2026-01-05, 2026-01-09..2026-01-10');
+  assert.equal(run({ rates: [] }).status, 'INCOMPLETE', 'no rate at all');
 });
 
-test('R7 a zero rate is valid and consumes nothing', () => {
+test('R3 a shortage proven without the unknown days stays SHORTAGE; its date is the latest possible', () => {
+  const r = run({ stock: [stock('20')], rates: [rate('DAY', '10', '2026-01-01', '2026-01-03')] });
+  assert.equal(r.status, 'SHORTAGE');
+  assert.equal(r.exhaustionDate, '2026-01-03');
+  assert.equal(r.exhaustionIsLatestPossible, true);
+  assert.equal(run({ stock: [stock('20')] }).exhaustionIsLatestPossible, false, 'complete data: exact date');
+});
+
+test('withdrawn (inactive) rates are ignored', () => {
+  const r = run({ rates: [{ ...rate('DAY', '10'), active: false }] });
+  assert.equal(r.status, 'INCOMPLETE');
+  assert.equal(r.noRateDays, 10);
+});
+
+test('R7 a zero rate is a known zero (explicitly inactive period): fully evaluated, COVERED', () => {
   const r = run({ rates: [rate('WEEK', '0')] });
   assert.equal(r.status, 'COVERED');
+  assert.equal(r.demandComplete, true);
   assert.equal(r.expectedDemand, '0.000');
   assert.equal(r.noRateDays, 0);
 });
@@ -76,6 +98,7 @@ test('R6 unit mismatch yields no numbers', () => {
 test('R1 horizon and start date are validated', () => {
   for (const days of [0, -1, MAX_HORIZON_DAYS + 1, 1.5, '10']) assert.throws(() => run({ days }), { code: 'INVALID_HORIZON' });
   assert.throws(() => run({ startDate: '01.01.2026' }), { code: 'INVALID_START' });
+  assert.throws(() => run({ startDate: '2026-02-30' }), { code: 'INVALID_START' });
   assert.equal(run({ days: 1 }).endDate, '2026-01-01');
   assert.equal(run({ days: MAX_HORIZON_DAYS }).endDate, '2027-01-01');
 });
@@ -86,9 +109,19 @@ test('validateRate rejects negatives, bad periods, bad dates and overlaps', () =
   assert.throws(() => validateRate(rate('DAY', 'abc')), { code: 'INVALID_QUANTITY' });
   assert.throws(() => validateRate(rate('YEAR', '1')), { code: 'INVALID_PERIOD' });
   assert.throws(() => validateRate(rate('DAY', '1', '2026-02-01', '2026-01-01')), { code: 'INVALID_PERIOD_DATES' });
+  assert.throws(() => validateRate(rate('DAY', '1', '2026-02-01', '2026-02-30')), { code: 'INVALID_PERIOD_DATES' });
+  assert.throws(() => validateRate(rate('DAY', '1', '2027-02-29', '2027-03-01')), { code: 'INVALID_PERIOD_DATES' });
+  assert.doesNotThrow(() => validateRate(rate('DAY', '1', '2028-02-29', '2028-02-29')), 'leap day, one-day period');
+  assert.throws(() => validateRate(rate('DAY', '1.2345')), { code: 'INVALID_QUANTITY' });
+  assert.doesNotThrow(() => validateRate(rate('DAY', '1.234')));
   const stored = [{ ...rate('DAY', '1', '2026-01-01', '2026-01-31'), ID: 'a' }];
   assert.throws(() => validateRate({ ...rate('WEEK', '7', '2026-01-31', '2026-02-28'), ID: 'b' }, stored), { code: 'OVERLAPPING_RATE' });
   assert.doesNotThrow(() => validateRate({ ...rate('WEEK', '7', '2026-02-01', '2026-02-28'), ID: 'b' }, stored));
-  assert.doesNotThrow(() => validateRate({ ...rate('DAY', '2', '2026-01-01', '2026-01-31'), ID: 'a' }, stored), 'editing itself');
+  assert.doesNotThrow(() => validateRate({ ...rate('DAY', '2', '2026-01-01', '2026-01-31'), ID: 'c' }, [{ ...stored[0], active: false }]), 'withdrawn rates do not block');
   assert.ok(new CoverageRejection('X', 'y') instanceof Error);
+});
+
+test('isCalendarDate accepts real dates only', () => {
+  for (const d of ['2026-01-31', '2028-02-29', '2026-12-31']) assert.equal(isCalendarDate(d), true, d);
+  for (const d of ['2026-02-29', '2026-04-31', '2026-13-01', '2026-00-10', '2026-1-1', '', null, '2026-01-01T00:00:00Z']) assert.equal(isCalendarDate(d), false, String(d));
 });

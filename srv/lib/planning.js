@@ -26,20 +26,34 @@ export async function caseCoverage(caseID, plants, { startDate, horizonDays }) {
   const names = materials.map(m => m.material);
   const [stock, rates] = await Promise.all([
     SELECT.from(StockSnapshots).columns('material', 'unit', 'availableQuantity', 'snapshotAt').where({ plant: rc.plant, material: { in: names } }),
-    SELECT.from(MaterialConsumptionRates).columns('material', 'unit', 'period', 'quantity', 'validFrom', 'validTo').where({ plant: rc.plant, material: { in: names } })
+    SELECT.from(MaterialConsumptionRates).columns('material', 'unit', 'period', 'quantity', 'validFrom', 'validTo', 'active').where({ plant: rc.plant, material: { in: names }, active: true })
   ]);
   return projectCoverage({ startDate, days: horizonDays, effectiveDate: to?.validFrom ?? null, materials, stock, rates });
 }
 
-/** Validates a rate before CREATE/UPDATE (merges stored values for partial updates). Throws CoverageRejection. */
-export async function checkRate(data, plants, ID) {
+/** Validates a new rate before CREATE. Throws CoverageRejection. */
+export async function checkRate(data, plants) {
   const { MaterialConsumptionRates } = E();
-  const stored = ID ? await SELECT.one.from(MaterialConsumptionRates).where({ ID }) : null;
-  const rate = { ...(stored ?? {}), ...data, ID: ID ?? data.ID };
+  const rate = { ...data };
   if (!plants.includes(rate.plant)) throw new CoverageRejection('PLANT_NOT_ALLOWED', `You are not authorised for plant ${rate.plant}.`);
   if (!rate.material || !rate.unit) throw new CoverageRejection('MISSING_FIELD', 'material and unit are required.');
-  const others = await SELECT.from(MaterialConsumptionRates).columns('ID', 'validFrom', 'validTo').where({ material: rate.material, plant: rate.plant });
+  for (const f of ['active', 'deactivatedAt', 'deactivatedBy', 'deactivationReason']) delete data[f];
+  const others = await SELECT.from(MaterialConsumptionRates).columns('ID', 'validFrom', 'validTo', 'active').where({ material: rate.material, plant: rate.plant, active: true });
   validateRate(rate, others);
+}
+
+/** Withdraws a rate (audited, never deleted). null = missing or foreign plant. */
+export async function deactivateRate(ID, reason, plants, user) {
+  const { MaterialConsumptionRates } = E();
+  const text = String(reason ?? '').trim();
+  if (text.length < 3) throw new CoverageRejection('REASON_REQUIRED', 'Give a reason (at least 3 characters) for withdrawing the rate.');
+  const rate = await SELECT.one.from(MaterialConsumptionRates).columns('ID', 'plant', 'active').where({ ID, plant: { in: plants } });
+  if (!rate) return null;
+  if (!rate.active) throw new CoverageRejection('ALREADY_INACTIVE', 'This rate has already been withdrawn.');
+  const n = await UPDATE(MaterialConsumptionRates).set({ active: false, deactivatedAt: new Date().toISOString(), deactivatedBy: user, deactivationReason: text.slice(0, 200) })
+    .where({ ID, active: true });
+  if (n !== 1) throw new CoverageRejection('ALREADY_INACTIVE', 'This rate has already been withdrawn.');
+  return SELECT.one.from(MaterialConsumptionRates, ID);
 }
 
 /** Existing assemblies in the caller's plants whose code or description contains the term (max 20). */

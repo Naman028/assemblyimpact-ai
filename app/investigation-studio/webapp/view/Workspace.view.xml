@@ -226,7 +226,7 @@
 					</IconTabFilter>
 					<IconTabFilter key="coverage" text="Consumption Planning" icon="sap-icon://line-chart-time-axis">
 						<MessageStrip type="Information" showIcon="true" class="sapUiSmallMarginBottom"
-							text="Planning view, separate from the impact result above (which is unchanged). Stock is projected per calendar day from the latest stock snapshot on or before the start date: consumption rates per day/week/month (week = 7 days, month = days of that calendar month) plus this case's requirement (production quantity x proposed BOM quantity) on the effective date of revision {ws>/case/toRevision}. Days without a rate consume nothing and are counted; different units are not converted."/>
+							text="Planning view, separate from the impact result above (which is unchanged). Stock is projected per calendar day from the latest stock snapshot on or before the start date: consumption rates per day/week/month (week = 7 days, month = days of that calendar month) plus this case's requirement (production quantity x proposed BOM quantity) on the effective date of revision {ws>/case/toRevision}. A rate of 0 is a known zero. Days without any rate have unknown demand: the result is then 'Incomplete' (or a shortage that is certain even so), never 'Covered'. Different units are not converted."/>
 						<HBox wrap="Wrap" alignItems="End" class="sapUiSmallMarginBottom">
 							<VBox class="sapUiSmallMarginEnd"><Label text="Start date" labelFor="covStart"/>
 								<DatePicker id="covStart" value="{ws>/cov/startDate}" valueFormat="yyyy-MM-dd" displayFormat="yyyy-MM-dd" width="10rem"/></VBox>
@@ -250,15 +250,16 @@
 								<ColumnListItem>
 									<cells>
 										<ObjectIdentifier title="{ws>material}" text="{ws>unit}"/>
-										<ObjectStatus text="{= ${ws>status} === 'COVERED' ? 'Covered' : ${ws>status} === 'SHORTAGE' ? 'Shortage' : ${ws>status} === 'NO_STOCK' ? 'No stock snapshot' : 'Unit mismatch' }"
-											state="{= ${ws>status} === 'COVERED' ? 'Success' : ${ws>status} === 'SHORTAGE' ? 'Error' : 'Warning' }"/>
+										<ObjectStatus text="{= ${ws>status} === 'COVERED' ? 'Covered' : ${ws>status} === 'SHORTAGE' ? 'Shortage' : ${ws>status} === 'INCOMPLETE' ? 'Incomplete: demand unknown' : ${ws>status} === 'NO_STOCK' ? 'No stock snapshot' : 'Unit mismatch' }"
+											state="{= ${ws>status} === 'COVERED' ? 'Success' : ${ws>status} === 'SHORTAGE' ? 'Error' : 'Warning' }"
+											tooltip="{= ${ws>missingRanges} ? 'No consumption rate for: ' + ${ws>missingRanges} : '' }"/>
 										<Text text="{ path: 'ws>openingStock', formatter: '.fmt.quantity' }"/>
 										<Text text="{= ${ws>dailyRateAtStart} === null || ${ws>dailyRateAtStart} === undefined ? 'no rate' : ${ws>dailyRateAtStart} }"/>
 										<Text text="{= ${ws>caseRequirement} + (${ws>requirementInHorizon} ? ' on ' + ${ws>effectiveDate} : ' (outside horizon)') }"/>
-										<Text text="{ path: 'ws>expectedDemand', formatter: '.fmt.quantity' }"/>
+										<Text text="{= (${ws>demandComplete} === false ? 'at least ' : '') + (${ws>expectedDemand} === null || ${ws>expectedDemand} === undefined ? '—' : ${ws>expectedDemand}) }"/>
 										<ObjectNumber number="{ path: 'ws>projectedEndStock', formatter: '.fmt.quantity' }" state="{= ${ws>status} === 'SHORTAGE' ? 'Error' : 'None' }"/>
-										<Text text="{= ${ws>exhaustionDate} ? 'short from ' + ${ws>exhaustionDate} + ' (' + ${ws>coveredDays} + ' days covered)' : (${ws>status} === 'COVERED' ? 'beyond ' + ${ws>endDate} : '—') }"/>
-										<Text text="{ws>noRateDays}"/>
+										<Text text="{= ${ws>exhaustionDate} ? (${ws>exhaustionIsLatestPossible} ? 'short on or before ' : 'short from ') + ${ws>exhaustionDate} : (${ws>status} === 'COVERED' ? 'beyond ' + ${ws>endDate} : ${ws>status} === 'INCOMPLETE' ? 'unknown' : '—') }"/>
+										<Text text="{= ${ws>noRateDays} > 0 ? ${ws>noRateDays} + ' (' + ${ws>missingRanges} + ')' : (${ws>noRateDays} === 0 ? '0' : '—') }" wrapping="true"/>
 									</cells>
 								</ColumnListItem>
 							</items>
@@ -267,7 +268,7 @@
 							<Table items="{ws>/cov/rates}" noDataText="No consumption rates for the materials of this case." fixedLayout="false">
 								<columns>
 									<Column><Text text="Material"/></Column><Column><Text text="Period"/></Column><Column hAlign="End"><Text text="Quantity"/></Column>
-									<Column><Text text="Valid"/></Column><Column width="3rem"/>
+									<Column><Text text="Valid (inclusive)"/></Column><Column minScreenWidth="Tablet" demandPopin="true"><Text text="Status"/></Column><Column width="7rem"/>
 								</columns>
 								<items>
 									<ColumnListItem>
@@ -275,7 +276,8 @@
 											<Text text="{ws>material}"/><Text text="per {= ${ws>period}.toLowerCase() }"/>
 											<Text text="{ path: 'ws>quantity', formatter: '.fmt.quantity' } {ws>unit}"/>
 											<Text text="{ws>validFrom} – {ws>validTo}"/>
-											<Button icon="sap-icon://delete" type="Transparent" press=".onDeleteRate" tooltip="Delete this rate" visible="{ws>/cov/canEdit}"/>
+											<ObjectStatus text="{= ${ws>active} ? 'Active' : 'Withdrawn by ' + ${ws>deactivatedBy} + ': ' + ${ws>deactivationReason} }" state="{= ${ws>active} ? 'Success' : 'None' }"/>
+											<Button text="Withdraw" type="Transparent" press=".onWithdrawRate" tooltip="Withdraw this rate (kept for audit; enter a corrected rate afterwards)" visible="{= ${ws>/cov/canEdit} &amp;&amp; ${ws>active} }"/>
 										</cells>
 									</ColumnListItem>
 								</items>

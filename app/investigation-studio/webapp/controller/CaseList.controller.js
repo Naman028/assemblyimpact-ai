@@ -221,10 +221,18 @@ sap.ui.define([
           MessageToast.show("Imported " + (result.caseIds || []).length + " case(s). They are now in the worklist.");
           this.byId("caseList").getBinding("items").refresh();
           this.byId("importDialog").close();
+          if (data.fromForm) {
+            // The form is cleared only after a successful commit; then the new case is opened.
+            this.getView().getModel("form").setData(scenarioBuilder.example());
+            if (this.byId("createDialog")) { this.byId("createDialog").close(); }
+            if ((result.caseIds || [])[0]) { this.getOwnerComponent().getRouter().navTo("workspace", { caseId: result.caseIds[0] }); }
+          }
         }
       }.bind(this)).catch(function (error) {
         MessageBox.error(error.message || "The import failed; nothing was saved.");
-      }).finally(function () { if (dialog) { dialog.setBusy(false); } action.destroy(); });
+        // Someone else took the proposed case number meanwhile: propose a fresh one; the rest of the form is kept.
+        if (data.fromForm && /IMPORT_CONFLICT|ALREADY_EXISTS|case number/i.test((error.error && error.error.code || "") + " " + (error.message || ""))) { this.onProposeCaseNumber(); }
+      }.bind(this)).finally(function () { if (dialog) { dialog.setBusy(false); } action.destroy(); });
     },
 
     onImportConfirm: function () {

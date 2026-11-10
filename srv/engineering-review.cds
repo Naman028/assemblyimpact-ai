@@ -116,16 +116,24 @@ service EngineeringReview {
         changeNumber : String(20), caseNumber : String(20) @mandatory, title : String(160) @mandatory,
         productionQuantity : Integer @mandatory, dryRun : Boolean) returns ImportResult;
 
-    // Planning input: consumption rates per material and plant (rules in lib/coverage.js). Analysts maintain them;
-    // validation (negative values, periods, overlapping validity) is done in the handler.
+    // Planning input: consumption rates per material and plant (rules in lib/coverage.js). Analysts enter rates;
+    // records are immutable: a wrong rate is withdrawn with a reason (deactivate) and a corrected one entered, so
+    // the planning basis stays auditable. Validation (negative values, decimals, real dates, overlaps) in the handler.
     @restrict: [
         { grant: 'READ', to: ['ChangeViewer', 'ChangeAnalyst', 'ChangeApprover'], where: 'plant = $user.plants' },
-        { grant: ['CREATE', 'UPDATE', 'DELETE'], to: 'ChangeAnalyst', where: 'plant = $user.plants' }
+        { grant: 'CREATE', to: 'ChangeAnalyst', where: 'plant = $user.plants' },
+        { grant: 'deactivate', to: 'ChangeAnalyst' }
     ]
-    entity MaterialConsumptionRates as projection on db.MaterialConsumptionRates;
+    entity MaterialConsumptionRates as projection on db.MaterialConsumptionRates actions {
+        action deactivate(reason : String(200) @mandatory) returns MaterialConsumptionRates;
+    };
+    annotate MaterialConsumptionRates with {
+        active @readonly; deactivatedAt @readonly; deactivatedBy @readonly; deactivationReason @readonly;
+    };
 
     type MaterialCoverage {
-        material : String(40); unit : String(3); status : String(14); // COVERED | SHORTAGE | NO_STOCK | UNIT_MISMATCH
+        material : String(40); unit : String(3); status : String(14); // COVERED | SHORTAGE | INCOMPLETE | NO_STOCK | UNIT_MISMATCH
+        demandComplete : Boolean; exhaustionIsLatestPossible : Boolean; missingRanges : String(1000);
         startDate : Date; endDate : Date; effectiveDate : Date; caseRequirement : Decimal(17, 3); requirementInHorizon : Boolean;
         openingStock : Decimal(17, 3); stockSnapshotAt : Timestamp; dailyRateAtStart : Decimal(17, 3);
         expectedDemand : Decimal(17, 3); projectedEndStock : Decimal(17, 3); shortageAtEnd : Decimal(17, 3);

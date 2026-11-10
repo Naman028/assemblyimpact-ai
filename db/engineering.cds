@@ -78,6 +78,11 @@ entity MaterialConsumptionRates : cuid, managed {
     validTo     : Date not null;
     sourceType  : SourceType not null default 'MANUAL';
     note        : String(200);
+    // Records are never updated or deleted: a wrong rate is withdrawn (audited) and a corrected one entered.
+    active             : Boolean not null default true;
+    deactivatedAt      : Timestamp;
+    deactivatedBy      : String(255);
+    deactivationReason : String(200);
 }
 
 entity Instructions : cuid {

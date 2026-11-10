@@ -71,9 +71,9 @@ sap.ui.define([], function () {
       });
       ["price", "stock"].forEach(function (k) {
         var v = num(r[k]);
-        if (v !== null && !/^\d{1,11}(\.\d{1,4})?$/.test(v)) { problems.push(r.itemNo + " " + r.material + ": " + k + " must be a non-negative number"); }
+        var digits = k === "price" ? "4" : "3";
+        if (v !== null && !new RegExp("^\\d{1,11}(\\.\\d{1," + digits + "})?$").test(v)) { problems.push(r.itemNo + " " + r.material + ": " + k + " must be empty or a number of 0 or more with up to " + digits + " decimals"); }
       });
-      if (num(r.price) !== null && Number(num(r.price)) === 0) { problems.push(r.itemNo + " " + r.material + ": price must be greater than zero (leave empty to use the stored price)"); }
     });
     if (!rows.some(function (r) { return qty(r.currentQty); })) { problems.push("revision A needs at least one component with a quantity above 0"); }
     if (!rows.some(function (r) { return qty(r.proposedQty); })) { problems.push("revision B needs at least one component with a quantity above 0"); }

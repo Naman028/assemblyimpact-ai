@@ -75,7 +75,8 @@ test('edits are refused outside their scope', async () => {
     [{ kind: 'DELETE_ALL', value: 1 }, 'INVALID_KIND'],
     [{ kind: 'PROPOSED_QUANTITY', itemNo: '0040', value: -1 }, 'INVALID_VALUE'],
     [{ kind: 'PROPOSED_QUANTITY', itemNo: '0040', value: 0.0001 }, 'INVALID_VALUE'],
-    [{ kind: 'PRICE', material: 'PSENS-700', value: 0 }, 'INVALID_VALUE'],
+    [{ kind: 'PRICE', material: 'PSENS-700', value: -0.01 }, 'INVALID_VALUE'],
+    [{ kind: 'STOCK', material: 'FIT-700', value: 1.2345 }, 'INVALID_VALUE'],
     [{ kind: 'PROPOSED_QUANTITY', itemNo: '9999', value: 1 }, 'ITEM_NOT_FOUND'],
     [{ kind: 'PRICE', material: 'COOL-FAN-1', value: 1 }, 'MATERIAL_NOT_IN_CASE'],
     [{ kind: 'STOCK', material: 'FIT-700', value: -1 }, 'INVALID_VALUE'],
@@ -291,4 +292,37 @@ test('quantity 0 removes a component from revision B; a positive quantity re-add
   assert.equal(money(again.costDeltaTotal), money(before.costDeltaTotal), 're-adding restores the result exactly');
   const audit = (await call('GET', `/DataImports?$filter=format eq 'edit'`, { user: 'cviewer' })).data.value;
   assert(audit.some(a => /PROPOSED_QUANTITY 0040 7 -> 0/.test(a.source)) && audit.some(a => /PROPOSED_QUANTITY 0040 0 -> 7/.test(a.source)));
+});
+
+test('price 0 is a real price (free-issue part), distinct from a missing price', async () => {
+  const id = idOf('EC-000485');
+  const before = await run(id);
+  const r = await revise(id, { kind: 'PRICE', material: 'PSENS-700', value: 0 });
+  assert.equal(r.status, 200, JSON.stringify(r.data));
+  const after = await run(id);
+  assert.equal(after.status, before.status, 'a zero price does not make the run incomplete');
+  assert.notEqual(after.costDeltaTotal, null);
+  const line = (await call('GET', `/ImpactRuns(${after.ID})/materialLines?$filter=material eq 'PSENS-700'`, { user: 'cviewer' })).data.value[0];
+  assert.equal(Number(line.unitPrice), 0);
+  assert.equal((await revise(id, { kind: 'PRICE', material: 'PSENS-700', value: 80 })).status, 200, 'restored');
+});
+
+test('concurrent imports with the same case number: exactly one succeeds, no partial records', async () => {
+  const caseNumber = (await call('GET', '/nextCaseNumber()')).data.value;
+  const bundle = suffix => JSON.stringify({ datasetId: `DS-RACE-${suffix}`, synthetic: true,
+    assemblies: [{ assemblyCode: `RACE-${suffix}`, plant: '1000', description: 'race test' }],
+    bomStates: ['A', 'B'].map((rev, i) => ({ stateKey: `BOM-RACE-${suffix}-${rev}`, assemblyCode: `RACE-${suffix}`, plant: '1000', bomUsage: '1', alternative: '01',
+      revision: rev, validFrom: i ? '2027-01-01' : '2026-01-01', validTo: i ? '9999-12-31' : '2026-12-31', status: i ? 'PROPOSED' : 'RELEASED' })),
+    bomItems: ['A', 'B'].map((rev, i) => ({ stateKey: `BOM-RACE-${suffix}-${rev}`, itemNo: '0010', material: `RM-${suffix}`, quantity: String(i + 1), unit: 'PC' })),
+    costPrices: [{ material: `RM-${suffix}`, plant: '1000', price: '1.00', currency: 'EUR', priceUnit: 1, unit: 'PC', validFrom: '2026-01-01', validTo: '9999-12-31' }],
+    stockSnapshots: [], instructions: [], instructionReferences: [],
+    reviewCases: [{ caseNumber, title: 'race', assemblyCode: `RACE-${suffix}`, plant: '1000', fromStateKey: `BOM-RACE-${suffix}-A`, toStateKey: `BOM-RACE-${suffix}-B`, productionQuantity: 1 }] });
+  const results = await Promise.all(['X', 'Y', 'Z'].map(s => call('POST', '/importScenario', { body: { fileName: `race-${s}`, format: 'json', content: bundle(s), dryRun: false } })));
+  const ok = results.filter(r => r.status === 200);
+  assert.equal(ok.length, 1, JSON.stringify(results.map(r => [r.status, r.data.error?.code])));
+  for (const r of results.filter(x => x.status !== 200)) assert.match(r.data.error?.code ?? '', /IMPORT_CONFLICT|IMPORT_VALIDATION_FAILED/);
+  const { Assemblies, ReviewCases } = cds.entities('assemblyimpact');
+  assert.equal((await SELECT.from(ReviewCases).where({ caseNumber })).length, 1);
+  assert.equal((await SELECT.from(Assemblies).where({ assemblyCode: { like: 'RACE-%' } })).length, 1, 'losing imports left no partial records');
+  assert.notEqual((await call('GET', '/nextCaseNumber()')).data.value, caseNumber, 'the next proposal moves on');
 });

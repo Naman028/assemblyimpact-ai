@@ -41,8 +41,13 @@ test('coverage without rates: only the case requirement on the effective date is
   assert.equal(Number(fan.caseRequirement), 100);
   assert.equal(fan.noRateDays, 10);
   assert.equal(Number(fan.expectedDemand), 100);
-  assert.equal(fan.status, 'SHORTAGE');                 // 80 in stock
+  assert.equal(fan.status, 'SHORTAGE');                 // 80 in stock: short even with unknown days at zero
   assert.equal(fan.exhaustionDate, '2026-12-01');
+  assert.equal(fan.exhaustionIsLatestPossible, true);
+  const sens = r.data.value.find(m => m.material === 'SENS-01'); // 120 in stock, 100 required, no rates
+  assert.equal(sens.status, 'INCOMPLETE', 'unknown demand is never reported as covered');
+  assert.equal(sens.demandComplete, false);
+  assert.equal(sens.missingRanges, '2026-11-25..2026-12-04');
   assert.equal(r.data.value.length, 4, 'one row per material of revision B');
 });
 
@@ -71,25 +76,43 @@ test('the impact result of the oracle case is unchanged by planning data', async
   assert.equal(run.data.materialsShort, 2);
 });
 
-test('consumption rates are validated and plant-isolated', async () => {
+test('consumption rates are validated, plant-isolated, immutable and withdrawn instead of deleted', async () => {
   for (const [body, code] of [
     [{ material: 'SEAL-01', period: 'WEEK', quantity: -1 }, 'INVALID_QUANTITY'],
     [{ material: 'SEAL-01', period: 'YEAR', quantity: 1 }, null],          // enum refused by CAP
     [{ material: 'SEAL-01', period: 'DAY', quantity: 1, validFrom: '2026-12-31', validTo: '2026-12-01' }, 'INVALID_PERIOD_DATES'],
+    [{ material: 'SEAL-01', period: 'DAY', quantity: 1.2345 }, null],      // Decimal(13,3) / 3-decimal rule
     [{ material: 'FAN-B', period: 'DAY', quantity: 1 }, 'OVERLAPPING_RATE'],
   ]) {
     const r = await rate(body);
-    assert.equal(r.status, 400, JSON.stringify(body));
+    assert.equal(r.status, 400, JSON.stringify(body) + JSON.stringify(r.data));
     if (code) assert.equal(r.data.error?.code, code, JSON.stringify(r.data));
   }
   assert.equal((await rate({ material: 'SEAL-01', period: 'DAY', quantity: 0 })).status, 201, 'zero consumption is valid');
   assert.equal((await rate({ material: 'SEAL-01', period: 'DAY', quantity: 1, plant: '2000', validFrom: '2027-01-01', validTo: '2027-01-31' })).status, 400, 'foreign plant');
   assert.equal((await rate({ material: 'SEAL-01', period: 'DAY', quantity: 1, validFrom: '2027-02-01', validTo: '2027-02-28' }, 'cviewer')).status, 403, 'viewers read only');
   assert.equal((await call('GET', '/MaterialConsumptionRates', { user: 'analyst2' })).data.value.length, 0, 'plant 2000 sees no plant-1000 rates');
-  const id = (await call('GET', "/MaterialConsumptionRates?$filter=material eq 'SEAL-01'")).data.value[0].ID;
-  const moved = await call('PATCH', `/MaterialConsumptionRates(${id})`, { body: { plant: '2000' } });
-  assert.notEqual(moved.status, 200, 'a rate cannot be moved to a foreign plant');
-  assert.equal((await call('PATCH', `/MaterialConsumptionRates(${id})`, { body: { quantity: -5 } })).data.error?.code, 'INVALID_QUANTITY');
+  const seal = (await call('GET', "/MaterialConsumptionRates?$filter=material eq 'SEAL-01'")).data.value[0];
+  assert.equal(seal.active, true);
+  // No update, no delete: records are immutable.
+  assert.equal((await call('PATCH', `/MaterialConsumptionRates(${seal.ID})`, { body: { quantity: 5 } })).status, 403);
+  assert.equal((await call('DELETE', `/MaterialConsumptionRates(${seal.ID})`)).status, 403);
+  const withdraw = (id, reason, user) => call('POST', `/MaterialConsumptionRates(${id})/EngineeringReview.deactivate`, { user, body: { reason } });
+  assert.equal((await withdraw(seal.ID, 'x')).data.error?.code, 'REASON_REQUIRED');
+  assert.equal((await withdraw(seal.ID, 'wrong period', 'cviewer')).status, 403);
+  assert.equal((await withdraw(seal.ID, 'wrong period', 'analyst2')).status, 404, 'foreign plant');
+  const w = await withdraw(seal.ID, 'wrong period entered');
+  assert.equal(w.status, 200, JSON.stringify(w.data));
+  assert.equal(w.data.active, false);
+  assert.equal(w.data.deactivatedBy, 'analyst');
+  assert.equal(w.data.deactivationReason, 'wrong period entered');
+  assert.equal((await withdraw(seal.ID, 'again please')).data.error?.code, 'ALREADY_INACTIVE');
+  assert.equal((await call('GET', `/MaterialConsumptionRates(${seal.ID})`)).status, 200, 'withdrawn record kept for audit');
+  assert.equal((await rate({ material: 'SEAL-01', period: 'DAY', quantity: 2 })).status, 201, 'a corrected rate may replace a withdrawn one');
+  const sealCov = (await coverage(ORACLE)).data.value.find(m => m.material === 'SEAL-01');
+  assert.equal(Number(sealCov.dailyRateAtStart), 2, 'only the active rate is used');
+  assert.equal((await rate({ material: 'SENS-01', period: 'DAY', quantity: 1, validFrom: '2026-02-01', validTo: '2026-02-30' })).status, 400, 'impossible date');
+  assert.equal((await rate({ material: 'SENS-01', period: 'DAY', quantity: 1, active: false, deactivatedBy: 'x' })).data.active, true, 'audit fields cannot be set by the client');
 });
 
 test('coverage is refused for foreign cases and invalid horizons', async () => {

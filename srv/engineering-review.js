@@ -2,7 +2,7 @@ import cds from '@sap/cds';
 import { calculateImpact, ImpactRejection, RULESET } from './lib/impact-calculator.js';
 import { loadImpactInput, fingerprint, persistImpactRun, ConcurrentRunError, CaseDecidedError, IMPACT_ALLOWED_STATUSES } from './lib/impact-persistence.js';
 import { userPlants } from './lib/plants.js';
-import { caseCoverage, checkRate, searchAssemblies, nextCaseNumber, CoverageRejection } from './lib/planning.js';
+import { caseCoverage, checkRate, deactivateRate, searchAssemblies, nextCaseNumber, CoverageRejection } from './lib/planning.js';
 import { systemStatus } from './lib/system-status.js';
 import { prepareAttachment, acceptUpload, checkRemoval, reviseInput, DemoDataError } from './lib/demo-data.js';
 import { decide, DecisionError, TRANSITIONS, submittersOf, availabilityFor } from './lib/review-decisions.js';
@@ -62,9 +62,12 @@ export default class EngineeringReview extends cds.ApplicationService {
         return rows ?? req.reject(404);
       } catch (e) { return asCoverageReject(req, e); }
     });
-    for (const event of ['CREATE', 'UPDATE']) this.before(event, 'MaterialConsumptionRates', async req => {
-      const key = req.params?.at?.(-1); const ID = event === 'UPDATE' ? (typeof key === 'object' ? key.ID : key) : undefined;
-      try { await checkRate(req.data, userPlants(req.user), ID); } catch (e) { return asCoverageReject(req, e); }
+    this.before('CREATE', 'MaterialConsumptionRates', async req => {
+      try { await checkRate(req.data, userPlants(req.user)); } catch (e) { return asCoverageReject(req, e); }
+    });
+    this.on('deactivate', 'MaterialConsumptionRates', async req => {
+      const key = req.params.at(-1); const ID = typeof key === 'object' ? key.ID : key;
+      try { return (await deactivateRate(ID, req.data.reason, userPlants(req.user), req.user.id)) ?? req.reject(404); } catch (e) { return asCoverageReject(req, e); }
     });
     this.on('searchAssemblies', async req => { try { return await searchAssemblies(unquote(req.data.term), userPlants(req.user)); } catch (e) { return asCoverageReject(req, e); } });
     this.on('nextCaseNumber', async req => { try { return await nextCaseNumber(); } catch (e) { return asCoverageReject(req, e); } });
@@ -167,7 +170,11 @@ export default class EngineeringReview extends cds.ApplicationService {
       ({ caseIds } = await commitBundle(validated, { importId, user: req.user.id, fileName, format: String(format).toLowerCase(), content, meta: parsed.meta }));
     } catch (error) {
       if (error instanceof ImportConflictError || /UNIQUE|unique constraint/i.test(error.message)) {
-        return req.reject({ status: 409, code: 'IMPORT_CONFLICT', message: 'A concurrent change conflicts with this import; nothing was imported. Validate again.' });
+        // A concurrent import took a key of this file (case number, BOM state, snapshot) between validation and commit.
+        // The database unique constraint is the authority; the whole transaction is rolled back.
+        const suggestion = await nextCaseNumber().catch(() => null);
+        return req.reject({ status: 409, code: 'IMPORT_CONFLICT', message: 'A concurrent import used an identifier of this file; nothing was imported. ' +
+          (suggestion ? `The next free case number is now ${suggestion}. ` : '') + 'Validate again.' });
       }
       throw error;
     }

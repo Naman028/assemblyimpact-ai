@@ -478,15 +478,23 @@ sap.ui.define([
         .catch(function (e) { MessageBox.error(e.message, { title: "Rate not saved" }); });
     },
 
-    onDeleteRate: function (event) {
+    /** Rates are never deleted: withdrawal keeps the record (who, when, why) and excludes it from planning. */
+    onWithdrawRate: function (event) {
       var rate = event.getSource().getBindingContext("ws").getObject(), that = this;
-      MessageBox.confirm("Delete the " + rate.period.toLowerCase() + " rate of " + rate.material + " (" + rate.validFrom + " – " + rate.validTo + ")? This only affects the planning view.", {
-        onClose: function (action) {
-          if (action !== MessageBox.Action.OK) { return; }
-          var ctx = that.getView().getModel().bindContext("/MaterialConsumptionRates(" + rate.ID + ")").getBoundContext();
-          ctx.delete().then(function () { MessageToast.show("Rate deleted."); that.onCoverage(); }).catch(function (e) { MessageBox.error(e.message); });
-        }
-      });
+      var reason = new TextArea({ width: "100%", rows: 2, placeholder: "Reason (required), e.g. wrong period entered", maxLength: 200 });
+      var dialog = new Dialog({ title: "Withdraw " + rate.period.toLowerCase() + " rate of " + rate.material, contentWidth: "28rem",
+        content: [new Label({ text: rate.validFrom + " – " + rate.validTo + ", " + rate.quantity + " " + rate.unit + ". The record stays visible as withdrawn.", wrapping: true }), reason],
+        beginButton: new Button({ text: "Withdraw", type: "Emphasized", press: function () {
+          var action = that.getView().getModel().bindContext("/MaterialConsumptionRates(" + rate.ID + ")/EngineeringReview.deactivate(...)");
+          action.setParameter("reason", reason.getValue());
+          action.execute().then(function () { MessageToast.show("Rate withdrawn."); dialog.close(); that.onCoverage(); })
+            .catch(function (e) { MessageBox.error(e.message, { title: "Rate not withdrawn" }); });
+        } }),
+        endButton: new Button({ text: "Cancel", press: function () { dialog.close(); } }),
+        afterClose: function () { dialog.destroy(); } });
+      this.getView().addDependent(dialog);
+      dialog.addStyleClass("sapUiContentPadding");
+      dialog.open();
     },
 
     onRunImpact: function () {

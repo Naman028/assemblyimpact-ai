@@ -111,11 +111,12 @@ export async function reviseInput({ caseID, kind, itemNo, material, value }, { p
   if (!EDIT_KINDS.includes(kind)) fail(400, 'INVALID_KIND', `kind must be one of ${EDIT_KINDS.join(', ')}.`);
   let v;
   try { v = Exact.of(String(value)); } catch { fail(400, 'INVALID_VALUE', 'value must be a decimal number.'); }
-  // Zero rules: STOCK 0 = nothing on hand (valid); PROPOSED_QUANTITY 0 = the component is removed from revision B
-  // (valid, see below); PRICE 0 is refused (a free component is not a demo scenario). Negatives are always refused.
+  // Zero rules: STOCK 0 = nothing on hand; PRICE 0 = a real zero price (e.g. a free-issue part), as in the import
+  // and the calculator (R-COST-1; only a missing price makes cost INCOMPLETE); PROPOSED_QUANTITY 0 = the component
+  // is removed from revision B (see below). Negatives are always refused.
   if (v.cmp('0') < 0) fail(400, 'INVALID_VALUE', kind === 'STOCK' ? 'Stock cannot be negative.' : 'The value cannot be negative.');
-  if (kind === 'PRICE' && v.cmp('0') === 0) fail(400, 'INVALID_VALUE', 'The price must be greater than zero.');
-  if (kind === 'PROPOSED_QUANTITY' && !v.isZero() && v.cmp('0.001') < 0) fail(400, 'INVALID_VALUE', 'Quantities have at most 3 decimals (min. 0.001).');
+  if (kind === 'PRICE' && !v.mul(10000).isInteger()) fail(400, 'INVALID_VALUE', 'Prices have at most 4 decimals.');
+  if (kind !== 'PRICE' && !v.mul(1000).isInteger()) fail(400, 'INVALID_VALUE', 'Quantities have at most 3 decimals.');
   if (v.cmp('1000000') > 0) fail(400, 'INVALID_VALUE', 'The value is unrealistically large (max. 1,000,000).');
   if (!plants) fail(404, 'NOT_FOUND', 'Not found.');
   const rc = await SELECT.one.from(ReviewCases).where({ ID: caseID, plant: { in: plants } });
