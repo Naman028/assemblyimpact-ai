@@ -1,0 +1,21 @@
+{
+  "Name": "ASSEMBLYIMPACT_ENGINEERING",
+  "Type": "HTTP",
+  "Description": "AssemblyImpact EngineeringReview OData V4 (CAP, US10) for SAP Build Actions / Joule in EU10 - principal propagation across subaccounts",
+  "URL": "https://78485bd6trial-dev-assemblyimpact-srv.cfapps.us10-001.hana.ondemand.com/odata/v4/engineering-review",
+  "ProxyType": "Internet",
+  "Authentication": "OAuth2SAMLBearerAssertion",
+  "audience": "<entityID from https://78485bd6trial.authentication.us10.hana.ondemand.com/saml/metadata>",
+  "tokenServiceURL": "https://78485bd6trial.authentication.us10.hana.ondemand.com/oauth/token/alias/<alias from the same metadata>",
+  "tokenServiceURLType": "Dedicated",
+  "clientKey": "<clientid of a dedicated service key of assemblyimpact-auth; enter in the cockpit only, never commit>",
+  "tokenServiceUser": "<same clientid>",
+  "tokenServicePassword": "<clientsecret of that service key; enter in the cockpit only, never commit>",
+  "authnContextClassRef": "urn:oasis:names:tc:SAML:2.0:ac:classes:PreviousSession",
+  "nameIdFormat": "urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress",
+  "sap.applicationdevelopment.actions.enabled": "true",
+  "sap.processautomation.enabled": "true",
+  "HTML5.DynamicDestination": "false",
+  "WebIDEEnabled": "false",
+  "_note": "Placeholders only. Remove this key before import. Requires the US10 subaccount to trust the EU10 subaccount's destination-service SAML IdP (see ADMIN-HANDOFF-EU10-DESTINATION.md). Authorization is NOT narrowed by this destination: it comes only from the role collections mapped to users of the EU10 trust origin in US10."
+}
