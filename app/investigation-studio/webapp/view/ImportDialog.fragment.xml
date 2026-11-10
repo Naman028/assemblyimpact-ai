@@ -5,12 +5,12 @@
 			<VBox>
 				<MessageStrip type="Warning" showIcon="true" class="sapUiSmallMarginBottom"
 					text="Development workflow only. Imports add new synthetic cases with provenance; they never overwrite existing records and are not SAP S/4HANA data."/>
-				<Label text="File (JSON or CSV, max. 512 KB)" labelFor="importFile"/>
-				<u:FileUploader id="importFile" width="100%" fileType="json,csv" maximumFileSize="0.5" sendXHR="false" useMultipart="false"
+				<Label text="File (JSON or CSV, max. 512 KB)" labelFor="importFile" visible="{= !${import>/fromForm} }"/>
+				<u:FileUploader id="importFile" visible="{= !${import>/fromForm} }" width="100%" fileType="json,csv" maximumFileSize="0.5" sendXHR="false" useMultipart="false"
 					change=".onImportFileChange" typeMissmatch=".onImportTypeMismatch" fileSizeExceed=".onImportTooLarge" placeholder="Choose a .json or .csv file"/>
-				<HBox class="sapUiTinyMarginTop">
-					<Link text="Sample JSON" href="samples/scenario-import-sample.json" target="_blank" class="sapUiSmallMarginEnd"/>
-					<Link text="Sample CSV" href="samples/scenario-import-sample.csv" target="_blank"/>
+				<HBox class="sapUiTinyMarginTop" visible="{= !${import>/fromForm} }">
+					<Link text="Sample JSON" href="../../investigation-studio/webapp/samples/scenario-import-sample.json" target="_blank" class="sapUiSmallMarginEnd"/>
+					<Link text="Sample CSV" href="../../investigation-studio/webapp/samples/scenario-import-sample.csv" target="_blank"/>
 				</HBox>
 				<MessageStrip visible="{import>/validated}" type="{= ${import>/accepted} ? 'Success' : 'Error' }" showIcon="true" class="sapUiSmallMarginTop"
 					text="{= ${import>/accepted} ? 'Validation passed: ' + ${import>/summary} + '. Review the preview and confirm the import.' : 'Validation failed: ' + ${import>/errors}.length + ' problem(s). Nothing was imported.' }"/>
@@ -52,11 +52,10 @@
 				</Table>
 			</VBox>
 		</content>
-		<beginButton>
+		<buttons>
 			<Button id="importConfirm" text="Confirm Import" type="Emphasized" enabled="{import>/accepted}" press=".onImportConfirm"/>
-		</beginButton>
-		<endButton>
+			<Button text="Back to Form" icon="sap-icon://edit" press=".onImportBackToForm" visible="{import>/fromForm}"/>
 			<Button text="Cancel" press=".onImportCancel"/>
-		</endButton>
+		</buttons>
 	</Dialog>
 </core:FragmentDefinition>

@@ -66,12 +66,12 @@ test('manifest: same OData V4 service as the worklist, OpenUI5-available librari
 
 test('views and fragments are well-formed and reference only existing controller handlers', () => {
   const files = readdirSync(join(WEBAPP, 'view')).filter(f => f.endsWith('.xml'));
-  assert.deepEqual(files.sort(), ['App.view.xml', 'CaseList.view.xml', 'ImportDialog.fragment.xml', 'Workspace.view.xml']);
+  assert.deepEqual(files.sort(), ['App.view.xml', 'CaseList.view.xml', 'CreateScenarioDialog.fragment.xml', 'ImportDialog.fragment.xml', 'Workspace.view.xml']);
   const controllers = { CaseList: read('controller', 'CaseList.controller.js'), Workspace: read('controller', 'Workspace.controller.js') };
   for (const f of files) {
     const xml = read('view', f);
     assertWellFormed(xml, f);
-    const controller = f === 'ImportDialog.fragment.xml' ? controllers.CaseList : controllers[f.replace('.view.xml', '')];
+    const controller = ['ImportDialog.fragment.xml', 'CreateScenarioDialog.fragment.xml'].includes(f) ? controllers.CaseList : controllers[f.replace('.view.xml', '')];
     for (const [, handler] of xml.matchAll(/="\.(on\w+)"/g)) assert.match(controller, new RegExp(`\\b${handler}: function`), `${f} -> ${handler}`);
   }
 });
@@ -145,7 +145,10 @@ test('server: the Studio is served, its case request works, and the worklist lin
   // Foreign plant: the deep link reveals nothing.
   assert.equal((await request(`/odata/v4/engineering-review/ReviewCases(${id})`, 'cviewer2')).status, 404);
   const annotations = readFileSync(join(ROOT, 'app', 'case-worklist', 'annotations.cds'), 'utf8');
-  assert.match(annotations, /'\.\.\/\.\.\/investigation-studio\/webapp\/index\.html#\/cases\/'/);
+  assert.match(annotations, /'\.\.\/\.\.\/launchpad\.html#EngineeringCase-investigate&\/cases\/'/);
+  const launchpad = await request('/launchpad.html', null);
+  assert.equal(launchpad.status, 200, 'single entry point served');
+  for (const intent of ['EngineeringCase-manage', 'EngineeringCase-investigate']) assert.match(launchpad.text, new RegExp(intent));
 });
 
 test('Fiori elements contract: review actions are availability-driven, default to the displayed run, refresh history', async () => {

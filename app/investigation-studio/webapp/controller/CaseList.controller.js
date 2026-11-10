@@ -1,7 +1,8 @@
 sap.ui.define([
   "sap/ui/core/mvc/Controller", "sap/ui/model/Filter", "sap/ui/model/FilterOperator", "sap/ui/model/json/JSONModel",
-  "sap/ui/core/Fragment", "sap/m/MessageBox", "sap/m/MessageToast", "assemblyimpact/investigationstudio/lib/format"
-], function (Controller, Filter, FilterOperator, JSONModel, Fragment, MessageBox, MessageToast, format) {
+  "sap/ui/core/Fragment", "sap/m/MessageBox", "sap/m/MessageToast", "assemblyimpact/investigationstudio/lib/format",
+  "assemblyimpact/investigationstudio/lib/scenarioBuilder"
+], function (Controller, Filter, FilterOperator, JSONModel, Fragment, MessageBox, MessageToast, format, scenarioBuilder) {
   "use strict";
 
   return Controller.extend("assemblyimpact.investigationstudio.controller.CaseList", {
@@ -61,12 +62,12 @@ sap.ui.define([
     },
 
     onOpenWorklist: function () {
-      window.open("../../case-worklist/webapp/index.html", "_self");
+      window.open("../../launchpad.html#EngineeringCase-manage", "_self");
     },
 
     // ------------------------------------------------------------ import (M05)
     _emptyImport: function () {
-      return { fileName: null, format: null, content: null, validated: false, accepted: false, errors: [], preview: [], summary: "" };
+      return { fileName: null, format: null, content: null, validated: false, accepted: false, errors: [], preview: [], summary: "", fromForm: false };
     },
 
     onOpenImport: function () {
@@ -76,6 +77,52 @@ sap.ui.define([
           .then(function (dialog) { view.addDependent(dialog); return dialog; });
       }
       this._importDialog.then(function (dialog) { dialog.open(); });
+    },
+
+    // ------------------------------------------------------------ create scenario (faculty demo)
+    onOpenCreate: function () {
+      var view = this.getView();
+      if (!view.getModel("form")) { view.setModel(new JSONModel(scenarioBuilder.example()), "form"); }
+      if (!this._createDialog) {
+        this._createDialog = Fragment.load({ id: view.getId(), name: "assemblyimpact.investigationstudio.view.CreateScenarioDialog", controller: this })
+          .then(function (dialog) { view.addDependent(dialog); return dialog; });
+      }
+      this._createDialog.then(function (dialog) { dialog.open(); });
+    },
+
+    onCreateAddRow: function () {
+      var model = this.getView().getModel("form"), rows = model.getProperty("/components").slice();
+      rows.push(scenarioBuilder.emptyRow(rows));
+      model.setProperty("/components", rows);
+    },
+
+    onCreateRemoveRow: function (event) {
+      var model = this.getView().getModel("form"), path = event.getSource().getBindingContext("form").getPath();
+      var index = Number(path.split("/").pop()), rows = model.getProperty("/components").slice();
+      rows.splice(index, 1);
+      model.setProperty("/components", rows);
+    },
+
+    onCreateExample: function () { this.getView().getModel("form").setData(scenarioBuilder.example()); },
+
+    onCreateCancel: function () { this.byId("createDialog").close(); },
+
+    /** Builds the import bundle and hands it to the existing import preview (server validation, confirmation). */
+    onCreateValidate: function () {
+      var form = this.getView().getModel("form").getData(), problems = scenarioBuilder.check(form);
+      if (problems.length) { MessageBox.error("Please complete the form:\n- " + problems.join("\n- "), { title: "Scenario incomplete" }); return; }
+      var model = this.getView().getModel("import");
+      model.setData(Object.assign(this._emptyImport(), { fileName: ("form-" + form.caseNumber).slice(0, 120), format: "json",
+        content: JSON.stringify(scenarioBuilder.build(form)), fromForm: true }));
+      this.byId("createDialog").close();
+      this.onOpenImport();
+      this._importDialog.then(function () { this._callImport(true); }.bind(this));
+    },
+
+    /** From the import preview back to the form, to correct validation errors. */
+    onImportBackToForm: function () {
+      this.byId("importDialog").close();
+      this.onOpenCreate();
     },
 
     onImportTypeMismatch: function () { MessageBox.error("Only .json and .csv files are supported."); },

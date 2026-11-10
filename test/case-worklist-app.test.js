@@ -151,12 +151,12 @@ test('P3 <-> P4 navigation keeps the case context in both directions', () => {
   const st = JSON.parse(readFileSync(join(root, 'investigation-studio', 'webapp', 'manifest.json'), 'utf8'));
   // Worklist -> Studio: the existing DataFieldWithUrl in the General field group (no second link is added).
   const annotations = readFileSync(join(root, 'case-worklist', 'annotations.cds'), 'utf8');
-  assert.match(annotations, /'\.\.\/\.\.\/investigation-studio\/webapp\/index\.html#\/cases\/',\s*\{\$Path: 'ID'\}/);
-  assert.equal((annotations.match(/investigation-studio\/webapp/g) || []).length, 1, 'exactly one worklist -> Studio link');
+  assert.match(annotations, /'\.\.\/\.\.\/launchpad\.html#EngineeringCase-investigate&\/cases\/',\s*\{\$Path: 'ID'\}/);
+  assert.equal((annotations.match(/EngineeringCase-investigate/g) || []).length, 1, 'exactly one worklist -> Studio link');
   assert(st['sap.ui5'].routing.routes.some(r => r.name === 'workspace' && r.pattern.startsWith('cases/{caseId}')), 'Studio route matches the link');
   // Studio -> worklist: the same case's object page.
   const ctrl = readFileSync(join(root, 'investigation-studio', 'webapp', 'controller', 'Workspace.controller.js'), 'utf8');
-  assert.match(ctrl, /"\.\.\/\.\.\/case-worklist\/webapp\/index\.html#\/ReviewCases\(" \+ encodeURIComponent\(this\._caseId\) \+ "\)"/);
+  assert.match(ctrl, /"\.\.\/\.\.\/launchpad\.html#EngineeringCase-manage&\/ReviewCases\(" \+ encodeURIComponent\(this\._caseId\) \+ "\)"/);
   assert(wl['sap.ui5'].routing.routes.some(r => r.name === 'ReviewCasesObjectPage' && r.pattern.startsWith('ReviewCases({key})')), 'worklist route matches the button');
   const view = readFileSync(join(root, 'investigation-studio', 'webapp', 'view', 'Workspace.view.xml'), 'utf8');
   assert.match(view, /id="btnOpenInWorklist"[^>]*press="\.onOpenInWorklist"[^>]*tooltip="[^"]+"/, 'button has an accessible tooltip');
@@ -181,4 +181,28 @@ test('Studio start-up: CaseList reads the OData model from the component in onIn
   await new Promise(r => setTimeout(r, 0));
   assert.equal(requested, '/myCapabilities()');
   assert.equal(caps['/canImport'], true);
+});
+
+test('one application: the launchpad hosts both apps; intents match the apps\' inbounds and component IDs', () => {
+  const root = join(import.meta.dirname, '..', 'app');
+  const html = readFileSync(join(root, 'launchpad.html'), 'utf8');
+  const config = JSON.parse(html.match(/window\["sap-ushell-config"\] = (\{[\s\S]*?\});\n/)[1]
+    .replace(/(\w+):/g, '"$1":').replace(/"(https?)":/g, '$1:'));
+  for (const [intent, app] of Object.entries(config.applications)) {
+    const manifest = JSON.parse(readFileSync(join(root, app.url, 'manifest.json'), 'utf8'));
+    assert.equal(app.additionalInformation, `SAPUI5.Component=${manifest['sap.app'].id}`, intent);
+    assert(manifest['sap.app'].crossNavigation.inbounds[intent], `${intent} inbound in ${app.url}`);
+  }
+  assert.deepEqual(Object.keys(config.applications).sort(), ['EngineeringCase-investigate', 'EngineeringCase-manage']);
+  // Static assets must resolve to the app folder from both pages (standalone index.html and the launchpad);
+  // a page-relative 'assets/...' broke the worklist thumbnails inside the launchpad (BAS walkthrough).
+  for (const f of ['AssemblyIllustration', 'AssemblyThumbnail']) {
+    const prefix = readFileSync(join(root, 'case-worklist', 'webapp', 'ext', 'fragment', `${f}.fragment.xml`), 'utf8').match(/src="\{= '([^']+)'/)[1];
+    for (const page of ['http://host/case-worklist/webapp/index.html', 'http://host/launchpad.html'])
+      assert.equal(new URL(prefix, page).pathname, '/case-worklist/webapp/assets/assemblies/', `${f} from ${page}`);
+  }
+  // Fiori tools (BAS Storyboard / Application Info) find both apps.
+  const pkg = JSON.parse(readFileSync(join(import.meta.dirname, '..', 'package.json'), 'utf8'));
+  assert.deepEqual(pkg.sapux, ['app/case-worklist', 'app/investigation-studio']);
+  for (const app of ['case-worklist', 'investigation-studio']) assert.match(readFileSync(join(root, app, 'ui5.yaml'), 'utf8'), /type: application/);
 });

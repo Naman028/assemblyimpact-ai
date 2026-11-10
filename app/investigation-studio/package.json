@@ -1,0 +1,7 @@
+{
+  "name": "investigation-studio",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Engineering Investigation Studio (freestyle SAPUI5, OData V4)",
+  "sapux": false
+}

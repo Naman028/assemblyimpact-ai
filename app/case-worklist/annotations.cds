@@ -114,7 +114,7 @@ annotate service.ReviewCases with @(
             Value : 'Open in Investigation Studio',
             // M05: the unified workspace for this case (same OData service, same key).
             Url   : {$edmJson: {$Apply: [
-                '../../investigation-studio/webapp/index.html#/cases/',
+                '../../launchpad.html#EngineeringCase-investigate&/cases/',
                 {$Path: 'ID'}
             ], $Function: 'odata.concat'}}
         }

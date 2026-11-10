@@ -24,6 +24,8 @@ service EngineeringReview {
         // P2: evidence-grounded GenAI explanation of the latest run (read-only; plant check in the handler).
         { grant: 'explainImpact', to: ['ChangeViewer', 'ChangeAnalyst', 'ChangeApprover'] },
         { grant: 'submitForReview', to: 'ChangeAnalyst' },
+        // Faculty demo: controlled edit of synthetic inputs (feature flag, OPEN synthetic cases only; checks in the handler).
+        { grant: 'reviseDemoInput', to: 'DemoDataImporter' },
         { grant: ['approve', 'reject'], to: 'ChangeApprover' }
     ]
     entity ReviewCases as projection on db.ReviewCases {
@@ -41,7 +43,7 @@ service EngineeringReview {
             when 'DEMO_IMPORT' then 'Demo Import' when 'SANDBOX_IMPORT' then 'API Sandbox Import' else sourceType end as sourceTypeText : String(30),
         assembly.description as assemblyDescription : String(160),
         createdAt, modifiedAt,
-        latestRun, runs, decisions, sourceImport,
+        latestRun, runs, decisions, sourceImport, attachments,
         // M05: BOM states of the case for the Investigation Studio (plant-restricted entity below).
         fromState, toState,
         // M05: per-user action availability for the UI (role + plant + status + separation of duties).
@@ -55,6 +57,11 @@ service EngineeringReview {
         // P2: explains the latest persisted run with SAP Generative AI Hub; answers are validated against the run's
         // evidence (citations, numbers) and withheld when ungrounded. 409 when no run exists or no provider is configured.
         function explainImpact() returns ImpactExplanation;
+        // Faculty demo (development/test only, cds.env.features.demo_import): change one synthetic input of an OPEN
+        // DEMO_IMPORT/SYNTHETIC_FIXTURE case. kind: PROPOSED_QUANTITY (itemNo of the proposed BOM), PRICE (material),
+        // STOCK (material; appends a new snapshot). Earlier runs stay unchanged; latestRun is cleared so the next
+        // decision needs a new calculation. Every edit is recorded in DataImports (format 'edit').
+        action reviseDemoInput(kind : String(20) @mandatory, itemNo : String(4), material : String(40), value : Decimal(15, 4) @mandatory) returns ReviewCases;
         action submitForReview(comment : String(1000)) returns ReviewCases;
         // basedOnRun: the impact run the reviewer evaluated; must be the case's latest run (else 409 STALE_EVIDENCE).
         // acknowledgeWarnings (M05): required true when basedOnRun has status COMPLETE_WITH_WARNINGS; recorded on the event.
@@ -62,6 +69,14 @@ service EngineeringReview {
         action approve(comment : String(1000), basedOnRun : UUID @mandatory, acknowledgeWarnings : Boolean) returns ReviewCases;
         action reject(comment : String(1000) @mandatory, basedOnRun : UUID) returns ReviewCases;
     };
+
+    // Supporting images per case. Read in the user's plants; analysts attach and remove them while the case is
+    // undecided (plant, status, size and file signature are checked in the handler).
+    @restrict: [
+        { grant: 'READ', to: ['ChangeViewer', 'ChangeAnalyst', 'ChangeApprover'], where: 'reviewCase.plant = $user.plants' },
+        { grant: ['CREATE', 'UPDATE', 'DELETE'], to: 'ChangeAnalyst' }
+    ]
+    entity CaseAttachments as projection on db.CaseAttachments;
 
     // M05: imports are visible to everyone in the plant (provenance); written only by importScenario.
     @readonly

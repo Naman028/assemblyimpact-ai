@@ -2,6 +2,7 @@ import cds from '@sap/cds';
 import { calculateImpact, ImpactRejection, RULESET } from './lib/impact-calculator.js';
 import { loadImpactInput, fingerprint, persistImpactRun, ConcurrentRunError, CaseDecidedError, IMPACT_ALLOWED_STATUSES } from './lib/impact-persistence.js';
 import { userPlants } from './lib/plants.js';
+import { prepareAttachment, acceptUpload, checkRemoval, reviseInput, DemoDataError } from './lib/demo-data.js';
 import { decide, DecisionError, TRANSITIONS, submittersOf, availabilityFor } from './lib/review-decisions.js';
 import { parseImport, validateBundle, commitBundle, checksum, ImportFormatError, ImportConflictError } from './lib/scenario-import.js';
 import { extract, transportFor, ErpConfigError, ErpTransportError, MODE_SOURCE_TYPE } from './integration/erp/erp-source.js';
@@ -19,6 +20,30 @@ export default class EngineeringReview extends cds.ApplicationService {
     this.after('READ', 'ReviewCases', (rows, req) => annotateAvailability(rows, req));
     this.on('myCapabilities', req => capabilitiesOf(req.user));
     this.on('lookupCases', req => this.#lookupCases(req));
+    // Faculty demo: supporting images and controlled synthetic input edits (lib/demo-data.js).
+    const asReject = (req, error) => { if (error instanceof DemoDataError) return req.reject({ status: error.status, code: error.code, message: error.message }); throw error; };
+    // Images are served inline; the browser must not guess another content type.
+    this.before('READ', 'CaseAttachments', req => { req.http?.res?.setHeader?.('X-Content-Type-Options', 'nosniff'); });
+    this.before('CREATE', 'CaseAttachments', async req => {
+      try { Object.assign(req.data, await prepareAttachment(req.data, { plants: userPlants(req.user), user: req.user.id })); } catch (e) { return asReject(req, e); }
+    });
+    this.before('UPDATE', 'CaseAttachments', async req => {
+      const key = req.params.at(-1); const ID = typeof key === 'object' ? key.ID : key;
+      try { const accepted = await acceptUpload(ID, req.data, { plants: userPlants(req.user) }); delete req.data.mediaType; Object.assign(req.data, accepted); } catch (e) { return asReject(req, e); }
+    });
+    this.before('DELETE', 'CaseAttachments', async req => {
+      const key = req.params.at(-1); const ID = typeof key === 'object' ? key.ID : key;
+      try { await checkRemoval(ID, { plants: userPlants(req.user) }); } catch (e) { return asReject(req, e); }
+    });
+    this.on('reviseDemoInput', 'ReviewCases', async req => {
+      if (!cds.env.features?.demo_import) return req.reject({ status: 403, code: 'DEMO_EDIT_DISABLED', message: 'Editing demonstration data is disabled in this environment.' });
+      const key = req.params.at(-1); const caseID = typeof key === 'object' ? key.ID : key;
+      try {
+        const { change } = await reviseInput({ caseID, ...req.data }, { plants: userPlants(req.user), user: req.user.id });
+        req.info({ message: `${change.kind} ${change.itemNo ?? change.material}: ${change.from ?? '-'} -> ${change.to}. Run the impact calculation again; earlier runs are unchanged.` });
+      } catch (e) { return asReject(req, e); }
+      return SELECT.one.from(this.entities.ReviewCases, caseID);
+    });
     this.on('explainImpact', 'ReviewCases', req => this.#explainImpact(req));
     for (const action of Object.keys(TRANSITIONS)) this.on(action, 'ReviewCases', req => this.#decide(req, TRANSITIONS[action]));
     return super.init();

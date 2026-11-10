@@ -5,6 +5,8 @@
 			<f:DynamicPageTitle>
 				<f:heading><Title text="Engineering Change Cases" level="H1" wrapping="true"/></f:heading>
 				<f:actions>
+					<Button id="createButton" text="Create Scenario" icon="sap-icon://add-document" type="Transparent" press=".onOpenCreate" visible="{caps>/canImport}"
+						tooltip="Enter a new synthetic engineering change with components, prices and stock"/>
 					<Button id="importButton" text="Import Scenario" icon="sap-icon://upload" type="Transparent" press=".onOpenImport" visible="{caps>/canImport}"
 						tooltip="Validate and import synthetic demonstration data (development only)"/>
 					<Button text="Worklist" icon="sap-icon://list" type="Transparent" press=".onOpenWorklist"
