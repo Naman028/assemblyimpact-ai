@@ -1,0 +1,26 @@
+{
+  "purpose": "Single live Gemini call for COOL-100 (EC-000473), deployed BTP app",
+  "environment": "CF US10 trial, approuter -> assemblyimpact-srv, HANA Cloud HDI, production XSUAA",
+  "deployed_commit": "091bf2d (main after PR #28)",
+  "systemStatus_before_call": { "databaseKind": "HANA", "genaiMode": "GEMINI", "authMode": "PRODUCTION" },
+  "request": "GET /odata/v4/engineering-review/ReviewCases(<COOL-100 case>)/EngineeringReview.explainImpact()",
+  "http_status": 200,
+  "latency_ms": { "ttfb": 2434, "total": 2440 },
+  "response": {
+    "runID": "76c59610-78fb-4d24-9b53-b7dab3a6ffef",
+    "caseNumber": "EC-000473",
+    "status": "WITHHELD",
+    "text": null,
+    "issues": "shortageAnalysis:NO_CITATIONS",
+    "citations": "RUN,F1",
+    "generatedBy": "GOOGLE_GEMINI_API",
+    "model": "gemini-3.5-flash-lite",
+    "promptSha256": "b5c70bbec1d1ffc6e3fc8a65a11a96594d3e17bd12eac871129ed4cdf69499da",
+    "factCount": 14,
+    "generatedAt": "2026-11-10T23:51:12.262Z"
+  },
+  "interpretation": "Google answered (model reachable, key valid, structured JSON parsed). CAP's grounding check withheld the answer because the shortageAnalysis section had no citation it recognised; the other sections cited RUN and F1. No AI text was shown to the user. CAP figures (+1200.00 EUR, 2 short) remain authoritative and unchanged.",
+  "fix": "Validator accepts grouped citations such as [M1, M2] (every id still checked against the evidence); prompt asks for one id per bracket. Branch fix/gemini-grouped-citations.",
+  "screenshot": "E09-01-gemini-live-cool100-withheld.jpg",
+  "secrets": "No key, token or user identifier recorded."
+}

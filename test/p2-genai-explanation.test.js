@@ -83,6 +83,10 @@ test('validator: citations must exist, numbers must come from the evidence', () 
   assert.deepEqual(genai.validateExplanation('Cost rises by 1300 EUR [RUN].', evidence).issues, ['UNGROUNDED_NUMBER:1300']);
   assert.deepEqual(genai.validateExplanation('BRG-300A is short [M9].', evidence).issues, ['UNKNOWN_CITATION:M9']);
   assert.deepEqual(genai.validateExplanation('Cost rises.', evidence).issues, ['NO_CITATIONS']);
+  // Grouped ids (seen live from gemini-3.5-flash-lite on 2026-11-10): accepted, but every id is still checked.
+  assert.deepEqual(genai.validateExplanation('BRG-300A is short by 50 [M1, RUN].', evidence), { ok: true, issues: [], citations: ['M1', 'RUN'] });
+  assert.deepEqual(genai.validateExplanation('BRG-300A is short by 50 [M1, M9].', evidence).issues, ['UNKNOWN_CITATION:M9']);
+  assert(genai.validateExplanation('BRG-300A is short by 50 (M1).', evidence).issues.includes('NO_CITATIONS'));
   assert.deepEqual(genai.validateExplanation('', evidence).issues, ['EMPTY_ANSWER']);
   assert(genai.validateExplanation('Data is complete [RUN]. We recommend that you approve it.', evidence).issues.includes('DECISION_RECOMMENDATION'));
 });
