@@ -9,8 +9,11 @@ All business data is **synthetic** (fictional company NovaMotion Manufacturing).
 S/4HANA system.
 
 > Status as of 2026-11-10. `main@22158b7` (PRs #20 and #21 merged) is deployed to the SAP BTP US10 trial
-> (Cloud Foundry, HANA Cloud, XSUAA); evidence in `docs/btp/deployment-2026-11-10.md`. PR #22 (explicit ERP source
-> and database mode) is open and not deployed.
+> (Cloud Foundry, HANA Cloud, XSUAA); evidence in `docs/btp/deployment-2026-11-10.md`. The following PRs are open and
+> **not merged or deployed**:
+> - #22: explicit ERP source and database mode
+> - #23: Gemini structured explanations; stacked on #22
+> - #24: worklist on phone widths
 
 ## Contents
 
@@ -40,7 +43,7 @@ S/4HANA system.
 | Review workflow: submit, approve, reject, evidence acknowledgement, separation of duties, decision history | `srv/lib/review-decisions.js` |
 | Synthetic scenario import (validated preview, all-or-nothing commit) and controlled edit of synthetic inputs | `srv/lib/scenario-import.js`, `srv/lib/demo-data.js` |
 | Consumption planning (PR #21): per-day stock projection from DAY/WEEK/MONTH rates, separate from the impact result | `srv/lib/coverage.js`, `srv/lib/planning.js` |
-| S/4HANA-shaped ERP adapter (P2; fixture mode) and grounded GenAI explanation (P2; fixture provider) | `srv/integration/` |
+| S/4HANA-shaped ERP adapter (P2; fixture mode) and grounded, structured GenAI explanation (P2). Providers: Google Gemini API (backend only, PR #23), SAP Generative AI Hub, labelled fixture | `srv/integration/`, `docs/p2/genai-provider.md` |
 | Fiori elements worklist (P3), SAPUI5 Investigation Studio (P4), landing page | `app/case-worklist`, `app/investigation-studio`, `app/home`, `app/launchpad.html` |
 | SAP Build Actions contract for Joule (P1) | `test/p1-actions-contract.test.js`, EU10 Actions projects (section 10) |
 | MTA for Cloud Foundry: CAP srv, HDI deployer, app router, XSUAA, destination | `mta.yaml`, `xs-security.json`, `app/router/xs-app.json` |
@@ -49,8 +52,8 @@ S/4HANA system.
 
 | Project | Implemented | Status | External blocker |
 |---|---|---|---|
-| **P1 Joule Skills & Agent** | Two released SAP Build Actions projects in the shared EU10 trial (`AssemblyImpact Engineering Actions` 1.0.0, `AssemblyImpact Engineering Read Actions` 1.0.1) over the EngineeringReview OData service; Joule Studio classic project `AssemblyImpact Engineering Assistant` with the skill `Engineering Case Lookup` (not released); Actions contract tested locally | Partially implemented, **no live Joule execution** | EU10: shared trial tenant without destination administration; US10: no Joule Studio-capable SAP Build plan (section 10) |
-| **P2 S/4HANA + GenAI** | ERP adapter with `fixtures` / `sandbox` / `s4` modes and grounded explanation (`explainImpact`) | Implemented and tested with fixtures; sandbox, S/4 and SAP AI Core modes not run live | No authorized S/4HANA system or AI Core binding |
+| **P1 Joule Skills & Agent** | Two released SAP Build Actions projects in the shared EU10 trial (`AssemblyImpact Engineering Actions` 1.0.0, `AssemblyImpact Engineering Read Actions` 1.0.1) over the EngineeringReview OData service; Joule Studio classic project `AssemblyImpact Engineering Assistant` with the skill `Engineering Case Lookup`: saved and validated, inputs caseNumber, assemblyCode and status mapped to `LookupEngineeringCases`; not released, no agent. Actions contract tested locally | Completed as a design-time artifact; **no live Joule execution** | EU10: the Test dialog has no environment, and there is no destination to the CAP service (needs subaccount trust and destination administration in the shared tenant); US10: no Joule Studio-capable SAP Build plan (section 10, `p1/joule/EU10-STATUS-2026-11-10.md`) |
+| **P2 S/4HANA + GenAI** | ERP adapter with `fixtures` / `sandbox` / `s4` modes. Grounded explanation (`explainImpact`) with the Gemini provider (`gemini-2.5-flash`, JSON schema, per-section validation); only synthetic data is sent | Implemented and locally tested; UI checked in BAS (fixture and not-configured). **No live Gemini call** (no key). Sandbox and S/4 modes not run live | Gemini key and billing decision by the owner: EEA users require Paid Services under the Gemini API terms. No authorized S/4HANA system |
 | **P3 AI-assisted Fiori** | Case Worklist (Fiori elements V4) generated first with SAP Project Accelerator, then reviewed and adapted | Implemented; evidence `docs/evidence/p3-case-worklist/` | — |
 | **P4 Fiori on BTP** | Investigation Studio (SAPUI5) + CAP + HANA + XSUAA + app router on BTP | Deployed (`main@22158b7`) | — |
 
@@ -187,7 +190,8 @@ Changing source in BAS does not change HANA: only an MTA deployment runs the HDI
 | Check | Result (2026-11-10) |
 |---|---|
 | EU10 Actions projects | `AssemblyImpact Engineering Actions` latest 1.0.0, `AssemblyImpact Engineering Read Actions` latest 1.0.1 — both listed as available (released) |
-| EU10 Joule Studio classic | project `AssemblyImpact Engineering Assistant`, one Joule skill `Engineering Case Lookup` (uses action `FindEngineeringCases`), shown as modified and not released; no agent |
+| EU10 Joule Studio classic | project `AssemblyImpact Engineering Assistant` with one Joule skill, `Engineering Case Lookup`. It uses `LookupEngineeringCases` with inputs caseNumber, assemblyCode and status. The skill is saved, validated (Design Console 0) and not released; there is no agent |
+| EU10 Test | the dialog requires an environment (none exists) and a destination for `assemblyImpactBackend`; none of the listed destinations points to this backend, so other users' destinations were not used |
 | Runtime readiness EU10 | needs a destination from the tenant to the CAP service with OAuth; the shared trial tenant gives no destination administration → not executable |
 | US10 | SAP Build Lobby without Joule Studio; entitlements show SAP Build Process Automation `free`/`standard`, no `build_default` plan with Joule → import of a Joule Studio project not possible |
 | Export / transport | Joule Studio classic supports project export/import between tenants; not performed, because no eligible target tenant exists |
@@ -213,16 +217,31 @@ entitlement) and destination rights. Nothing in the application fakes a Joule co
 
 ## 13. Tests and evidence
 
-- `npm test`: 187 tests (unit, service/API, authorization, business rules, concurrency) — 187/187 locally on PR #21 (5de3758); CI results are recorded on the PR.
+- `npm test`: 196/196 on PR #23 (unit, service/API, authorization, business rules, concurrency, Gemini provider with stubbed HTTP); 187/187 on PR #24. CI results are recorded on the PRs.
+- Deployed app checked in a browser on 2026-11-10 (router URL, `main@22158b7`):
+  - XSUAA sign-in works (authMode PRODUCTION).
+  - `systemStatus`: data source NONE, GenAI NOT_CONFIGURED, Joule NOT_CONNECTED.
+  - 7 cases, all plant 1000, and no case from another plant is visible.
+  - A missing case returns 404.
+  - `explainImpact` returns 409 `GENAI_NOT_CONFIGURED`.
+  - `/dev-users.html` returns 404.
+  - Defects found: plants shown as "1000, 1000, 1000" (fixed in PR #22), and the worklist showing only the image column at 390 px (fixed in PR #24, see `docs/evidence/worklist-narrow-screen/`).
+- AI Explanation tab (PR #23) checked in BAS: `docs/evidence/p2-gemini-ui/`.
 - CI: `.github/workflows/ci.yml` (lint, tests, audit) on every PR.
 - Browser walkthrough of PR #21 in BAS (separate clone, port 4005, in-memory SQLite): `docs/evidence/pr21-bas-walkthrough/` (20 screenshots; defects found there were fixed on the branch).
 - Earlier evidence: `docs/evidence/faculty-demo/`, `docs/evidence/p3-case-worklist/`, `docs/evidence/rc1-browser-check/`.
 
 ## 14. Known limitations and next actions
 
-Blockers: live Joule (P1) needs a licensed tenant; live S/4HANA and SAP AI Core (P2) need authorized systems.
-Open: review PR #22; create a second SAP ID user with the Approver role for the deployed demo;
-narrow-screen layout of the Studio not re-verified in a resized browser after PR #21.
+Blockers:
+- Live Joule (P1) needs a destination and environment in the Joule tenant, or a licensed tenant.
+- Live Gemini (P2) needs the owner to set `GEMINI_API_KEY` on `assemblyimpact-srv` and to decide on billing.
+- Live S/4HANA needs an authorized system.
+
+Open:
+- Review and merge PRs #22, #23 and #24, then deploy.
+- Create a second SAP ID user with the Approver role, to show the review workflow on the deployed app.
+- Plant restriction on the deployed app was checked only with one plant-1000 user. Cross-plant isolation is covered by the automated tests.
 
 ## 15. GenAI assistance disclosure
 
@@ -232,5 +251,5 @@ narrow-screen layout of the Studio not re-verified in a resized browser after PR
 - **AI-supported testing and documentation:** test cases and this README were drafted with Claude and checked against
   the running application, CI and BTP.
 - **SAP AI in the application:** P3 used SAP Project Accelerator (evidence folder). Joule is designed but not running
-  (section 10). The GenAI explanation uses a fixture provider; no LLM calculates, authorizes or decides anything.
+  (section 10). The GenAI explanation can use the Google Gemini API from the CAP backend (PR #23; not live, because no key is set) or a labelled fixture. No LLM calculates, authorizes or decides anything.
   Claude is not part of the deployed application.
