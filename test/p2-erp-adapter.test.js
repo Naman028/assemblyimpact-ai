@@ -210,8 +210,10 @@ test('a second engineering change of the same material, and shared components, a
   const later = { ...SELECTION, caseNumber: 'EC-S4-0004', title: 'Price moved' };
   const changed = { d: { results: v.d.results.map(r => (r.Product === 'HSG-4711' && r.ValuationArea === '1000' && !r.ValuationType ? { ...r, StandardPrice: '48.00' } : r)) } };
   const transport = async path => (path.includes('A_ProductValuation') ? changed : fixtureTransport(DIR)(path));
-  // Next day (within the one-day clock tolerance of the validator), so the new price starts after the existing one.
-  const nextDay = new Date(Date.now() + 20 * 3600_000).toISOString();
+  // Next calendar day (UTC), and less than 24 h ahead, i.e. within the validator's one-day clock tolerance.
+  // (Was now + 20 h, which stays on the same date before 04:00 UTC and made the test fail at night.)
+  const midnight = new Date(); midnight.setUTCHours(24, 1, 0, 0);
+  const nextDay = midnight.toISOString();
   const bundle = await extract({ transport, mode: 'synthetic', selection: later, now: nextDay });
   const result = await cds.tx(async () => {
     const validated = await validateBundle({ records: Object.fromEntries(Object.entries(bundle).filter(([, x]) => Array.isArray(x))) }, { plants: ['1000'], sourceType: 'DEMO_IMPORT', policy: 'erp-merge' });

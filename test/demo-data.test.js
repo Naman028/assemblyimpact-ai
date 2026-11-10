@@ -107,6 +107,8 @@ test('supporting image: create, upload once, read back in plant; validated type 
   assert.equal(img.status, 200);
   assert.match(img.type, /image\/png/);
   assert(img.data.equals(PNG), 'bytes round-trip');
+  const raw = await fetch(`${base}/CaseAttachments(${id})/content`, { headers: { authorization: `Basic ${Buffer.from('cviewer:test').toString('base64')}` } });
+  assert.equal(raw.headers.get('x-content-type-options'), 'nosniff', 'no content sniffing on served images');
   assert.equal((await call('GET', `/CaseAttachments(${id})/content`, { user: 'cviewer2' })).status, 404, 'other plant cannot read');
   assert.equal((await call('PATCH', `/CaseAttachments(${id})`, { user: 'analyst', body: { fileName: 'x.png' } })).status, 400, 'metadata immutable');
 });

@@ -22,6 +22,8 @@ export default class EngineeringReview extends cds.ApplicationService {
     this.on('lookupCases', req => this.#lookupCases(req));
     // Faculty demo: supporting images and controlled synthetic input edits (lib/demo-data.js).
     const asReject = (req, error) => { if (error instanceof DemoDataError) return req.reject({ status: error.status, code: error.code, message: error.message }); throw error; };
+    // Images are served inline; the browser must not guess another content type.
+    this.before('READ', 'CaseAttachments', req => { req.http?.res?.setHeader?.('X-Content-Type-Options', 'nosniff'); });
     this.before('CREATE', 'CaseAttachments', async req => {
       try { Object.assign(req.data, await prepareAttachment(req.data, { plants: userPlants(req.user), user: req.user.id })); } catch (e) { return asReject(req, e); }
     });
