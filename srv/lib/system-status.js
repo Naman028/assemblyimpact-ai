@@ -40,8 +40,11 @@ export function databaseKind(db = cds.env.requires?.db ?? {}) {
   return kind ? kind.toUpperCase() : 'UNKNOWN';
 }
 
-/** GENAI_HUB (live provider configured), FIXTURE (labelled test answers) or NOT_CONFIGURED. */
-export function genaiMode(genai = cds.env.requires?.genai ?? {}) {
+/** GEMINI or GENAI_HUB (live provider configured), FIXTURE (labelled test answers) or NOT_CONFIGURED. */
+export function genaiMode(genai = cds.env.requires?.genai ?? {}, environment = process.env) {
+  // Gemini: same preconditions as geminiProvider() — a model id and the key in the named environment variable.
+  // Only the presence of the key is checked; its value is never read into the status.
+  if (genai.provider === 'gemini') return genai.modelId && environment[genai.apiKeyEnv ?? 'GEMINI_API_KEY'] ? 'GEMINI' : 'NOT_CONFIGURED';
   // Same preconditions as providerFor(): without deployment and resource group every call would fail.
   if (genai.provider === 'genai-hub') return genai.deploymentId && genai.resourceGroup ? 'GENAI_HUB' : 'NOT_CONFIGURED';
   if (genai.provider === 'fixture') return 'FIXTURE';

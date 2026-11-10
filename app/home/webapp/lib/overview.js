@@ -33,6 +33,7 @@ sap.ui.define([], function () {
   };
   var GENAI = {
     FIXTURE: ["Test answers", "Labelled fixture answers — not live AI output", "Information"],
+    GEMINI: ["Google Gemini", "Live provider configured (backend only); answers are validated against the run", "Success"],
     GENAI_HUB: ["Generative AI Hub", "Live provider configured; answers are validated against the run", "Success"],
     NOT_CONFIGURED: ["Not configured", "AI explanations are unavailable", "None"]
   };

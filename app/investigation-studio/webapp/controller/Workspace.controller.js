@@ -327,7 +327,10 @@ sap.ui.define([
         var status = error && error.status;
         var retryable = status === 429 || status === 502 || status === 503 || status === 504
           || code === "GENAI_RATE_LIMITED" || code === "GENAI_TIMEOUT" || code === "GENAI_UNAVAILABLE";
-        var message = ((error && error.message) || "The explanation is not available.")
+        // In production CAP replaces 5xx messages with the HTTP reason ("Bad Gateway"); say what it means instead.
+        var raw = (error && error.message) || "";
+        var message = (status === 502 || status === 503 ? "The AI provider did not return an explanation (HTTP " + status + ")."
+          : status === 504 ? "The AI provider did not answer in time." : raw || "The explanation is not available.")
           + (retryable ? " The impact calculation is unaffected; you can retry." : "");
         ws.setProperty("/explanation", null);
         ws.setProperty("/explanationSections", null);
