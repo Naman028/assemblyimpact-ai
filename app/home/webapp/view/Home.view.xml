@@ -50,18 +50,18 @@
 
 				<Title text="Applications" level="H2" class="sapUiTinyMarginBottom"/>
 				<HBox wrap="Wrap" renderType="Bare" class="aiTiles">
-					<GenericTile header="Engineering Change Worklist" subheader="Find, filter and review cases" press=".onOpenWorklist" ariaLabel="Open the Engineering Change Worklist">
+					<GenericTile header="Engineering Change Worklist" subheader="Find and review" press=".onOpenWorklist" ariaLabel="Open the Engineering Change Worklist">
 						<TileContent footer="{= ${home>/counts/total} === undefined ? '' : ${home>/counts/total} + ' cases' }"><ImageContent src="sap-icon://list"/></TileContent>
 					</GenericTile>
-					<GenericTile header="Investigation Studio" subheader="Components, evidence, impact" press=".onOpenStudio" ariaLabel="Open the Investigation Studio">
+					<GenericTile header="Investigation Studio" subheader="Impact and evidence" press=".onOpenStudio" ariaLabel="Open the Investigation Studio">
 						<TileContent footer="Calculate and explain"><ImageContent src="sap-icon://machine"/></TileContent>
 					</GenericTile>
-					<GenericTile header="Review queue" subheader="Cases waiting for a decision" press=".onOpenStatus" ariaLabel="Open the cases in review">
+					<GenericTile header="Review queue" subheader="Awaiting decision" press=".onOpenStatus" ariaLabel="Open the cases in review">
 						<customData><core:CustomData key="status" value="IN_REVIEW"/></customData>
 						<TileContent footer="In review"><NumericContent value="{home>/counts/inReview}" icon="sap-icon://approvals" withMargin="false"/></TileContent>
 					</GenericTile>
-					<GenericTile header="Create Scenario" subheader="New synthetic engineering case" press=".onOpenCreate" visible="{home>/caps/canImport}" ariaLabel="Create a synthetic scenario">
-						<TileContent footer="Demonstration data only"><ImageContent src="sap-icon://add-document"/></TileContent>
+					<GenericTile header="Create Scenario" subheader="Synthetic case" press=".onOpenCreate" visible="{home>/caps/canImport}" ariaLabel="Create a synthetic scenario">
+						<TileContent footer="Demo data only"><ImageContent src="sap-icon://add-document"/></TileContent>
 					</GenericTile>
 				</HBox>
 
@@ -80,7 +80,7 @@
 						<customData><core:CustomData key="status" value="DECIDED"/></customData>
 						<TileContent><NumericContent value="{home>/counts/decided}" valueColor="Good" withMargin="false"/></TileContent>
 					</GenericTile>
-					<GenericTile header="Material shortages" subheader="Latest run has short materials" ariaLabel="Cases with shortages">
+					<GenericTile header="Material shortages" subheader="In latest run" ariaLabel="Cases with shortages">
 						<TileContent footer="Cases"><NumericContent value="{home>/counts/withShortages}" valueColor="Error" withMargin="false"/></TileContent>
 					</GenericTile>
 				</HBox>
