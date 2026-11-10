@@ -3,9 +3,9 @@ sap.ui.define([
   "sap/m/MessageBox", "sap/m/MessageToast", "sap/m/Dialog", "sap/m/Button", "sap/m/TextArea", "sap/m/CheckBox", "sap/m/Label",
   "sap/m/MessageStrip", "sap/m/DatePicker", "sap/m/VBox", "sap/m/Text", "sap/f/library",
   "assemblyimpact/investigationstudio/lib/format", "assemblyimpact/investigationstudio/lib/schematic",
-  "sap/ui/core/InvisibleMessage", "sap/ui/core/library", "sap/m/Select", "sap/m/Input", "sap/ui/core/Item"
+  "sap/ui/core/InvisibleMessage", "sap/ui/core/library", "sap/m/Select", "sap/m/Input", "sap/ui/core/Item", "sap/ui/core/Messaging"
 ], function (Controller, JSONModel, Filter, FilterOperator, MessageBox, MessageToast, Dialog, Button, TextArea, CheckBox, Label,
-  MessageStrip, DatePicker, VBox, Text, fLibrary, format, schematic, InvisibleMessage, coreLibrary, Select, Input, Item) {
+  MessageStrip, DatePicker, VBox, Text, fLibrary, format, schematic, InvisibleMessage, coreLibrary, Select, Input, Item, Messaging) {
   "use strict";
   var InvisibleMessageMode = coreLibrary.InvisibleMessageMode;
 
@@ -488,10 +488,28 @@ sap.ui.define([
       var ws = this.getView().getModel("ws"), c = ws.getProperty("/case"), n = ws.getProperty("/cov/new"), that = this;
       var unit = (ws.getProperty("/cov/materials").filter(function (m) { return m.material === n.material; })[0] || {}).unit;
       if (!n.material || !unit || n.quantity === "" || !(Number(n.quantity) >= 0)) { MessageBox.error("Choose a material and enter a quantity of 0 or more."); return; }
-      var list = this.getView().getModel().bindList("/MaterialConsumptionRates");
-      var ctx = list.create({ material: n.material, plant: c.plant, period: n.period, quantity: String(n.quantity), unit: unit, validFrom: n.validFrom, validTo: n.validTo });
-      ctx.created().then(function () { MessageToast.show("Consumption rate saved."); ws.setProperty("/cov/new/quantity", ""); return that.onCoverage(); })
-        .catch(function (e) { MessageBox.error(e.message, { title: "Rate not saved" }); });
+      // A refused POST must not stay queued: OData V4 keeps a failed create pending and repeats it with the next
+      // request (found in the BAS walkthrough: an overlapping rate failed silently). The create runs in its own
+      // group; on failure the server message is shown and the transient entry is discarded.
+      var model = this.getView().getModel(), group = "rateCreate";
+      var list = model.bindList("/MaterialConsumptionRates", null, null, null, { $$updateGroupId: group });
+      var before = Messaging.getMessageModel().getData().length;
+      list.attachEventOnce("createCompleted", function (event) {
+        if (event.getParameter("success")) {
+          MessageToast.show("Consumption rate saved.");
+          ws.setProperty("/cov/new/quantity", "");
+          that.onCoverage();
+          list.destroy();
+        } else {
+          var fresh = Messaging.getMessageModel().getData().slice(before).filter(function (m) { return m.getType() === "Error"; });
+          MessageBox.error(fresh.length ? fresh[fresh.length - 1].getMessage() : "The rate was not saved.", { title: "Rate not saved" });
+          Messaging.removeMessages(fresh);
+          event.getParameter("context").delete().catch(function () { /* transient entry discarded */ }).then(function () { list.destroy(); });
+        }
+      });
+      list.create({ material: n.material, plant: c.plant, period: n.period, quantity: String(n.quantity), unit: unit, validFrom: n.validFrom, validTo: n.validTo })
+        .created().catch(function () { /* handled in createCompleted */ });
+      model.submitBatch(group);
     },
 
     /** Rates are never deleted: withdrawal keeps the record (who, when, why) and excludes it from planning. */
