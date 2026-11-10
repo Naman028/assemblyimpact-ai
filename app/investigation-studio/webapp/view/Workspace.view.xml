@@ -44,28 +44,28 @@
 						text="Latest run has warnings ({ path: 'ws>/run/flags', formatter: '.fmt.flags' }). Approval requires an explicit acknowledgement."/>
 					<cssgrid:CSSGrid gridTemplateColumns="repeat(auto-fit, minmax(min(100%, 9.5rem), 1fr))" gridGap="0.75rem 1.5rem" class="aiKpis">
 						<VBox class="aiKpi">
-							<Label text="Revisions"/>
+							<Label wrapping="true" text="Revisions"/>
 							<Title text="{ parts: ['ws>/case/fromRevision', 'ws>/case/toRevision'], formatter: '.fmt.revisionPath' }" level="H3"/>
 						</VBox>
 						<VBox class="aiKpi">
-							<Label text="Estimated cost delta"/>
+							<Label wrapping="true" text="Estimated cost delta"/>
 							<ObjectNumber number="{ parts: ['ws>/run/costDeltaTotal', 'ws>/run/currency', 'ws>/run/status'], formatter: '.fmt.runMoney' }" state="{ path: 'ws>/run/costDeltaTotal', formatter: '.fmt.deltaState' }" emphasized="true" class="aiKpiNumber"/>
-							<Label text="{ path: 'ws>/run/costDeltaPercent', formatter: '.fmt.percent' }"/>
+							<Label wrapping="true" text="{ path: 'ws>/run/costDeltaPercent', formatter: '.fmt.percent' }"/>
 						</VBox>
 						<VBox class="aiKpi">
-							<Label text="Materials short"/>
+							<Label wrapping="true" text="Materials short"/>
 							<ObjectNumber number="{= ${ws>/run} ? ${ws>/run/materialsShort} : '—' }" state="{ path: 'ws>/run/materialsShort', formatter: '.fmt.countState' }" emphasized="true" class="aiKpiNumber"/>
-							<Label text="{= ${ws>/run/materialsUnknown} > 0 ? ${ws>/run/materialsUnknown} + ' unknown' : '' }"/>
+							<Label wrapping="true" text="{= ${ws>/run/materialsUnknown} > 0 ? ${ws>/run/materialsUnknown} + ' unknown' : '' }"/>
 						</VBox>
 						<VBox class="aiKpi">
-							<Label text="Instruction findings"/>
+							<Label wrapping="true" text="Instruction findings"/>
 							<ObjectNumber number="{= ${ws>/run} ? ${ws>/run/instructionFindings} : '—' }" state="{ path: 'ws>/run/instructionFindings', formatter: '.fmt.countState' }" emphasized="true" class="aiKpiNumber"/>
-							<Label text="{= ${ws>/run} ? ${ws>/run/instructionsToUpdate} + ' instruction(s) to update' : '' }"/>
+							<Label wrapping="true" text="{= ${ws>/run} ? ${ws>/run/instructionsToUpdate} + ' instruction(s) to update' : '' }"/>
 						</VBox>
 						<VBox class="aiKpi">
-							<Label text="Impact run"/>
+							<Label wrapping="true" text="Impact run"/>
 							<ObjectStatus text="{ path: 'ws>/run/status', formatter: '.fmt.runStatus' }" state="{ path: 'ws>/run/status', formatter: '.fmt.runState' }" icon="sap-icon://measure" class="aiKpiStatus"/>
-							<Label text="{= ${ws>/run} ? 'as of ' + ${ws>/run/asOfDate} : '' }"/>
+							<Label wrapping="true" text="{= ${ws>/run} ? 'as of ' + ${ws>/run/asOfDate} : '' }"/>
 						</VBox>
 					</cssgrid:CSSGrid>
 				</VBox>
@@ -135,7 +135,7 @@
 												infoState="{ path: 'ws>severity', formatter: '.fmt.severityState' }" wrapping="true"/>
 										</items>
 									</List>
-									<List headerText="Instruction steps for this component" items="{ws>/detail/steps}" noDataText="No work-instruction step references this component." class="sapUiSmallMarginTop">
+									<List headerText="Instruction steps" items="{ws>/detail/steps}" noDataText="No work-instruction step references this component." class="sapUiSmallMarginTop">
 										<items>
 											<StandardListItem title="{ws>instructionId} v{ws>version} · step {ws>step}" description="{ws>text}" info="{= ${ws>outdated} ? 'Outdated' : 'Consistent' }"
 												infoState="{= ${ws>outdated} ? 'Error' : 'Success' }" icon="sap-icon://document-text" wrapping="true"/>
