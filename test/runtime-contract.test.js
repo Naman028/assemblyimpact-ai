@@ -90,3 +90,16 @@ test('landing page: sap.m.Page (no DynamicPage content-fit oscillation); one req
   assert.match(ov.loadError({ status: 403 }), /no role/);
   assert.match(ov.loadError(new Error('HTTP 500 for x')), /could not be loaded/);
 });
+
+test('P1 Actions spec: every {placeholder} in a path is a declared path parameter (SAP Build lost ImpactRuns ID)', () => {
+  const spec = JSON.parse(read('p1/build-actions/assemblyimpact-engineering-actions.openapi.json'));
+  for (const [path, item] of Object.entries(spec.paths))
+    for (const [method, op] of Object.entries(item)) {
+      const declared = (op.parameters ?? []).filter(p => p.in === 'path').map(p => p.name).sort();
+      const placeholders = [...path.matchAll(/\{(\w+)\}/g)].map(m => m[1]).sort();
+      assert.deepEqual(declared, placeholders, `${method.toUpperCase()} ${path}`);
+    }
+  // Regenerating from the full CAP OpenAPI document reproduces the committed spec exactly.
+  const out = spawnSync(process.execPath, ['make-actions-spec.mjs', 'engineering-review.openapi.full.json'], { cwd: join(ROOT, 'p1', 'build-actions'), encoding: 'utf8' });
+  assert.equal(out.stdout, read('p1/build-actions/assemblyimpact-engineering-actions.openapi.json'));
+});
