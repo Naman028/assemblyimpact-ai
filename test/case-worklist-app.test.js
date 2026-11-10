@@ -81,6 +81,14 @@ test('UI annotations implement the agreed worklist contract without draft', asyn
   assert.deepEqual(columns, ['assemblyCode', 'caseNumber', 'fromRevision', 'toRevision', 'latestRun/instructionFindings',
     'latestRun/materialsShort', 'latestRun/costDeltaTotal', 'sourceType', 'status']);
   assert.match(lineItem, /UI.DataFieldForAction[\s\S]*EngineeringReview.runImpact/);
+  // Phone widths (found on the deployed app at 390 px: only the image column was visible): identifying columns keep
+  // High importance, the image column is Low, so case number, assembly and status stay on screen.
+  const importance = path => (lineItem.split('</Record>').find(r => r.includes(`Path="${path}"/>`))
+    ?.match(/UI\.ImportanceType\/(\w+)/) ?? [])[1];
+  for (const path of ['assemblyCode', 'caseNumber', 'status']) assert.equal(importance(path), 'High', path);
+  assert.equal(importance('latestRun/costDeltaTotal'), 'Medium');
+  const lr = Object.values(manifest['sap.ui5'].routing.targets).find(t => t.options?.settings?.controlConfiguration)?.options.settings.controlConfiguration['@com.sap.vocabularies.UI.v1.LineItem'];
+  assert.equal(lr.columns.AssemblyImage.importance, 'Low');
   const filters = [...cases.match(/Term="UI.SelectionFields">[\s\S]*?<\/Collection>/)[0].matchAll(/<PropertyPath>([^<]+)</g)].map(m => m[1]);
   assert.deepEqual(filters, ['assemblyCode', 'plant', 'toRevision', 'status', 'sourceType']);
   for (const facet of ['@UI.FieldGroup#General', '@UI.FieldGroup#Impact', 'runs/@UI.PresentationVariant']) assert(cases.includes(facet), facet);
