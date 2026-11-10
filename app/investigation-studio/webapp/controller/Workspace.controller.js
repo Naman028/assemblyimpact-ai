@@ -464,7 +464,11 @@ sap.ui.define([
       var materials = Object.keys(mats).sort().map(function (m) { return { material: m, unit: mats[m] }; });
       ws.setProperty("/cov/materials", materials);
       if (!ws.getProperty("/cov/new/material") && materials[0]) { ws.setProperty("/cov/new/material", materials[0].material); }
-      model.bindContext("/myCapabilities()").requestObject().then(function (caps) { ws.setProperty("/cov/canEdit", !!(caps && caps.canMaintainRates)); }).catch(function () { /* read-only */ });
+      model.bindContext("/myCapabilities()").requestObject().then(function (caps) {
+        ws.setProperty("/cov/canEdit", !!(caps && caps.canMaintainRates));
+        // Edit Input needs DemoDataImporter and the demo feature (found in the walkthrough: shown to approvers, then 403).
+        ws.setProperty("/canEditInput", !!(caps && caps.canImport));
+      }).catch(function () { /* read-only */ });
       if (!materials.length) { ws.setProperty("/cov/rates", []); return Promise.resolve(); }
       var list = model.bindList("/MaterialConsumptionRates", null, null,
         [new Filter("plant", FilterOperator.EQ, c.plant), new Filter({ filters: materials.map(function (m) { return new Filter("material", FilterOperator.EQ, m.material); }), and: false })],

@@ -18,7 +18,7 @@
 				<f:actions>
 					<Button id="btnRun" text="Run Impact" icon="sap-icon://simulate" type="Emphasized" press=".onRunImpact" visible="{= !!${ws>/case/canRunImpact} }"/>
 					<Button id="btnEditInput" text="Edit Input" icon="sap-icon://edit" press=".onEditInput"
-						visible="{= ${ws>/case/status} === 'OPEN' &amp;&amp; (${ws>/case/sourceType} === 'DEMO_IMPORT' || ${ws>/case/sourceType} === 'SYNTHETIC_FIXTURE') }"
+						visible="{= !!${ws>/canEditInput} &amp;&amp; ${ws>/case/status} === 'OPEN' &amp;&amp; (${ws>/case/sourceType} === 'DEMO_IMPORT' || ${ws>/case/sourceType} === 'SYNTHETIC_FIXTURE') }"
 						tooltip="Change one synthetic input (demonstration data only)"/>
 					<Button id="btnSubmit" text="Submit for Review" icon="sap-icon://paper-plane" press=".onSubmit" visible="{= !!${ws>/case/canSubmit} }"/>
 					<Button id="btnApprove" text="Approve" icon="sap-icon://accept" type="Accept" press=".onApprove" visible="{= !!${ws>/case/canDecide} }"/>
