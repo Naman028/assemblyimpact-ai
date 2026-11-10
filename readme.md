@@ -8,12 +8,9 @@ projects (P1 Joule, P2 S/4HANA + GenAI, P3 AI-assisted Fiori, P4 Fiori on BTP).
 All business data is **synthetic** (fictional company NovaMotion Manufacturing). No record comes from a real SAP
 S/4HANA system.
 
-> Status as of 2026-11-10. `main@22158b7` (PRs #20 and #21 merged) is deployed to the SAP BTP US10 trial
-> (Cloud Foundry, HANA Cloud, XSUAA); evidence in `docs/btp/deployment-2026-11-10.md`. The following PRs are open and
-> **not merged or deployed**:
-> - #22: explicit ERP source and database mode
-> - #23: Gemini structured explanations; stacked on #22
-> - #24: worklist on phone widths
+> **Status as of 2026-11-10:** The deployed SAP BTP US10 application runs `main@22158b7` (Cloud Foundry, SAP HANA Cloud, XSUAA). Deployment evidence is recorded in `docs/btp/deployment-2026-11-10.md`.
+>
+> PR #22 (explicit ERP source and database mode) has been merged into `main`, but that update has not yet been deployed. PR #23 (Gemini structured explanations) and PR #24 (responsive worklist) remain open and are not deployed.
 
 ## Contents
 
@@ -234,14 +231,15 @@ entitlement) and destination rights. Nothing in the application fakes a Joule co
 ## 14. Known limitations and next actions
 
 Blockers:
-- Live Joule (P1) needs a destination and environment in the Joule tenant, or a licensed tenant.
-- Live Gemini (P2) needs the owner to set `GEMINI_API_KEY` on `assemblyimpact-srv` and to decide on billing.
-- Live S/4HANA needs an authorized system.
+- **P1 Joule:** The EU10 skill is saved, but the testing environment, authenticated destination and live backend execution remain unverified. The required tenant permissions must be confirmed.
+- **P2 Gemini:** The implementation is in PR #23 and is not yet deployed. Live execution requires an authorized API credential, confirmation of applicable service terms, and a successful real-provider test.
+- **P2 S/4HANA:** No authorized live S/4HANA system is connected. The application uses explicitly labelled synthetic manufacturing data.
 
 Open:
-- Review and merge PRs #22, #23 and #24, then deploy.
-- Create a second SAP ID user with the Approver role, to show the review workflow on the deployed app.
-- Plant restriction on the deployed app was checked only with one plant-1000 user. Cross-plant isolation is covered by the automated tests.
+- Merge PR #23 (Gemini) and PR #24 (responsive Worklist) after final checks, then deploy the verified combined application.
+- Configure a separate authorized SAP ID user with the Approver role to demonstrate the deployed review workflow.
+- Verify cross-plant authorization with a second authorized identity; current production evidence covers plant 1000, and automated tests cover cross-plant restrictions.
+- Recheck the Investigation Studio on narrow screens if that verification has not been completed.
 
 ## 15. GenAI assistance disclosure
 
