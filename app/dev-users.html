@@ -41,10 +41,10 @@
 <script>
   // Users of the development profile (package.json). Roles are listed for orientation; the server decides them.
   var USERS = [
-    { id: "analyst", label: "Analyst", roles: "ChangeAnalyst, DemoDataImporter · plant 1000", intent: "#EngineeringCase-investigate&/" },
-    { id: "approver", label: "Approver", roles: "ChangeApprover · plant 1000", intent: "#EngineeringCase-investigate&/" },
-    { id: "cviewer", label: "Viewer", roles: "ChangeViewer (read only) · plant 1000", intent: "#EngineeringCase-manage" },
-    { id: "analyst2000", label: "Analyst, plant 2000", roles: "ChangeAnalyst · plant 2000 (plant isolation)", intent: "#EngineeringCase-investigate&/" }
+    { id: "analyst", label: "Analyst", roles: "ChangeAnalyst, DemoDataImporter · plant 1000", intent: "#AssemblyImpact-overview" },
+    { id: "approver", label: "Approver", roles: "ChangeApprover · plant 1000", intent: "#AssemblyImpact-overview" },
+    { id: "cviewer", label: "Viewer", roles: "ChangeViewer (read only) · plant 1000", intent: "#AssemblyImpact-overview" },
+    { id: "analyst2000", label: "Analyst, plant 2000", roles: "ChangeAnalyst · plant 2000 (plant isolation)", intent: "#AssemblyImpact-overview" }
   ];
   var WHO = "/odata/v4/engineering-review/whoAmI()";
   var status = document.getElementById("status");
