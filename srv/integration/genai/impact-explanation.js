@@ -198,8 +198,10 @@ export function sectionsText(sections) {
  */
 export function geminiProvider(env, environment = process.env, fetchImpl = globalThis.fetch) {
   const keyName = env.apiKeyEnv ?? 'GEMINI_API_KEY';
+  // 'modelId', not 'model': CAP treats cds.requires.<service>.model as CDS model files to load and compile.
+  const modelId = env.modelId;
   const apiKey = environment[keyName];
-  if (!apiKey || !env.model) throw new GenAiConfigError(NOT_CONFIGURED_MESSAGE);
+  if (!apiKey || !modelId) throw new GenAiConfigError(NOT_CONFIGURED_MESSAGE);
   const endpoint = (env.endpoint ?? 'https://generativelanguage.googleapis.com/v1beta').replace(/\/$/, '');
   const timeoutMs = Number(env.timeoutMs ?? 20000);
   const provider = async messages => {
@@ -209,7 +211,7 @@ export function geminiProvider(env, environment = process.env, fetchImpl = globa
     const timer = setTimeout(() => controller.abort(), timeoutMs);
     let response;
     try {
-      response = await fetchImpl(`${endpoint}/models/${encodeURIComponent(env.model)}:generateContent`, {
+      response = await fetchImpl(`${endpoint}/models/${encodeURIComponent(modelId)}:generateContent`, {
         method: 'POST', signal: controller.signal,
         headers: { 'content-type': 'application/json', 'x-goog-api-key': apiKey },
         body: JSON.stringify({
@@ -231,12 +233,12 @@ export function geminiProvider(env, environment = process.env, fetchImpl = globa
       // Only Google's status enum (e.g. NOT_FOUND for a model this project may not use) is surfaced, never the body text.
       const reason = await response.json().then(b => b?.error?.status, () => null).catch(() => null);
       const code = typeof reason === 'string' && /^[A-Z_]{3,40}$/.test(reason) ? ` ${reason}` : '';
-      throw new GenAiTransportError(`The Gemini API answered HTTP ${response.status}${code} for model ${env.model}.`, response.status);
+      throw new GenAiTransportError(`The Gemini API answered HTTP ${response.status}${code} for model ${modelId}.`, response.status);
     }
     const body = await response.json().catch(() => null);
     const candidate = body?.candidates?.[0];
     const raw = (candidate?.content?.parts ?? []).map(p => p?.text ?? '').join('');
-    return { raw, sections: parseSections(raw), model: body?.modelVersion ?? env.model, generatedBy: 'GOOGLE_GEMINI_API',
+    return { raw, sections: parseSections(raw), model: body?.modelVersion ?? modelId, generatedBy: 'GOOGLE_GEMINI_API',
       finishReason: candidate?.finishReason ?? null };
   };
   provider.structured = true;

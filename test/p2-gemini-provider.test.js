@@ -42,7 +42,7 @@ const geminiFetch = (respond, calls = []) => async (url, init) => {
 };
 const ok = sections => async () => new Response(JSON.stringify({ modelVersion: 'gemini-2.5-flash',
   candidates: [{ finishReason: 'STOP', content: { parts: [{ text: typeof sections === 'string' ? sections : JSON.stringify(sections) }] } }] }), { status: 200 });
-const cfg = { provider: 'gemini', model: 'gemini-2.5-flash', apiKeyEnv: 'GEMINI_API_KEY', timeoutMs: 200 };
+const cfg = { provider: 'gemini', modelId: 'gemini-2.5-flash', apiKeyEnv: 'GEMINI_API_KEY', timeoutMs: 200 };
 const gem = (respond, calls, over = {}) => genai.geminiProvider({ ...cfg, ...over }, { GEMINI_API_KEY: KEY }, geminiFetch(respond, calls));
 
 test('valid structured explanation: grounded, sections returned, request shape and key handling', async () => {
@@ -125,7 +125,7 @@ test('timeout, rate limit, HTTP errors and network failures map to typed errors 
 });
 
 test('missing credentials or model: "Live AI explanations are not configured."', () => {
-  for (const [env, environment] of [[cfg, {}], [cfg, { GEMINI_API_KEY: '' }], [{ ...cfg, model: null }, { GEMINI_API_KEY: KEY }], [{}, { GEMINI_API_KEY: KEY }]]) {
+  for (const [env, environment] of [[cfg, {}], [cfg, { GEMINI_API_KEY: '' }], [{ ...cfg, modelId: null }, { GEMINI_API_KEY: KEY }], [{ ...cfg, modelId: undefined, model: 'gemini-2.5-flash' }, { GEMINI_API_KEY: KEY }], [{}, { GEMINI_API_KEY: KEY }]]) {
     assert.throws(() => genai.providerFor(env, environment), e => e instanceof genai.GenAiConfigError && e.message === 'Live AI explanations are not configured.');
   }
   assert.equal(typeof genai.providerFor(cfg, { GEMINI_API_KEY: KEY }), 'function');
@@ -146,7 +146,8 @@ test('production profile: Gemini provider configured, key only from the environm
   const pkg = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8'));
   const prod = pkg.cds.requires['[production]'].genai;
   assert.equal(prod.provider, 'gemini');
-  assert.equal(prod.model, 'gemini-3.5-flash-lite', 'stable model open to new projects (2.5 is restricted to earlier users)');
+  assert.equal(prod.model, undefined, "no 'model' key: CAP would load it as CDS model files");
+  assert.equal(prod.modelId, 'gemini-3.5-flash-lite', 'stable model open to new projects (2.5 is restricted to earlier users)');
   assert.equal(prod.thinkingBudget, undefined, 'no 2.5-specific thinking budget is sent');
   assert.equal(prod.apiKeyEnv, 'GEMINI_API_KEY');
   assert.equal(JSON.stringify(pkg).match(/AIza[0-9A-Za-z_-]{20,}/), null, 'no Google API key committed');
