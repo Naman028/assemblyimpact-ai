@@ -159,7 +159,7 @@ service EngineeringReview {
     // Landing page: configured integration modes of this deployment (no data, no secrets).
     // dataSourceMode: MOCK | SANDBOX | S4HANA | NONE; genaiMode: FIXTURE | GENAI_HUB | NOT_CONFIGURED;
     // jouleStatus: NOT_CONNECTED | CONFIGURED; authMode: DEVELOPMENT | PRODUCTION.
-    type SystemStatus { dataSourceMode : String(10); genaiMode : String(16); jouleStatus : String(16); demoImport : Boolean; authMode : String(12); }
+    type SystemStatus { dataSourceMode : String(13); databaseKind : String(10); genaiMode : String(16); jouleStatus : String(16); demoImport : Boolean; authMode : String(12); }
     @(requires: ['ChangeViewer', 'ChangeAnalyst', 'ChangeApprover'])
     function systemStatus() returns SystemStatus;
 

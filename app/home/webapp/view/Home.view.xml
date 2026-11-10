@@ -22,6 +22,7 @@
 						<Label text="Data source mode" labelFor="stDataSource"/>
 						<ObjectStatus id="stDataSource" text="{home>/status/dataSource/text}" state="{home>/status/dataSource/state}" inverted="true" icon="sap-icon://database"/>
 						<Text text="{home>/status/dataSource/description}" wrapping="true" class="aiStatusNote"/>
+						<Text text="{home>/status/database}" visible="{= !!${home>/status/database} }" wrapping="true" class="aiStatusNote"/>
 					</VBox>
 					<VBox class="aiStatusItem">
 						<Label text="P1 Joule assistant" labelFor="stJoule"/>

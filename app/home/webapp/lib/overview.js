@@ -21,10 +21,15 @@ sap.ui.define([], function () {
     { key: "GENAI_PROPOSAL", text: "GenAI proposal", icon: "sap-icon://ai", real: false }
   ];
   var DATA_SOURCE = {
-    MOCK: ["MOCK", "Mock ERP — labelled synthetic S/4-shaped data", "Information"],
+    FIXTURE: ["FIXTURE", "Synthetic SAP-shaped records (not S/4HANA data)", "Information"],
+    MISCONFIGURED: ["MISCONFIGURED", "The selected ERP source is incomplete; nothing is extracted", "Error"],
     SANDBOX: ["SANDBOX", "SAP API Hub sandbox — public demo data, not your ERP", "Warning"],
     S4HANA: ["S/4HANA", "S/4HANA access configured (destination)", "Success"],
-    NONE: ["NONE", "No ERP source configured", "None"]
+    NONE: ["NONE", "No ERP source active", "None"]
+  };
+  var DATABASE = {
+    HANA: "Database: SAP HANA Cloud (HDI container)",
+    SQLITE: "Database: SQLite (local development, synthetic data)"
   };
   var GENAI = {
     FIXTURE: ["Test answers", "Labelled fixture answers — not live AI output", "Information"],
@@ -49,6 +54,7 @@ sap.ui.define([], function () {
     RECENT_PATH: "ReviewCases?$select=ID,caseNumber,title,status,statusText,sourceType,sourceTypeText,assemblyCode,modifiedAt" +
       "&$expand=latestRun($select=status,costDeltaTotal,currency,materialsShort,asOfDate)&$orderby=modifiedAt%20desc&$top=6",
     dataSource: function (key) { return pick(DATA_SOURCE, key); },
+    database: function (key) { return DATABASE[key] || ("Database: " + (key || "unknown")); },
     genai: function (key) { return pick(GENAI, key); },
     joule: function (key) { return pick(JOULE, key); },
     auth: function (key) { return pick(AUTH, key); },

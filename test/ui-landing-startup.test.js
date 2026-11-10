@@ -40,8 +40,8 @@ after(async () => {
 });
 
 test('systemStatus: modes come from configuration; a sandbox without API key is not reported as SANDBOX; no secrets', () => {
-  assert.equal(dataSourceMode({ fixtures: 'x' }), 'MOCK');
-  assert.equal(dataSourceMode({ fixtures: 'x', sandbox: { url: 'https://s', apiKeyEnv: 'K' } }, {}), 'MOCK', 'key missing');
+  assert.equal(dataSourceMode({ fixtures: 'x' }), 'FIXTURE');
+  assert.equal(dataSourceMode({ fixtures: 'x', sandbox: { url: 'https://s', apiKeyEnv: 'K' } }, {}), 'FIXTURE', 'key missing');
   assert.equal(dataSourceMode({ fixtures: 'x', sandbox: { url: 'https://s', apiKeyEnv: 'K' } }, { K: 'secret' }), 'SANDBOX');
   assert.equal(dataSourceMode({ fixtures: 'x', s4: { enabled: true } }), 'S4HANA');
   assert.equal(dataSourceMode({}), 'NONE');
@@ -52,17 +52,17 @@ test('systemStatus: modes come from configuration; a sandbox without API key is 
   assert.equal(jouleStatus({}), 'NOT_CONNECTED');
   assert.equal(jouleStatus({ actionsReleased: true }), 'CONFIGURED');
   const s = systemStatus({ requires: { 'erp-source': { sandbox: { url: 'https://s', apiKeyEnv: 'PATH' } }, auth: { kind: 'xsuaa' } }, features: {} });
-  assert.deepEqual(Object.keys(s).sort(), ['authMode', 'dataSourceMode', 'demoImport', 'genaiMode', 'jouleStatus']);
+  assert.deepEqual(Object.keys(s).sort(), ['authMode', 'dataSourceMode', 'databaseKind', 'demoImport', 'genaiMode', 'jouleStatus']);
   assert.doesNotMatch(JSON.stringify(s), /https|PATH|secret/, 'no URLs or key names returned');
   assert.equal(s.authMode, 'PRODUCTION');
 });
 
-test('systemStatus over OData: authenticated only; test profile reports MOCK, FIXTURE, NOT_CONNECTED, DEVELOPMENT', async () => {
+test('systemStatus over OData: authenticated only; test profile reports FIXTURE, FIXTURE, NOT_CONNECTED, DEVELOPMENT', async () => {
   assert.equal((await call('systemStatus()', null)).status, 401);
   assert.equal((await call('systemStatus()', 'norole')).status, 403, 'business role required');
   const r = await call('systemStatus()');
   assert.equal(r.status, 200, JSON.stringify(r.body));
-  assert.equal(r.body.dataSourceMode, 'MOCK');
+  assert.equal(r.body.dataSourceMode, 'FIXTURE');
   assert.equal(r.body.genaiMode, 'FIXTURE');
   assert.equal(r.body.jouleStatus, 'NOT_CONNECTED');
   assert.equal(r.body.authMode, 'DEVELOPMENT');
@@ -112,7 +112,7 @@ test('landing page helpers: no run is "Not calculated"; S/4HANA is always listed
   assert.equal(ov.latest({ status: 'INCOMPLETE', costDeltaTotal: null, materialsShort: 0, asOfDate: '2026-11-10' }), 'cost not calculable · 0 short · as of 2026-11-10');
   const rows = ov.sources({ SYNTHETIC_FIXTURE: 7, DEMO_IMPORT: 0 });
   assert.equal(JSON.stringify(rows.map(r => [r.key, r.count, r.real])), JSON.stringify([['SYNTHETIC_FIXTURE', 7, false], ['S4_IMPORT', 0, true]]));
-  assert.equal(ov.dataSource('MOCK').text, 'MOCK');
+  assert.equal(ov.dataSource('FIXTURE').text, 'FIXTURE');
   assert.match(ov.genai('FIXTURE').description, /not live/);
   assert.equal(ov.hash.studioCase('a b'), 'EngineeringCase-investigate&/cases/a%20b');
   assert.equal(ov.hash.create(), 'EngineeringCase-investigate&/?create=true');
@@ -174,4 +174,26 @@ test('Studio entry points from the landing page: ?status filters the list, ?crea
   assert.deepEqual(await run({ create: 'true' }, true), ['nav:cases:true', 'create'], 'hash cleaned (replace) so refresh does not reopen');
   assert.deepEqual(await run({ create: 'true' }, false), ['nav:cases:true'], 'not offered without the import capability');
   assert.deepEqual(await run(undefined, true), []);
+});
+
+test('explicit ERP source: the selected mode is reported or MISCONFIGURED, never replaced by another source', async () => {
+  const { allowedExtractMode, databaseKind } = await import('../srv/lib/system-status.js');
+  const full = { fixtures: 'x', sandbox: { url: 'https://s', apiKeyEnv: 'K' }, s4: { enabled: false } };
+  assert.equal(dataSourceMode({ ...full, mode: 'FIXTURE' }, { K: 'k' }), 'FIXTURE', 'sandbox configured but not selected');
+  assert.equal(dataSourceMode({ ...full, mode: 'SANDBOX' }, { K: 'k' }), 'SANDBOX');
+  assert.equal(dataSourceMode({ ...full, mode: 'SANDBOX' }, {}), 'MISCONFIGURED', 'no key: no fallback to fixtures');
+  assert.equal(dataSourceMode({ ...full, mode: 'S4' }), 'MISCONFIGURED', 'S/4 not enabled: no fallback');
+  assert.equal(dataSourceMode({ ...full, mode: 'NONE' }, { K: 'k' }), 'NONE');
+  assert.equal(dataSourceMode({ mode: 'FIXTURE' }), 'MISCONFIGURED');
+  assert.equal(dataSourceMode({ mode: 'ERP' }), 'MISCONFIGURED');
+  assert.equal(allowedExtractMode({ mode: 'FIXTURE' }), 'synthetic');
+  assert.equal(allowedExtractMode({ mode: 'NONE' }), 'none');
+  assert.equal(allowedExtractMode({}), null);
+  assert.equal(databaseKind({ kind: 'hana' }), 'HANA');
+  assert.equal(databaseKind({ kind: 'sqlite' }), 'SQLITE');
+  const pkg = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8'));
+  const prod = pkg.cds.requires['[production]'];
+  assert.equal(prod.db.kind, 'hana', 'production uses HANA only (no SQLite fallback configured)');
+  assert.equal(prod['erp-source'].mode, 'NONE', 'production: no ERP source until one is authorized');
+  assert.equal(pkg.cds.requires['[development]']['erp-source'].mode, 'FIXTURE');
 });
