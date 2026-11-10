@@ -4,6 +4,7 @@
 .aiCaseTitle { margin: 0.125rem 0 0.25rem; }
 .aiKpis { margin-top: 0.5rem; }
 .aiKpi { min-width: 0; }
+.aiField { flex: 1 1 14rem; min-width: 0; max-width: 24rem; }
 .aiKpiNumber .sapMObjectNumberText { font-size: 1.5rem; }
 .aiBigNumber .sapMObjectNumberText { font-size: 1.75rem; }
 .aiVisualPanel, .aiDetailPanel { padding: 0.25rem 0.5rem; }

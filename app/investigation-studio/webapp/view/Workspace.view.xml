@@ -172,12 +172,11 @@
 							</items>
 						</Table>
 					</IconTabFilter>
-					<IconTabFilter key="materials" text="Materials &amp; Stock" icon="sap-icon://inventory" count="{= ${ws>/run/materialsShort} > 0 ? ${ws>/run/materialsShort} + ' short' : '' }">
-						<Toolbar style="Clear">
-							<Title text="Proposed revision requirements for {ws>/case/productionQuantity} assemblies" level="H3"/>
-							<ToolbarSpacer/>
+					<IconTabFilter key="materials" text="Materials" icon="sap-icon://inventory" count="{= ${ws>/run/materialsShort} > 0 ? ${ws>/run/materialsShort} + ' short' : '' }">
+						<HBox justifyContent="SpaceBetween" alignItems="Center" wrap="Wrap" class="sapUiTinyMarginBottom">
+							<Title text="Proposed revision requirements for {ws>/case/productionQuantity} assemblies" level="H3" wrapping="true" class="sapUiSmallMarginEnd"/>
 							<ToggleButton id="shortOnly" text="Shortages only" icon="sap-icon://filter" pressed="false" press=".onShortOnly"/>
-						</Toolbar>
+						</HBox>
 						<Table id="materialTable" items="{ws>/materials}" noDataText="Run the impact calculation to check stock." fixedLayout="false">
 							<columns>
 								<Column><Text text="Material"/></Column>
@@ -296,7 +295,7 @@
 						<f:Card>
 							<f:header><card:Header title="Supporting images" subtitle="Engineering photos or drawings as evidence only; they are not inputs of the calculation" iconSrc="sap-icon://attachment-photo"/></f:header>
 							<f:content>
-								<VBox class="sapUiSmallMargin" width="100%">
+								<VBox class="sapUiSmallMargin">
 									<List items="{ws>/case/attachments}" noDataText="No images attached." showSeparators="Inner">
 										<CustomListItem>
 											<HBox alignItems="Center" class="sapUiTinyMargin">
@@ -313,14 +312,14 @@
 										</CustomListItem>
 									</List>
 									<HBox alignItems="End" wrap="Wrap" class="sapUiSmallMarginTop" visible="{= ${ws>/case/status} === 'OPEN' }">
-										<VBox class="sapUiSmallMarginEnd">
-											<Label text="Image (PNG or JPEG, max. 2 MB)" labelFor="attachFile"/>
-											<u:FileUploader id="attachFile" fileType="png,jpg,jpeg" mimeType="image/png,image/jpeg" maximumFileSize="2" sendXHR="false"
+										<VBox class="sapUiSmallMarginEnd aiField">
+											<Label text="Image (PNG or JPEG, max. 2 MB)" labelFor="attachFile" wrapping="true"/>
+											<u:FileUploader id="attachFile" width="100%" fileType="png,jpg,jpeg" mimeType="image/png,image/jpeg" maximumFileSize="2" sendXHR="false"
 												change=".onAttachFileChange" placeholder="Choose an image"/>
 										</VBox>
-										<VBox class="sapUiSmallMarginEnd">
+										<VBox class="sapUiSmallMarginEnd aiField">
 											<Label text="Description" labelFor="attachDescription"/>
-											<Input id="attachDescription" maxLength="300" width="18rem" placeholder="e.g. Seal drawing rev. B"/>
+											<Input id="attachDescription" maxLength="300" width="100%" placeholder="e.g. Seal drawing rev. B"/>
 										</VBox>
 										<Button text="Attach" icon="sap-icon://upload" press=".onAttachUpload"/>
 									</HBox>
