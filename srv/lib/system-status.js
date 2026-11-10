@@ -13,7 +13,8 @@ export function dataSourceMode(erp = cds.env.requires?.['erp-source'] ?? {}, env
 
 /** GENAI_HUB (live provider configured), FIXTURE (labelled test answers) or NOT_CONFIGURED. */
 export function genaiMode(genai = cds.env.requires?.genai ?? {}) {
-  if (genai.provider === 'genai-hub') return 'GENAI_HUB';
+  // Same preconditions as providerFor(): without deployment and resource group every call would fail.
+  if (genai.provider === 'genai-hub') return genai.deploymentId && genai.resourceGroup ? 'GENAI_HUB' : 'NOT_CONFIGURED';
   if (genai.provider === 'fixture') return 'FIXTURE';
   return 'NOT_CONFIGURED';
 }

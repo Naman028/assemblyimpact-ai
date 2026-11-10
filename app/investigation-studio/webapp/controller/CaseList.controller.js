@@ -40,6 +40,8 @@ sap.ui.define([
         this._applyFilters();
       }
       if (query.create === "true" && this._capsReady) {
+        // Drop ?create from the hash (replace), so a refresh or Back does not reopen the form.
+        this.getOwnerComponent().getRouter().navTo("cases", {}, true);
         this._capsReady.then(function (allowed) { if (allowed) { this.onOpenCreate(); } }.bind(this));
       }
     },

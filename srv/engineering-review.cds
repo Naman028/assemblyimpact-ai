@@ -113,6 +113,7 @@ service EngineeringReview {
     // dataSourceMode: MOCK | SANDBOX | S4HANA | NONE; genaiMode: FIXTURE | GENAI_HUB | NOT_CONFIGURED;
     // jouleStatus: NOT_CONNECTED | CONFIGURED; authMode: DEVELOPMENT | PRODUCTION.
     type SystemStatus { dataSourceMode : String(10); genaiMode : String(16); jouleStatus : String(16); demoImport : Boolean; authMode : String(12); }
+    @(requires: ['ChangeViewer', 'ChangeAnalyst', 'ChangeApprover'])
     function systemStatus() returns SystemStatus;
 
     // ---- P1: read-only case lookup for Joule (ported from PR #11, without its technical identity) ----

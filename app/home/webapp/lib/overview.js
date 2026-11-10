@@ -37,7 +37,7 @@ sap.ui.define([], function () {
   };
   var AUTH = {
     DEVELOPMENT: ["Development login", "Local test users — not for productive use", "Warning"],
-    PRODUCTION: ["XSUAA", "SAP BTP authentication", "Success"]
+    PRODUCTION: ["SAP BTP sign-in", "XSUAA or SAP Cloud Identity", "Success"]
   };
   var pick = function (map, key) { var v = map[key] || ["Unknown", "Status not reported", "None"]; return { text: v[0], description: v[1], state: v[2] }; };
 

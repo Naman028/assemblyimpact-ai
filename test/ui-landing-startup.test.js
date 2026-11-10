@@ -46,7 +46,8 @@ test('systemStatus: modes come from configuration; a sandbox without API key is 
   assert.equal(dataSourceMode({ fixtures: 'x', s4: { enabled: true } }), 'S4HANA');
   assert.equal(dataSourceMode({}), 'NONE');
   assert.equal(genaiMode({ provider: 'fixture' }), 'FIXTURE');
-  assert.equal(genaiMode({ provider: 'genai-hub' }), 'GENAI_HUB');
+  assert.equal(genaiMode({ provider: 'genai-hub' }), 'NOT_CONFIGURED', 'no deployment: every call would fail');
+  assert.equal(genaiMode({ provider: 'genai-hub', deploymentId: 'd', resourceGroup: 'g' }), 'GENAI_HUB');
   assert.equal(genaiMode({}), 'NOT_CONFIGURED');
   assert.equal(jouleStatus({}), 'NOT_CONNECTED');
   assert.equal(jouleStatus({ actionsReleased: true }), 'CONFIGURED');
@@ -58,6 +59,7 @@ test('systemStatus: modes come from configuration; a sandbox without API key is 
 
 test('systemStatus over OData: authenticated only; test profile reports MOCK, FIXTURE, NOT_CONNECTED, DEVELOPMENT', async () => {
   assert.equal((await call('systemStatus()', null)).status, 401);
+  assert.equal((await call('systemStatus()', 'norole')).status, 403, 'business role required');
   const r = await call('systemStatus()');
   assert.equal(r.status, 200, JSON.stringify(r.body));
   assert.equal(r.body.dataSourceMode, 'MOCK');
@@ -80,11 +82,18 @@ test('landing page queries: accepted by the service and restricted to the user\'
   assert(counts.notCalculated <= counts.open);
   const other = await call(sandbox.countPath(''), 'cviewer2');
   assert.notEqual(Number(other.body), counts.total, 'another plant sees other cases');
-  for (const s of sandbox.SOURCES) assert.equal((await call(sandbox.sourcePath(s.key))).status, 200, s.key);
+  const mine = (await call('ReviewCases?$select=ID,plant')).body.value, theirs = (await call('ReviewCases?$select=ID,plant', 'cviewer2')).body.value;
+  assert(mine.every(c => c.plant === '1000') && theirs.every(c => c.plant === '2000'));
+  assert(!theirs.some(t => mine.some(m => m.ID === t.ID)), 'no shared cases across plants');
+  let bySource = 0;
+  for (const s of sandbox.SOURCES) { const r = await call(sandbox.sourcePath(s.key)); assert.equal(r.status, 200, s.key); bySource += Number(r.body); }
+  assert.equal(bySource, counts.total, 'source counts are plant-restricted and add up');
   const recent = await call(sandbox.RECENT_PATH);
   assert.equal(recent.status, 200, JSON.stringify(recent.body));
   assert(recent.body.value.length > 0 && recent.body.value.length <= 6);
   assert('latestRun' in recent.body.value[0]);
+  const ids = new Set(mine.map(c => c.ID));
+  assert(recent.body.value.every(r => ids.has(r.ID)), 'recent cases only from the user\'s plant');
 });
 
 test('landing page tiles: every NumericContent passes clicks to its tile (it swallowed the tile press)', () => {
@@ -153,7 +162,8 @@ test('Studio entry points from the landing page: ?status filters the list, ?crea
       byId: () => ({ setSelectedKey: k => calls.push('status:' + k) }),
       _applyFilters: () => calls.push('filter'),
       onOpenCreate: () => calls.push('create'),
-      _capsReady: Promise.resolve(allowed)
+      _capsReady: Promise.resolve(allowed),
+      getOwnerComponent: () => ({ getRouter: () => ({ navTo: (n, a, replace) => calls.push('nav:' + n + ':' + replace) }) })
     });
     self._applyQuery(query);
     await self._capsReady; await Promise.resolve();
@@ -161,7 +171,7 @@ test('Studio entry points from the landing page: ?status filters the list, ?crea
   };
   assert.deepEqual(await run({ status: 'IN_REVIEW' }, false), ['status:IN_REVIEW', 'filter']);
   assert.deepEqual(await run({ status: 'DROP TABLE' }, false), [], 'unknown status ignored');
-  assert.deepEqual(await run({ create: 'true' }, true), ['create']);
-  assert.deepEqual(await run({ create: 'true' }, false), [], 'not offered without the import capability');
+  assert.deepEqual(await run({ create: 'true' }, true), ['nav:cases:true', 'create'], 'hash cleaned (replace) so refresh does not reopen');
+  assert.deepEqual(await run({ create: 'true' }, false), ['nav:cases:true'], 'not offered without the import capability');
   assert.deepEqual(await run(undefined, true), []);
 });

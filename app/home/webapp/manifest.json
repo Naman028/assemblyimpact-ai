@@ -26,8 +26,7 @@
     },
     "contentDensities": { "compact": true, "cozy": true },
     "models": {
-      "i18n": { "type": "sap.ui.model.resource.ResourceModel", "settings": { "bundleName": "assemblyimpact.home.i18n.i18n", "supportedLocales": [""], "fallbackLocale": "" } },
-      "": { "dataSource": "mainService", "preload": true, "settings": { "operationMode": "Server", "autoExpandSelect": true } }
+      "i18n": { "type": "sap.ui.model.resource.ResourceModel", "settings": { "bundleName": "assemblyimpact.home.i18n.i18n", "supportedLocales": [""], "fallbackLocale": "" } }
     },
     "resources": { "css": [{ "uri": "css/style.css" }] }
   }
