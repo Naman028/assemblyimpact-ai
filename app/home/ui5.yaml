@@ -1,0 +1,6 @@
+# Registers the app with SAP Fiori tools in BAS (Storyboard, Application Info, Preview).
+# Served by the CAP server (cds watch) from ./webapp; the UI5 runtime comes from the SAPUI5 CDN (see webapp/index.html).
+specVersion: "3.0"
+metadata:
+  name: assemblyimpact.home
+type: application

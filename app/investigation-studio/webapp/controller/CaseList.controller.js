@@ -11,7 +11,9 @@ sap.ui.define([
     onInit: function () {
       var router = this.getOwnerComponent().getRouter();
       router.getRoute("workspace").attachPatternMatched(function (event) { this._selectedId = event.getParameter("arguments").caseId; this._syncSelection(); }, this);
-      router.getRoute("cases").attachPatternMatched(function () { this._selectedId = null; this._syncSelection(); }, this);
+      router.getRoute("cases").attachPatternMatched(function (event) {
+        this._selectedId = null; this._syncSelection(); this._applyQuery(event.getParameter("arguments")["?query"]);
+      }, this);
       this.getOwnerComponent().getEventBus().subscribe("studio", "casesChanged", function () {
         this.byId("caseList").getBinding("items").refresh();
       }, this);
@@ -24,9 +26,22 @@ sap.ui.define([
     _loadCapabilities: function () {
       // The view is not yet attached to the component in onInit; the OData model comes from the component.
       var fn = this.getOwnerComponent().getModel().bindContext("/myCapabilities()"), model = this.getView().getModel("caps");
-      fn.requestObject().then(function (caps) { model.setProperty("/canImport", !!(caps && caps.canImport)); })
-        .catch(function () { model.setProperty("/canImport", false); })
+      this._capsReady = fn.requestObject().then(function (caps) { model.setProperty("/canImport", !!(caps && caps.canImport)); return !!(caps && caps.canImport); })
+        .catch(function () { model.setProperty("/canImport", false); return false; })
         .finally(function () { fn.destroy(); });
+    },
+
+    /** Landing page entry points: ?status=OPEN|IN_REVIEW|DECIDED|ALL filters the list, ?create=true opens the form
+     *  (only for users the server allows to import; the server re-checks on submit). */
+    _applyQuery: function (query) {
+      if (!query) { return; }
+      if (["ALL", "OPEN", "IN_REVIEW", "DECIDED"].indexOf(query.status) >= 0) {
+        this.byId("statusFilter").setSelectedKey(query.status);
+        this._applyFilters();
+      }
+      if (query.create === "true" && this._capsReady) {
+        this._capsReady.then(function (allowed) { if (allowed) { this.onOpenCreate(); } }.bind(this));
+      }
     },
 
     /** Highlights the open case (also after a deep link, once the items have arrived). */

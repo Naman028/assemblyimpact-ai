@@ -109,6 +109,12 @@ service EngineeringReview {
     type Capabilities { canImport : Boolean; }
     function myCapabilities() returns Capabilities;
 
+    // Landing page: configured integration modes of this deployment (no data, no secrets).
+    // dataSourceMode: MOCK | SANDBOX | S4HANA | NONE; genaiMode: FIXTURE | GENAI_HUB | NOT_CONFIGURED;
+    // jouleStatus: NOT_CONNECTED | CONFIGURED; authMode: DEVELOPMENT | PRODUCTION.
+    type SystemStatus { dataSourceMode : String(10); genaiMode : String(16); jouleStatus : String(16); demoImport : Boolean; authMode : String(12); }
+    function systemStatus() returns SystemStatus;
+
     // ---- P1: read-only case lookup for Joule (ported from PR #11, without its technical identity) ----
     // Named parameters, so a skill maps its inputs directly instead of building an OData $filter string.
     // Runs as the signed-in user (principal propagation): business read roles only, caller's plants only.

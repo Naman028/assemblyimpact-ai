@@ -2,6 +2,7 @@ import cds from '@sap/cds';
 import { calculateImpact, ImpactRejection, RULESET } from './lib/impact-calculator.js';
 import { loadImpactInput, fingerprint, persistImpactRun, ConcurrentRunError, CaseDecidedError, IMPACT_ALLOWED_STATUSES } from './lib/impact-persistence.js';
 import { userPlants } from './lib/plants.js';
+import { systemStatus } from './lib/system-status.js';
 import { prepareAttachment, acceptUpload, checkRemoval, reviseInput, DemoDataError } from './lib/demo-data.js';
 import { decide, DecisionError, TRANSITIONS, submittersOf, availabilityFor } from './lib/review-decisions.js';
 import { parseImport, validateBundle, commitBundle, checksum, ImportFormatError, ImportConflictError } from './lib/scenario-import.js';
@@ -19,6 +20,7 @@ export default class EngineeringReview extends cds.ApplicationService {
     this.on('extractFromErp', req => this.#extractFromErp(req));
     this.after('READ', 'ReviewCases', (rows, req) => annotateAvailability(rows, req));
     this.on('myCapabilities', req => capabilitiesOf(req.user));
+    this.on('systemStatus', () => systemStatus());
     this.on('lookupCases', req => this.#lookupCases(req));
     // Faculty demo: supporting images and controlled synthetic input edits (lib/demo-data.js).
     const asReject = (req, error) => { if (error instanceof DemoDataError) return req.reject({ status: error.status, code: error.code, message: error.message }); throw error; };
