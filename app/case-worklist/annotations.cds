@@ -27,6 +27,9 @@ annotate service.ReviewCases with {
     canSubmit          @UI.Hidden;
     canDecide          @UI.Hidden;
     submittedBy        @title: 'Submitted By';
+    runImpactHint      @title: 'Run Impact';
+    submitHint         @title: 'Submit for Review';
+    decideHint         @title: 'Approve / Reject';
 };
 
 annotate service.ReviewCases with @(
@@ -119,6 +122,12 @@ annotate service.ReviewCases with @(
             ], $Function: 'odata.concat'}}
         }
     ]},
+    // Why a greyed-out action is not available to the signed-in user (computed by the server; empty = available).
+    UI.FieldGroup #Actions: {Data: [
+        {Value: decideHint},
+        {Value: submitHint},
+        {Value: runImpactHint}
+    ]},
     UI.FieldGroup #Impact : {Data: [
         {Value: latestRun.asOfDate, Label: 'As-of Date'},
         {Value: latestRun.statusText, Label: 'Run Status'},
@@ -137,6 +146,12 @@ annotate service.ReviewCases with @(
             ID    : 'General',
             Label : 'General Information',
             Target: '@UI.FieldGroup#General'
+        },
+        {
+            $Type : 'UI.ReferenceFacet',
+            ID    : 'Actions',
+            Label : 'Review Actions',
+            Target: '@UI.FieldGroup#Actions'
         },
         {
             $Type : 'UI.ReferenceFacet',
@@ -162,14 +177,14 @@ annotate service.ReviewCases with @(
 annotate service.ReviewCases actions {
     // M05: refresh the latest-impact figures and the run list after the action (it was silent before).
     @Common.SideEffects: {
-        TargetProperties: ['in/latestRun_ID', 'in/canSubmit', 'in/canDecide', 'in/canRunImpact'],
+        TargetProperties: ['in/latestRun_ID', 'in/canSubmit', 'in/canDecide', 'in/canRunImpact', 'in/runImpactHint', 'in/submitHint', 'in/decideHint'],
         TargetEntities  : ['in/latestRun', 'in/runs']
     }
     @Core.OperationAvailable: {$edmJson: {$Path: 'in/canRunImpact'}}
     runImpact(asOfDate @title: 'As-of Date' @Common.QuickInfo: 'Leave empty to calculate as of today');
 
     @Common.SideEffects: {
-        TargetProperties: ['in/status', 'in/statusText', 'in/canSubmit', 'in/canDecide', 'in/canRunImpact', 'in/submittedBy'],
+        TargetProperties: ['in/status', 'in/statusText', 'in/canSubmit', 'in/canDecide', 'in/canRunImpact', 'in/runImpactHint', 'in/submitHint', 'in/decideHint', 'in/submittedBy'],
         TargetEntities  : ['in/decisions']
     }
     @Core.OperationAvailable: {$edmJson: {$Path: 'in/canSubmit'}}
@@ -177,7 +192,7 @@ annotate service.ReviewCases actions {
 
     // basedOnRun defaults to the run shown on the page; the server refuses it if a newer run exists.
     @Common.SideEffects: {
-        TargetProperties: ['in/status', 'in/statusText', 'in/canSubmit', 'in/canDecide', 'in/canRunImpact'],
+        TargetProperties: ['in/status', 'in/statusText', 'in/canSubmit', 'in/canDecide', 'in/canRunImpact', 'in/runImpactHint', 'in/submitHint', 'in/decideHint'],
         TargetEntities  : ['in/decisions']
     }
     @Core.OperationAvailable: {$edmJson: {$Path: 'in/canDecide'}}
@@ -186,7 +201,7 @@ annotate service.ReviewCases actions {
             acknowledgeWarnings @title: 'I acknowledge the impact-run warnings (e.g. stale stock)');
 
     @Common.SideEffects: {
-        TargetProperties: ['in/status', 'in/statusText', 'in/canSubmit', 'in/canDecide', 'in/canRunImpact'],
+        TargetProperties: ['in/status', 'in/statusText', 'in/canSubmit', 'in/canDecide', 'in/canRunImpact', 'in/runImpactHint', 'in/submitHint', 'in/decideHint'],
         TargetEntities  : ['in/decisions']
     }
     @Core.OperationAvailable: {$edmJson: {$Path: 'in/canDecide'}}

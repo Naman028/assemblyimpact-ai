@@ -42,3 +42,19 @@
 .aiCurated .ai-state-removed { opacity: 0.4; }
 .aiCurated .ai-selected { filter: drop-shadow(0 0 3px #0070f2) drop-shadow(0 0 8px #0070f2); }
 .aiCurated .ai-selected > * { filter: none; }
+
+/* Responsive fixes (defect: clipped prices). Numbers wrap instead of being cut, and scale down on narrow cards. */
+.aiKpiNumber .sapMObjectNumberText, .aiBigNumber .sapMObjectNumberText,
+.aiKpiNumber .sapMObjectNumberUnit, .aiBigNumber .sapMObjectNumberUnit { white-space: normal; overflow-wrap: anywhere; }
+.aiKpiNumber, .aiBigNumber { max-width: 100%; overflow: visible; }
+.aiKpiNumber .sapMObjectNumberText { font-size: clamp(1.125rem, 2.2vw, 1.5rem); }
+.aiBigNumber .sapMObjectNumberText { font-size: clamp(1.25rem, 2.6vw, 1.75rem); }
+.aiTabs .sapMListTbl .sapMObjectNumber, .aiTabs .sapMListTbl .sapMText { overflow-wrap: anywhere; }
+.aiHints .sapMObjStatus { display: block; margin: 0.125rem 0; white-space: normal; }
+.aiAssemblyHits { max-height: 12rem; overflow-y: auto; }
+/* Keyboard focus is shown only while focusing with the keyboard; a mouse click leaves no lingering halo. */
+.aiVisual .ai-component:focus:not(:focus-visible) > * { filter: none; }
+@media (max-width: 600px) {
+  .aiCaseItem .sapMLIBContent > .sapMHBox { flex-wrap: wrap; }
+  .aiCaseSide { text-align: left; align-items: flex-start !important; margin-top: 0.25rem; }
+}

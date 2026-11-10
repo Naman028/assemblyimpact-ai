@@ -100,6 +100,7 @@ sap.ui.define([
     onOpenCreate: function () {
       var view = this.getView();
       if (!view.getModel("form")) { view.setModel(new JSONModel(scenarioBuilder.example()), "form"); }
+      if (!view.getModel("form").getProperty("/caseNumber")) { this.onProposeCaseNumber(); }
       if (!this._createDialog) {
         this._createDialog = Fragment.load({ id: view.getId(), name: "assemblyimpact.investigationstudio.view.CreateScenarioDialog", controller: this })
           .then(function (dialog) { view.addDependent(dialog); return dialog; });
@@ -120,7 +121,48 @@ sap.ui.define([
       model.setProperty("/components", rows);
     },
 
-    onCreateExample: function () { this.getView().getModel("form").setData(scenarioBuilder.example()); },
+    onCreateExample: function () { this.getView().getModel("form").setData(scenarioBuilder.example()); this.onProposeCaseNumber(); },
+
+    /** The server proposes the next free case number; nothing is reserved until the import is committed. */
+    onProposeCaseNumber: function () {
+      var form = this.getView().getModel("form");
+      this.getOwnerComponent().getModel().bindContext("/nextCaseNumber()").requestObject()
+        .then(function (r) { form.setProperty("/caseNumber", r && r.value || ""); })
+        .catch(function (e) { MessageToast.show("No case number proposed: " + e.message); });
+    },
+
+    /** Lists existing assemblies of the user's plants, so a change of e.g. PUMP-450 is not entered twice. */
+    onAssemblySearch: function (event) {
+      var form = this.getView().getModel("form"), term = String(event.getParameter("query") || "").trim().toUpperCase().replace(/[^A-Z0-9\-_.]/g, "");
+      var fn = this.getOwnerComponent().getModel().bindList("/searchAssemblies(term='" + term + "')");
+      fn.requestContexts(0, 20).then(function (ctx) {
+        form.setProperty("/assemblyHits", ctx.map(function (c) { return c.getObject(); }));
+        form.setProperty("/assemblySearched", true);
+      }).catch(function (e) { MessageBox.error(e.message, { title: "Assembly search failed" }); });
+    },
+
+    onAssemblyPick: function (event) {
+      var form = this.getView().getModel("form"), hit = event.getParameter("listItem").getBindingContext("form").getObject();
+      var revisions = hit.revisions ? hit.revisions.split(", ") : [];
+      form.setProperty("/existingAssembly", true);
+      form.setProperty("/existingRevisions", revisions);
+      form.setProperty("/assemblyCode", hit.assemblyCode);
+      form.setProperty("/plant", hit.plant);
+      form.setProperty("/description", hit.description);
+      var next = scenarioBuilder.nextRevisions(revisions);
+      form.setProperty("/fromRevision", next[0]);
+      form.setProperty("/toRevision", next[1]);
+      form.setProperty("/assemblySearched", false);
+    },
+
+    onAssemblyNew: function () {
+      var form = this.getView().getModel("form");
+      form.setProperty("/existingAssembly", false);
+      form.setProperty("/existingRevisions", []);
+      form.setProperty("/fromRevision", "A");
+      form.setProperty("/toRevision", "B");
+      form.setProperty("/assemblySearched", false);
+    },
 
     onCreateCancel: function () { this.byId("createDialog").close(); },
 
