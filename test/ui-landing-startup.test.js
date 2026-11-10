@@ -87,6 +87,14 @@ test('landing page queries: accepted by the service and restricted to the user\'
   assert('latestRun' in recent.body.value[0]);
 });
 
+test('landing page tiles: every NumericContent passes clicks to its tile (it swallowed the tile press)', () => {
+  const view = read('app/home/webapp/view/Home.view.xml');
+  const numeric = view.match(/<NumericContent [^>]*>/g);
+  assert(numeric.length >= 5);
+  for (const tag of numeric) assert.match(tag, /class="aiTileValue"/, tag);
+  assert.match(read('app/home/webapp/css/style.css'), /\.aiTileValue \{ pointer-events: none; \}/);
+});
+
 test('landing page helpers: no run is "Not calculated"; S/4HANA is always listed; intents keep app IDs', () => {
   const ov = loadUi5('app/home/webapp/lib/overview.js');
   assert.equal(ov.latest(null), 'Not calculated');

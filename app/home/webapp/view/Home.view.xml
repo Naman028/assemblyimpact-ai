@@ -58,7 +58,7 @@
 					</GenericTile>
 					<GenericTile header="Review queue" subheader="Awaiting decision" press=".onOpenStatus" ariaLabel="Open the cases in review">
 						<customData><core:CustomData key="status" value="IN_REVIEW"/></customData>
-						<TileContent footer="In review"><NumericContent value="{home>/counts/inReview}" icon="sap-icon://approvals" withMargin="false"/></TileContent>
+						<TileContent footer="In review"><NumericContent class="aiTileValue" value="{home>/counts/inReview}" icon="sap-icon://approvals" withMargin="false"/></TileContent>
 					</GenericTile>
 					<GenericTile header="Create Scenario" subheader="Synthetic case" press=".onOpenCreate" visible="{home>/caps/canImport}" ariaLabel="Create a synthetic scenario">
 						<TileContent footer="Demo data only"><ImageContent src="sap-icon://add-document"/></TileContent>
@@ -70,18 +70,18 @@
 					<GenericTile header="Open" subheader="Analysis in progress" press=".onOpenStatus" ariaLabel="Open cases">
 						<customData><core:CustomData key="status" value="OPEN"/></customData>
 						<TileContent footer="{= ${home>/counts/notCalculated} === undefined ? '' : ${home>/counts/notCalculated} + ' not yet calculated' }">
-							<NumericContent value="{home>/counts/open}" withMargin="false"/></TileContent>
+							<NumericContent class="aiTileValue" value="{home>/counts/open}" withMargin="false"/></TileContent>
 					</GenericTile>
 					<GenericTile header="In review" subheader="Submitted for approval" press=".onOpenStatus" ariaLabel="Cases in review">
 						<customData><core:CustomData key="status" value="IN_REVIEW"/></customData>
-						<TileContent><NumericContent value="{home>/counts/inReview}" valueColor="Critical" withMargin="false"/></TileContent>
+						<TileContent><NumericContent class="aiTileValue" value="{home>/counts/inReview}" valueColor="Critical" withMargin="false"/></TileContent>
 					</GenericTile>
 					<GenericTile header="Decided" subheader="Approved or rejected" press=".onOpenStatus" ariaLabel="Decided cases">
 						<customData><core:CustomData key="status" value="DECIDED"/></customData>
-						<TileContent><NumericContent value="{home>/counts/decided}" valueColor="Good" withMargin="false"/></TileContent>
+						<TileContent><NumericContent class="aiTileValue" value="{home>/counts/decided}" valueColor="Good" withMargin="false"/></TileContent>
 					</GenericTile>
 					<GenericTile header="Material shortages" subheader="In latest run" ariaLabel="Cases with shortages">
-						<TileContent footer="Cases"><NumericContent value="{home>/counts/withShortages}" valueColor="Error" withMargin="false"/></TileContent>
+						<TileContent footer="Cases"><NumericContent class="aiTileValue" value="{home>/counts/withShortages}" valueColor="Error" withMargin="false"/></TileContent>
 					</GenericTile>
 				</HBox>
 
