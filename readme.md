@@ -143,7 +143,7 @@ Two-person demo deployed: two SAP ID users, one with `AssemblyImpact_Analyst`, o
 ```bash
 git clone https://github.com/Naman028/assemblyimpact-ai.git && cd assemblyimpact-ai
 npm ci
-npm test            # 185 tests, in-memory SQLite, isolated port
+npm test            # 187 tests, in-memory SQLite, isolated port
 npm run lint
 cds watch --port 4005    # BAS: cds-dk is installed globally; elsewhere: npx -p @sap/cds-dk cds watch
 ```
@@ -213,7 +213,7 @@ entitlement) and destination rights. Nothing in the application fakes a Joule co
 
 ## 13. Tests and evidence
 
-- `npm test`: 185 tests (unit, service/API, authorization, business rules, concurrency) — 185/185 locally on PR #21; CI results are recorded on the PR.
+- `npm test`: 187 tests (unit, service/API, authorization, business rules, concurrency) — 187/187 locally on PR #21 (5de3758); CI results are recorded on the PR.
 - CI: `.github/workflows/ci.yml` (lint, tests, audit) on every PR.
 - Browser walkthrough of PR #21 in BAS (separate clone, port 4005, in-memory SQLite): `docs/evidence/pr21-bas-walkthrough/` (20 screenshots; defects found there were fixed on the branch).
 - Earlier evidence: `docs/evidence/faculty-demo/`, `docs/evidence/p3-case-worklist/`, `docs/evidence/rc1-browser-check/`.
