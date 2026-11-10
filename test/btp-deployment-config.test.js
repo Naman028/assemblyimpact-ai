@@ -70,6 +70,8 @@ test('mta.yaml: CAP service, HDI deployer, app router, HANA/XSUAA/destination re
   // Demo data is staged into db/data before the build (so CAP generates .hdbtabledata) and removed afterwards.
   assert.match(read('mta-demo.mtaext'), /stage-demo-data\.mjs\n[\s\S]*cds build --production\n[\s\S]*stage-demo-data\.mjs --clean/);
   assert.doesNotMatch(read('mta.yaml'), /stage-demo-data/, 'demo data is opt-in only');
+  assert.equal(modules['assemblyimpact-srv']?.parameters?.['keep-existing']?.env, true, 'cf set-env GEMINI_API_KEY must survive deploys');
+  assert.equal(modules['assemblyimpact-srv']?.properties, undefined, 'keep-existing env would ignore descriptor env properties');
 });
 
 test('app router: every route authenticates with XSUAA; OData is forwarded with CSRF protection; all UIs served', () => {
