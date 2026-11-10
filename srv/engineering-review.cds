@@ -150,6 +150,10 @@ service EngineeringReview {
 
     // M05: global UI capabilities of the signed-in user (no data access).
     type Capabilities { canImport : Boolean; canMaintainRates : Boolean; }
+    // The signed-in user as the server sees it (own data only): id, application roles and authorised plants.
+    // Shown on Home so a demonstration makes clear which user and role is acting. Read-only, no secrets.
+    type UserInfo { id : String(255); roles : String(500); plants : String(200); authMode : String(12); }
+    function whoAmI() returns UserInfo;
     function myCapabilities() returns Capabilities;
 
     // Landing page: configured integration modes of this deployment (no data, no secrets).

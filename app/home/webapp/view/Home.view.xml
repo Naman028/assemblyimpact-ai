@@ -37,6 +37,8 @@
 						<Label text="Sign-in" labelFor="stAuth"/>
 						<ObjectStatus id="stAuth" text="{home>/status/auth/text}" state="{home>/status/auth/state}" inverted="true" icon="sap-icon://locked"/>
 						<Text text="{home>/status/auth/description}" wrapping="true" class="aiStatusNote"/>
+						<Text text="Signed in as {home>/me/text}" visible="{= !!${home>/me/text} }" wrapping="true" class="aiStatusNote"/>
+						<Link text="Switch user (development)" href="/dev-users.html" visible="{= !!${home>/me/dev} }"/>
 					</VBox>
 				</cssgrid:CSSGrid>
 			</VBox>

@@ -144,3 +144,23 @@ test('disabled actions explain why: role, status, missing evidence and separatio
   assert.equal(h.canDecide, true);
   assert.equal(h.decideHint, null);
 });
+
+test('whoAmI reports the server-side user, roles and plants (no client-chosen roles)', async () => {
+  const me = async user => (await call('GET', '/whoAmI()', { user })).data;
+  assert.deepEqual([(await me('analyst')).id, (await me('approver')).roles, (await me('cviewer')).roles, (await me('analyst2')).plants],
+    ['analyst', 'ChangeApprover', 'ChangeViewer', '2000']);
+  assert.equal((await me('analyst')).authMode, 'DEVELOPMENT');
+  const anon = await fetch(base + '/whoAmI()');
+  assert.equal(anon.status, 401, 'no anonymous access');
+  const wrong = await fetch(base + '/whoAmI()', { headers: { authorization: `Basic ${Buffer.from('approver:wrong').toString('base64')}` } });
+  assert.equal(wrong.status, 401, 'a wrong password is refused');
+});
+
+test('the development sign-in page is never staged for the app router', async () => {
+  const { readFileSync } = await import('node:fs');
+  const stage = readFileSync(new URL('../tools/btp/stage-ui.mjs', import.meta.url), 'utf8');
+  assert(!/dev-users/.test(stage), 'stage-ui.mjs must not copy dev-users.html');
+  assert.match(stage, /\['launchpad\.html', 'logout\.html'\]/);
+  const xsapp = JSON.parse(readFileSync(new URL('../app/router/xs-app.json', import.meta.url), 'utf8'));
+  assert(!JSON.stringify(xsapp).includes('dev-users'));
+});

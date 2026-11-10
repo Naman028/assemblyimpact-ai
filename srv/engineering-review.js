@@ -69,6 +69,12 @@ export default class EngineeringReview extends cds.ApplicationService {
       const key = req.params.at(-1); const ID = typeof key === 'object' ? key.ID : key;
       try { return (await deactivateRate(ID, req.data.reason, userPlants(req.user), req.user.id)) ?? req.reject(404); } catch (e) { return asCoverageReject(req, e); }
     });
+    const APP_ROLES = ['ChangeViewer', 'ChangeAnalyst', 'ChangeApprover', 'ImpactRunner', 'DemoDataImporter', 'ErpExtractor', 'AssemblyViewer', 'AssemblyMaintainer'];
+    this.on('whoAmI', req => {
+      const kind = cds.env.requires?.auth?.kind;
+      return { id: req.user.id, roles: APP_ROLES.filter(r => req.user.is(r)).join(', '), plants: userPlants(req.user).join(', '),
+        authMode: kind === 'xsuaa' || kind === 'ias' ? 'PRODUCTION' : 'DEVELOPMENT' };
+    });
     this.on('searchAssemblies', async req => { try { return await searchAssemblies(unquote(req.data.term), userPlants(req.user)); } catch (e) { return asCoverageReject(req, e); } });
     this.on('nextCaseNumber', async req => { try { return await nextCaseNumber(userPlants(req.user)); } catch (e) { return asCoverageReject(req, e); } });
     for (const [action, transition] of Object.entries(DECISION_ACTIONS)) this.on(action, 'ReviewCases', req => this.#decide(req, transition));
