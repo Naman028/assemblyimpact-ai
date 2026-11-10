@@ -216,7 +216,7 @@ export function geminiProvider(env, environment = process.env, fetchImpl = globa
           systemInstruction: { parts: [{ text: system }] },
           contents: [{ role: 'user', parts: [{ text: user }] }],
           generationConfig: { temperature: 0, maxOutputTokens: 1500, responseMimeType: 'application/json', responseSchema: RESPONSE_SCHEMA,
-            ...(env.thinkingBudget === undefined ? {} : { thinkingConfig: { thinkingBudget: env.thinkingBudget } }) },
+            ...(typeof env.thinkingBudget === 'number' ? { thinkingConfig: { thinkingBudget: env.thinkingBudget } } : {}) },
         }),
       });
     } catch (error) {
@@ -227,7 +227,12 @@ export function geminiProvider(env, environment = process.env, fetchImpl = globa
       const retryAfter = Number(response.headers?.get?.('retry-after')) || null;
       throw new GenAiTransportError('The Gemini API rate limit or free-tier quota was reached. Try again later.', 429, retryAfter);
     }
-    if (!response.ok) throw new GenAiTransportError(`The Gemini API answered HTTP ${response.status}.`, response.status);
+    if (!response.ok) {
+      // Only Google's status enum (e.g. NOT_FOUND for a model this project may not use) is surfaced, never the body text.
+      const reason = await response.json().then(b => b?.error?.status, () => null).catch(() => null);
+      const code = typeof reason === 'string' && /^[A-Z_]{3,40}$/.test(reason) ? ` ${reason}` : '';
+      throw new GenAiTransportError(`The Gemini API answered HTTP ${response.status}${code} for model ${env.model}.`, response.status);
+    }
     const body = await response.json().catch(() => null);
     const candidate = body?.candidates?.[0];
     const raw = (candidate?.content?.parts ?? []).map(p => p?.text ?? '').join('');

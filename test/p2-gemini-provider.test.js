@@ -63,6 +63,7 @@ test('valid structured explanation: grounded, sections returned, request shape a
   assert.equal(call.body.generationConfig.responseMimeType, 'application/json');
   assert.deepEqual(call.body.generationConfig.responseSchema.required, ['summary', 'verifiedImpact', 'shortageAnalysis', 'workInstructionImplications', 'nextActions', 'warnings', 'references']);
   assert.equal(call.body.generationConfig.temperature, 0);
+  assert.equal(call.body.generationConfig.thinkingConfig, undefined, 'thinking budget only when configured as a number');
   const sent = call.body.contents[0].parts[0].text;
   assert.match(sent, /^Evidence:\n\{/);
   assert.equal(sent.includes('"plant"'), false, 'plant is not in the approved data list');
@@ -116,6 +117,9 @@ test('timeout, rate limit, HTTP errors and network failures map to typed errors 
     e => e instanceof genai.GenAiTransportError && e.status === 429 && e.retryAfter === 30);
   await assert.rejects(genai.explain(caseOf(), runOf(), gem(async () => new Response(`{"error":"bad key ${KEY}"}`, { status: 400 }))),
     e => e.status === 400 && !e.message.includes(KEY));
+  // A model the project may not use: Google's status enum is reported (no body text), with the model name.
+  await assert.rejects(genai.explain(caseOf(), runOf(), gem(async () => new Response(JSON.stringify({ error: { code: 404, status: 'NOT_FOUND', message: `models/x ${KEY}` } }), { status: 404 }))),
+    e => e.status === 404 && e.message === 'The Gemini API answered HTTP 404 NOT_FOUND for model gemini-2.5-flash.' && !e.message.includes(KEY));
   await assert.rejects(genai.explain(caseOf(), runOf(), gem(async () => { throw new TypeError(`fetch failed ${KEY}`); })),
     e => e instanceof genai.GenAiTransportError && e.status === 502 && !e.message.includes(KEY));
 });
@@ -142,6 +146,8 @@ test('production profile: Gemini provider configured, key only from the environm
   const pkg = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8'));
   const prod = pkg.cds.requires['[production]'].genai;
   assert.equal(prod.provider, 'gemini');
+  assert.equal(prod.model, 'gemini-3.5-flash-lite', 'stable model open to new projects (2.5 is restricted to earlier users)');
+  assert.equal(prod.thinkingBudget, undefined, 'no 2.5-specific thinking budget is sent');
   assert.equal(prod.apiKeyEnv, 'GEMINI_API_KEY');
   assert.equal(JSON.stringify(pkg).match(/AIza[0-9A-Za-z_-]{20,}/), null, 'no Google API key committed');
   const mta = readFileSync(new URL('../mta.yaml', import.meta.url), 'utf8');

@@ -50,11 +50,18 @@ The model never calculates, approves, rejects, changes a BOM, stock or price, or
 read-only (no run, decision or record is created). The UI keeps the deterministic figures in a separate panel labelled
 *Calculated by the CAP impact engine (deterministic, not AI)*.
 
+## Model choice
+
+The first deployed test (2026-11-10, `main@0c9c961`) returned HTTP 404 from Google for `gemini-2.5-flash`. Google now
+limits the 2.5 models to projects that used them before and recommends 3.5 Flash-Lite or 3.8 Flash for new projects
+(Gemini API models page and release notes, 18 September 2026). The default is therefore the stable
+`gemini-3.5-flash-lite`. The model can be overridden without a code change through `cds.requires.genai.model`.
+
 ## Configuration
 
 | Profile | `cds.requires.genai` | Effect |
 |---|---|---|
-| `[production]` (BTP) | `provider: gemini`, `model: gemini-2.5-flash`, `apiKeyEnv: GEMINI_API_KEY`, `timeoutMs: 20000`, `thinkingBudget: 0` | Live only if the environment variable `GEMINI_API_KEY` is set on the `assemblyimpact-srv` app. Without it: 409 `GENAI_NOT_CONFIGURED`, "Live AI explanations are not configured." |
+| `[production]` (BTP) | `provider: gemini`, `model: gemini-3.5-flash-lite`, `apiKeyEnv: GEMINI_API_KEY`, `timeoutMs: 20000` | Live only if the environment variable `GEMINI_API_KEY` is set on the `assemblyimpact-srv` app. Without it: 409 `GENAI_NOT_CONFIGURED`, "Live AI explanations are not configured." |
 | `[test]` | `provider: fixture` | Canned answers in `test/fixtures/p2/genai/answers.json`, always labelled `FIXTURE_LLM_RESPONSE` ("Canned test answer (fixture), not a live model"). |
 | `[development]` | none | "Live AI explanations are not configured." The deterministic calculation is unaffected. |
 
