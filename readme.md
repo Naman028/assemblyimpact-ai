@@ -52,7 +52,7 @@ S/4HANA system.
 
 | Project | Implemented | Status | External blocker |
 |---|---|---|---|
-| **P1 Joule Skills & Agent** | Two released SAP Build Actions projects in the shared EU10 trial (`AssemblyImpact Engineering Actions` 1.0.0, `AssemblyImpact Engineering Read Actions` 1.0.1) over the EngineeringReview OData service; Joule Studio classic project `AssemblyImpact Engineering Assistant` with the skill `Engineering Case Lookup`: saved and validated, inputs caseNumber, assemblyCode and status mapped to `LookupEngineeringCases`; not released, no agent. Actions contract tested locally. **Joule runtime test in the private environment:** Joule selected the skill and passed `caseNumber = EC-000473` to the action | Skill selection runtime-tested; **the backend call cannot complete** | EU10: no destination to the CAP service (needs subaccount trust and destination administration in the shared tenant); US10: no Joule Studio-capable SAP Build plan (section 10, `p1/joule/EU10-STATUS-2026-11-10.md`) |
+| **P1 Joule Skills & Agent** | Two released SAP Build Actions projects in the shared EU10 trial (`AssemblyImpact Engineering Actions` 1.0.0, `AssemblyImpact Engineering Read Actions` 1.0.1) over the EngineeringReview OData service; Joule Studio classic project `AssemblyImpact Engineering Assistant` with four skills (`Engineering Case Lookup`, `Explain Case Impact`, `Review Decision History`, `Run Engineering Impact` with a confirmation step) and the agent `Engineering Assistant`: all saved and validated (Design Console 0), not released. Actions contract tested locally. **Joule runtime test in the private environment:** Joule selected the skill/agent and extracted `caseNumber = EC-000473` | Skill and agent selection runtime-tested; **the backend call cannot complete** | EU10: no destination to the CAP service (needs subaccount trust and destination administration in the shared tenant); US10: no Joule Studio-capable SAP Build plan (section 10, `p1/joule/EU10-STATUS-2026-11-10.md`) |
 | **P2 S/4HANA + GenAI** | ERP adapter with `fixtures` / `sandbox` / `s4` modes. Grounded explanation (`explainImpact`) with the Gemini provider (`gemini-3.5-flash-lite`, JSON schema, per-section validation); only synthetic data is sent | Deployed (`main@0c9c961`) and the key is set. The first live call returned HTTP 404 (model not available to new projects); the fix is PR #25, not yet deployed. UI checked in BAS (fixture and not-configured). Sandbox and S/4 modes not run live | PR #25 merge and deploy; billing decision (EEA users require Paid Services under the Gemini API terms). No authorized S/4HANA system |
 | **P3 AI-assisted Fiori** | Case Worklist (Fiori elements V4) generated first with SAP Project Accelerator, then reviewed and adapted | Implemented; evidence `docs/evidence/p3-case-worklist/` | — |
 | **P4 Fiori on BTP** | Investigation Studio (SAPUI5) + CAP + HANA + XSUAA + app router on BTP | Deployed (`main@0c9c961`), checked in the browser (section 17) | — |
@@ -78,7 +78,7 @@ flowchart LR
   S -- extractFromErp --> ERP
   S -- explainImpact<br/>synthetic evidence only --> G
   subgraph P1["P1 · SAP Build EU10"]
-    J[Joule skill<br/>Engineering Case Lookup] --> A[SAP Build Actions<br/>LookupEngineeringCases …]
+    J[Joule agent + 4 skills<br/>Engineering Assistant] --> A[SAP Build Actions<br/>LookupEngineeringCases …]
   end
   A -. destination assemblyImpactBackend<br/>NOT AVAILABLE in tenant .-> R
 ```
@@ -205,7 +205,7 @@ Changing source in BAS does not change HANA: only an MTA deployment runs the HDI
 | Check | Result (2026-11-10) |
 |---|---|
 | EU10 Actions projects | `AssemblyImpact Engineering Actions` latest 1.0.0, `AssemblyImpact Engineering Read Actions` latest 1.0.1 — both listed as available (released) |
-| EU10 Joule Studio classic | project `AssemblyImpact Engineering Assistant` with one Joule skill, `Engineering Case Lookup`. It uses `LookupEngineeringCases` with inputs caseNumber, assemblyCode and status. The skill is saved, validated (Design Console 0) and not released; there is no agent |
+| EU10 Joule Studio classic | project `AssemblyImpact Engineering Assistant` with four Joule skills (*Engineering Case Lookup*, *Explain Case Impact*, *Review Decision History*, *Run Engineering Impact* with Send Confirmation Request) and the agent *Engineering Assistant* using all four. Everything is saved and validated (Design Console 0) and not released. Per-skill configuration and types: `p1/joule/EU10-STATUS-2026-11-10.md` |
 | EU10 Control Tower → Environments | a **private environment** is active (activated on 2026-11-10), alongside the public one |
 | EU10 Test (private environment) | test package deployed. Joule answered "Look up engineering case EC-000473" by **selecting the skill** and passing `caseNumber = EC-000473` to the API call (`docs/evidence/p1-eu10-2026-11-10/03-*.jpg`, `04-*.jpg`). The call cannot complete: the variable `assemblyImpactBackend` has no destination to this backend, and other users' destinations were not used |
 | Runtime readiness EU10 | needs a destination from the tenant to the CAP service with OAuth; the shared trial tenant gives no destination administration → not executable |
@@ -288,7 +288,7 @@ Open:
 - **Design:** `p1/joule/skills.json` defines four skills (find cases, explain impact, decision history, run impact with confirmation) and an agent that never decides. The skills use the operations in `p1/build-actions/*.openapi.json` against the CAP service. `test/p1-actions-contract.test.js` checks every response against that spec, including 403/404 and plant restriction.
 - **In the EU10 tenant:**
   - Actions projects 1.0.0 and 1.0.1 are released.
-  - The skill *Engineering Case Lookup* is saved and was runtime-tested in the private environment, where it was selected with the right input.
+  - All four skills and the agent *Engineering Assistant* are saved and validated (Design Console 0). In the private environment, Joule selected the skill and the agent with the right input; no backend call completed.
   - Execution against the backend is **blocked** by the missing destination.
   - The impact, materials, work-instruction and history skills are design-time only (`skills.json` and contract tests); they were not built in Joule Studio, because they cannot be tested without the destination.
   - Status: `p1/joule/EU10-STATUS-2026-11-10.md`.
@@ -349,7 +349,7 @@ Locally without BTP: section 7.
 | Home AI status / 5xx message | Locally tested (PR #25) | `test/ui-landing-startup.test.js`, `test/p2-genai-explanation.test.js` |
 | P1 Actions | Completed (released 1.0.0 / 1.0.1) | EU10 Actions projects |
 | P1 skill Engineering Case Lookup | Runtime-tested up to the API call (skill selection, input extraction) | `docs/evidence/p1-eu10-2026-11-10/03-04` |
-| P1 backend execution, release, agent | Blocked by external permission (destination in EU10) | `p1/joule/EU10-STATUS-2026-11-10.md` |
-| P1 further skills and agent | Completed as design-time artifacts | `p1/joule/skills.json`, `test/p1-actions-contract.test.js` |
+| P1 backend execution, release, deployment | Blocked by external permission (destination in EU10); administrator handoff written | `p1/joule/EU10-STATUS-2026-11-10.md` |
+| P1 further skills and agent | Saved and validated in Joule Studio (Design Console 0); agent selection runtime-tested; not released | `docs/evidence/p1-eu10-2026-11-10/05-10`, `p1/joule/EU10-STATUS-2026-11-10.md` |
 | S/4HANA live extraction | Blocked (no authorized system) | `docs/p2/S4HANA_Adapter.md` |
 
