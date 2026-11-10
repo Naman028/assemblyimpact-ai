@@ -40,7 +40,8 @@ sap.ui.define([
           Promise.all(sourceKeys.map(function (k) { return that._get(overview.sourcePath(k), true); })),
           that._get(overview.RECENT_PATH),
           status,
-          that._get("myCapabilities()").catch(function () { return { canImport: false }; })
+          that._get("myCapabilities()").catch(function () { return { canImport: false }; }),
+          that._get("whoAmI()").catch(function () { return null; })
         ]);
       }).then(function (res) {
         var counts = {}, bySource = {};
@@ -54,7 +55,10 @@ sap.ui.define([
             dataSource: overview.dataSource(res[3].dataSourceMode), genai: overview.genai(res[3].genaiMode),
             joule: overview.joule(res[3].jouleStatus), auth: overview.auth(res[3].authMode), demoImport: !!res[3].demoImport
           },
-          caps: { canImport: !!(res[4] && res[4].canImport) }
+          caps: { canImport: !!(res[4] && res[4].canImport) },
+          // Who is acting (server view). In development the user can be switched on /dev-users.html.
+          me: res[5] ? { text: res[5].id + " · " + (res[5].roles || "no application role") + (res[5].plants ? " · plant " + res[5].plants : ""),
+            dev: res[5].authMode === "DEVELOPMENT" } : { text: "", dev: false }
         });
       }).catch(function (error) {
         model.setProperty("/busy", false);

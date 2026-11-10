@@ -58,13 +58,25 @@ export async function submittersOf(cases) {
 }
 
 /** M05: which review actions the user may start on a case (advisory for UIs; every action re-checks). */
-export function availabilityFor({ status, submittedBy }, user, impactAllowedStatuses) {
-  const analyst = user.is('ChangeAnalyst');
-  return {
-    canRunImpact: (analyst || user.is('ImpactRunner')) && impactAllowedStatuses.includes(status),
-    canSubmit: analyst && status === 'OPEN',
-    canDecide: user.is('ChangeApprover') && status === 'IN_REVIEW' && submittedBy !== user.id,
-  };
+export function availabilityFor({ status, submittedBy, latestRun_ID }, user, impactAllowedStatuses) {
+  const analyst = user.is('ChangeAnalyst'), approver = user.is('ChangeApprover');
+  const canRunImpact = (analyst || user.is('ImpactRunner')) && impactAllowedStatuses.includes(status);
+  const canSubmit = analyst && status === 'OPEN';
+  const canDecide = approver && status === 'IN_REVIEW' && submittedBy !== user.id;
+  // Reasons, in the order a user can act on them: role first, then case state, then evidence and duties.
+  const runImpactHint = canRunImpact ? null
+    : !(analyst || user.is('ImpactRunner')) ? 'Requires the Change Analyst role.'
+      : `Not available in status ${status}; the evidence of a decided case is preserved.`;
+  const submitHint = canSubmit ? (latestRun_ID ? null : 'You can submit now, but the approver will need an impact run: run the calculation first.')
+    : !analyst ? 'Requires the Change Analyst role.'
+      : `Only open cases can be submitted (status ${status}).`;
+  const decideHint = !approver ? 'Requires the Change Approver role (an independent reviewer).'
+    : status === 'OPEN' ? 'The analyst must submit the case for review first.'
+      : status !== 'IN_REVIEW' ? `Already decided (status ${status}).`
+        : submittedBy === user.id ? 'You submitted this case; another approver must decide it (separation of duties).'
+          : !latestRun_ID ? 'No impact run exists: approval needs a calculation (rejection is still possible).'
+            : null;
+  return { canRunImpact, canSubmit, canDecide, runImpactHint, submitHint, decideHint };
 }
 
 /**

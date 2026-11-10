@@ -2,6 +2,7 @@ import cds from '@sap/cds';
 import { calculateImpact, ImpactRejection, RULESET } from './lib/impact-calculator.js';
 import { loadImpactInput, fingerprint, persistImpactRun, ConcurrentRunError, CaseDecidedError, IMPACT_ALLOWED_STATUSES } from './lib/impact-persistence.js';
 import { userPlants } from './lib/plants.js';
+import { caseCoverage, checkRate, deactivateRate, searchAssemblies, nextCaseNumber, CoverageRejection } from './lib/planning.js';
 import { systemStatus } from './lib/system-status.js';
 import { prepareAttachment, acceptUpload, checkRemoval, reviseInput, DemoDataError } from './lib/demo-data.js';
 import { decide, DecisionError, TRANSITIONS, submittersOf, availabilityFor } from './lib/review-decisions.js';
@@ -50,6 +51,32 @@ export default class EngineeringReview extends cds.ApplicationService {
       return SELECT.one.from(this.entities.ReviewCases, caseID);
     });
     this.on('explainImpact', 'ReviewCases', req => this.#explainImpact(req));
+    // Planning view and case-creation helpers (lib/planning.js, rules in lib/coverage.js).
+    const asCoverageReject = (req, e) => { if (e instanceof CoverageRejection) return req.reject({ status: 400, code: e.code, message: e.message }); throw e; };
+    const unquote = v => (typeof v === 'string' && /^'.*'$/s.test(v) ? v.slice(1, -1).replace(/''/g, "'") : v);
+    this.on('materialCoverage', 'ReviewCases', async req => {
+      const key = req.params.at(-1); const caseID = typeof key === 'object' ? key.ID : key;
+      const horizonDays = Number(req.data.horizonDays);
+      try {
+        const rows = await caseCoverage(caseID, userPlants(req.user), { startDate: unquote(req.data.startDate), horizonDays });
+        return rows ?? req.reject(404);
+      } catch (e) { return asCoverageReject(req, e); }
+    });
+    this.before('CREATE', 'MaterialConsumptionRates', async req => {
+      try { await checkRate(req.data, userPlants(req.user)); } catch (e) { return asCoverageReject(req, e); }
+    });
+    this.on('deactivate', 'MaterialConsumptionRates', async req => {
+      const key = req.params.at(-1); const ID = typeof key === 'object' ? key.ID : key;
+      try { return (await deactivateRate(ID, req.data.reason, userPlants(req.user), req.user.id)) ?? req.reject(404); } catch (e) { return asCoverageReject(req, e); }
+    });
+    const APP_ROLES = ['ChangeViewer', 'ChangeAnalyst', 'ChangeApprover', 'ImpactRunner', 'DemoDataImporter', 'ErpExtractor', 'AssemblyViewer', 'AssemblyMaintainer'];
+    this.on('whoAmI', req => {
+      const kind = cds.env.requires?.auth?.kind;
+      return { id: req.user.id, roles: APP_ROLES.filter(r => req.user.is(r)).join(', '), plants: userPlants(req.user).join(', '),
+        authMode: kind === 'xsuaa' || kind === 'ias' ? 'PRODUCTION' : 'DEVELOPMENT' };
+    });
+    this.on('searchAssemblies', async req => { try { return await searchAssemblies(unquote(req.data.term), userPlants(req.user)); } catch (e) { return asCoverageReject(req, e); } });
+    this.on('nextCaseNumber', async req => { try { return await nextCaseNumber(userPlants(req.user)); } catch (e) { return asCoverageReject(req, e); } });
     for (const [action, transition] of Object.entries(DECISION_ACTIONS)) this.on(action, 'ReviewCases', req => this.#decide(req, transition));
     return super.init();
   }
@@ -149,7 +176,11 @@ export default class EngineeringReview extends cds.ApplicationService {
       ({ caseIds } = await commitBundle(validated, { importId, user: req.user.id, fileName, format: String(format).toLowerCase(), content, meta: parsed.meta }));
     } catch (error) {
       if (error instanceof ImportConflictError || /UNIQUE|unique constraint/i.test(error.message)) {
-        return req.reject({ status: 409, code: 'IMPORT_CONFLICT', message: 'A concurrent change conflicts with this import; nothing was imported. Validate again.' });
+        // A concurrent import took a key of this file (case number, BOM state, snapshot) between validation and commit.
+        // The database unique constraint is the authority; the whole transaction is rolled back.
+        const suggestion = await nextCaseNumber(userPlants(req.user)).catch(() => null);
+        return req.reject({ status: 409, code: 'IMPORT_CONFLICT', message: 'A concurrent import used an identifier of this file; nothing was imported. ' +
+          (suggestion ? `The next free case number is now ${suggestion}. ` : '') + 'Validate again.' });
       }
       throw error;
     }
@@ -242,7 +273,7 @@ export default class EngineeringReview extends cds.ApplicationService {
   }
 }
 
-const VIRTUAL_FLAGS = ['canRunImpact', 'canSubmit', 'canDecide', 'submittedBy'];
+const VIRTUAL_FLAGS = ['canRunImpact', 'canSubmit', 'canDecide', 'submittedBy', 'runImpactHint', 'submitHint', 'decideHint'];
 
 /**
  * M05: fills the virtual availability flags used by the UIs to show only meaningful actions — only those
@@ -256,20 +287,20 @@ async function annotateAvailability(result, req) {
     : VIRTUAL_FLAGS.filter(f => columns.some(c => c?.ref?.length === 1 && c.ref[0] === f));
   if (!selected.length) return;
   const { ReviewCases } = cds.entities('assemblyimpact');
-  const stored = new Map((await SELECT.from(ReviewCases).columns('ID', 'status', 'createdBy').where({ ID: { in: rows.map(r => r.ID) } }))
+  const stored = new Map((await SELECT.from(ReviewCases).columns('ID', 'status', 'createdBy', 'latestRun_ID').where({ ID: { in: rows.map(r => r.ID) } }))
     .map(r => [r.ID, r]));
   const inReview = [...stored.values()].filter(r => r.status === 'IN_REVIEW');
   const submitters = new Map((await submittersOf(inReview)).map((s, i) => [inReview[i].ID, s]));
   for (const row of rows) {
-    const status = stored.get(row.ID)?.status, submittedBy = submitters.get(row.ID) ?? null;
-    const flags = { ...availabilityFor({ status, submittedBy }, req.user, IMPACT_ALLOWED_STATUSES), submittedBy };
+    const { status, latestRun_ID } = stored.get(row.ID) ?? {}, submittedBy = submitters.get(row.ID) ?? null;
+    const flags = { ...availabilityFor({ status, submittedBy, latestRun_ID }, req.user, IMPACT_ALLOWED_STATUSES), submittedBy };
     for (const f of selected) row[f] = flags[f];
   }
 }
 
 /** M05: what the signed-in user may do globally (drives optional UI controls such as the import button). */
 function capabilitiesOf(user) {
-  return { canImport: !!cds.env.features?.demo_import && user.is('DemoDataImporter') };
+  return { canImport: !!cds.env.features?.demo_import && user.is('DemoDataImporter'), canMaintainRates: user.is('ChangeAnalyst') };
 }
 
 const caseDecided = status => ({ status: 409, code: 'CASE_ALREADY_DECIDED',

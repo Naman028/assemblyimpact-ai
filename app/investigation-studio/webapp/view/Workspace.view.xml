@@ -18,7 +18,7 @@
 				<f:actions>
 					<Button id="btnRun" text="Run Impact" icon="sap-icon://simulate" type="Emphasized" press=".onRunImpact" visible="{= !!${ws>/case/canRunImpact} }"/>
 					<Button id="btnEditInput" text="Edit Input" icon="sap-icon://edit" press=".onEditInput"
-						visible="{= ${ws>/case/status} === 'OPEN' &amp;&amp; (${ws>/case/sourceType} === 'DEMO_IMPORT' || ${ws>/case/sourceType} === 'SYNTHETIC_FIXTURE') }"
+						visible="{= !!${ws>/canEditInput} &amp;&amp; ${ws>/case/status} === 'OPEN' &amp;&amp; (${ws>/case/sourceType} === 'DEMO_IMPORT' || ${ws>/case/sourceType} === 'SYNTHETIC_FIXTURE') }"
 						tooltip="Change one synthetic input (demonstration data only)"/>
 					<Button id="btnSubmit" text="Submit for Review" icon="sap-icon://paper-plane" press=".onSubmit" visible="{= !!${ws>/case/canSubmit} }"/>
 					<Button id="btnApprove" text="Approve" icon="sap-icon://accept" type="Accept" press=".onApprove" visible="{= !!${ws>/case/canDecide} }"/>
@@ -36,6 +36,8 @@
 				<VBox>
 					<MessageStrip visible="{= ${ws>/case/status} === 'APPROVED' || ${ws>/case/status} === 'REJECTED' }" type="Information" showIcon="true" class="sapUiTinyMarginBottom"
 						text="This case is decided ({ path: 'ws>/case/status', formatter: '.fmt.caseStatus' }). Its evidence is frozen: no new impact runs or decisions are possible."/>
+					<MessageStrip visible="{= !!${ws>/case/canDecide} }" type="Success" showIcon="true" class="sapUiTinyMarginBottom"
+						text="Ready for your decision: inspect the results, then Approve or Reject (top right, or in the Review tab)."/>
 					<MessageStrip visible="{= !${ws>/run} }" type="Warning" showIcon="true" class="sapUiTinyMarginBottom"
 						text="No impact run yet. Run the impact calculation to compare the revisions, check stock, cost and work instructions."/>
 					<MessageStrip visible="{= ${ws>/run/status} === 'INCOMPLETE' }" type="Error" showIcon="true" class="sapUiTinyMarginBottom"
@@ -222,6 +224,76 @@
 							text="Material cost from synthetic standard prices valid on the as-of date {ws>/run/asOfDate}, calculated by the CAP ruleset {ws>/run/ruleset}. Labour and overhead are not included."/>
 						</VBox>
 					</IconTabFilter>
+					<IconTabFilter key="coverage" text="Consumption Planning" icon="sap-icon://line-chart-time-axis">
+						<MessageStrip type="Information" showIcon="true" class="sapUiSmallMarginBottom"
+							text="Planning view, separate from the impact result above (which is unchanged). Stock is projected per calendar day from the latest stock snapshot on or before the start date: consumption rates per day/week/month (week = 7 days, month = days of that calendar month) plus this case's requirement (production quantity x proposed BOM quantity) on the effective date of revision {ws>/case/toRevision}. A rate of 0 is a known zero. Days without any rate have unknown demand: the result is then 'Incomplete' (or a shortage that is certain even so), never 'Covered'. Different units are not converted."/>
+						<HBox wrap="Wrap" alignItems="End" class="sapUiSmallMarginBottom">
+							<VBox class="sapUiSmallMarginEnd"><Label text="Start date" labelFor="covStart"/>
+								<DatePicker id="covStart" value="{ws>/cov/startDate}" valueFormat="yyyy-MM-dd" displayFormat="yyyy-MM-dd" width="10rem"/></VBox>
+							<VBox class="sapUiSmallMarginEnd"><Label text="Horizon (days, 1–366)" labelFor="covDays"/>
+								<StepInput id="covDays" value="{ws>/cov/horizonDays}" min="1" max="366" width="9rem"/></VBox>
+							<Button text="Project coverage" icon="sap-icon://line-chart-time-axis" type="Emphasized" press=".onCoverage"/>
+						</HBox>
+						<Table id="coverageTable" items="{ws>/cov/rows}" noDataText="Choose a start date and horizon, then project coverage." fixedLayout="false">
+							<columns>
+								<Column width="8rem"><Text text="Material"/></Column>
+								<Column><Text text="Status"/></Column>
+								<Column hAlign="End"><Text text="Opening stock"/></Column>
+								<Column hAlign="End" minScreenWidth="Tablet" demandPopin="true"><Text text="Rate per day at start"/></Column>
+								<Column hAlign="End" minScreenWidth="Tablet" demandPopin="true"><Text text="Case requirement"/></Column>
+								<Column hAlign="End"><Text text="Demand in horizon"/></Column>
+								<Column hAlign="End"><Text text="Stock at end"/></Column>
+								<Column minScreenWidth="Tablet" demandPopin="true"><Text text="Covered until"/></Column>
+								<Column minScreenWidth="Desktop" demandPopin="true"><Text text="Days without rate"/></Column>
+							</columns>
+							<items>
+								<ColumnListItem>
+									<cells>
+										<ObjectIdentifier title="{ws>material}" text="{ws>unit}"/>
+										<ObjectStatus text="{= ${ws>status} === 'COVERED' ? 'Covered' : ${ws>status} === 'SHORTAGE' ? 'Shortage' : ${ws>status} === 'INCOMPLETE' ? 'Incomplete: demand unknown' : ${ws>status} === 'NO_STOCK' ? 'No stock snapshot' : 'Unit mismatch' }"
+											state="{= ${ws>status} === 'COVERED' ? 'Success' : ${ws>status} === 'SHORTAGE' ? 'Error' : 'Warning' }"
+											tooltip="{= ${ws>missingRanges} ? 'No consumption rate for: ' + ${ws>missingRanges} : '' }"/>
+										<Text text="{ path: 'ws>openingStock', formatter: '.fmt.quantity' }"/>
+										<Text text="{ path: 'ws>dailyRateAtStart', formatter: '.fmtRate' }"/>
+										<Text text="{ parts: ['ws>caseRequirement', 'ws>requirementInHorizon', 'ws>effectiveDate'], formatter: '.fmtRequirement' }"/>
+										<Text text="{ parts: ['ws>expectedDemand', 'ws>demandComplete'], formatter: '.fmtDemand' }"/>
+										<ObjectNumber number="{ path: 'ws>projectedEndStock', formatter: '.fmt.quantity' }" state="{= ${ws>status} === 'SHORTAGE' ? 'Error' : 'None' }"/>
+										<Text text="{= ${ws>exhaustionDate} ? (${ws>exhaustionIsLatestPossible} ? 'short on or before ' : 'short from ') + ${ws>exhaustionDate} : (${ws>status} === 'COVERED' ? 'beyond ' + ${ws>endDate} : ${ws>status} === 'INCOMPLETE' ? 'unknown' : '—') }"/>
+										<Text text="{= ${ws>noRateDays} > 0 ? ${ws>noRateDays} + ' (' + ${ws>missingRanges} + ')' : (${ws>noRateDays} === 0 ? '0' : '—') }" wrapping="true"/>
+									</cells>
+								</ColumnListItem>
+							</items>
+						</Table>
+						<Panel headerText="Consumption rates (plant {ws>/case/plant})" expandable="true" expanded="true" class="sapUiSmallMarginTop">
+							<Table items="{ws>/cov/rates}" noDataText="No consumption rates for the materials of this case." fixedLayout="false">
+								<columns>
+									<Column><Text text="Material"/></Column><Column><Text text="Period"/></Column><Column hAlign="End"><Text text="Quantity"/></Column>
+									<Column><Text text="Valid (inclusive)"/></Column><Column minScreenWidth="Tablet" demandPopin="true"><Text text="Status"/></Column><Column width="7rem"/>
+								</columns>
+								<items>
+									<ColumnListItem>
+										<cells>
+											<Text text="{ws>material}"/><Text text="per {= ${ws>period}.toLowerCase() }"/>
+											<Text text="{ path: 'ws>quantity', formatter: '.fmt.quantity' } {ws>unit}"/>
+											<Text text="{ws>validFrom} – {ws>validTo}"/>
+											<ObjectStatus text="{= ${ws>active} ? 'Active' : 'Withdrawn by ' + ${ws>deactivatedBy} + ': ' + ${ws>deactivationReason} }" state="{= ${ws>active} ? 'Success' : 'None' }"/>
+											<Button text="Withdraw" type="Transparent" press=".onWithdrawRate" tooltip="Withdraw this rate (kept for audit; enter a corrected rate afterwards)" visible="{= ${ws>/cov/canEdit} &amp;&amp; ${ws>active} }"/>
+										</cells>
+									</ColumnListItem>
+								</items>
+							</Table>
+							<HBox wrap="Wrap" alignItems="End" class="sapUiSmallMarginTop" visible="{ws>/cov/canEdit}">
+								<VBox class="sapUiSmallMarginEnd"><Label text="Material"/>
+									<Select selectedKey="{ws>/cov/new/material}" items="{ws>/cov/materials}" width="10rem"><core:Item key="{ws>material}" text="{ws>material} ({ws>unit})"/></Select></VBox>
+								<VBox class="sapUiSmallMarginEnd"><Label text="Per"/>
+									<Select selectedKey="{ws>/cov/new/period}" width="7rem"><core:Item key="DAY" text="day"/><core:Item key="WEEK" text="week"/><core:Item key="MONTH" text="month"/></Select></VBox>
+								<VBox class="sapUiSmallMarginEnd"><Label text="Quantity (≥ 0)"/><Input value="{ws>/cov/new/quantity}" type="Number" width="7rem"/></VBox>
+								<VBox class="sapUiSmallMarginEnd"><Label text="Valid from"/><DatePicker value="{ws>/cov/new/validFrom}" valueFormat="yyyy-MM-dd" displayFormat="yyyy-MM-dd" width="9rem"/></VBox>
+								<VBox class="sapUiSmallMarginEnd"><Label text="Valid to"/><DatePicker value="{ws>/cov/new/validTo}" valueFormat="yyyy-MM-dd" displayFormat="yyyy-MM-dd" width="9rem"/></VBox>
+								<Button text="Add rate" icon="sap-icon://add" press=".onAddRate"/>
+							</HBox>
+						</Panel>
+					</IconTabFilter>
 					<IconTabFilter key="explain" text="AI Explanation" icon="sap-icon://ai">
 						<VBox class="sapUiSmallMargin">
 							<MessageStrip type="Information" showIcon="true" text="P2 GenAI: SAP Generative AI Hub explains the latest impact run using only that run's figures, findings, shortages and BOM changes. The server checks citations, figures, cost direction and decision wording against the run and withholds answers that fail; this is a safeguard, not proof of correctness. Read it together with the BOM, Materials and Findings tabs. The model does not calculate or decide."/>
@@ -384,6 +456,12 @@
 							<Label visible="{= !${ws>/case/canRunImpact} &amp;&amp; !${ws>/case/canSubmit} &amp;&amp; !${ws>/case/canDecide} }" wrapping="true"
 								text="{= ${ws>/case/status} === 'IN_REVIEW' &amp;&amp; ${ws>/case/submittedBy} ? 'Waiting for an independent approver (submitted by ' + ${ws>/case/submittedBy} + ').' : 'No review action is available to you for this case.' }"/>
 						</HBox>
+						<!-- Why an action is not offered (role, status, separation of duties, missing evidence); computed by the server. -->
+						<VBox id="actionHints" class="sapUiSmallMarginBottom aiHints">
+							<ObjectStatus visible="{= !!${ws>/case/runImpactHint} }" title="Run Impact" text="{ws>/case/runImpactHint}" icon="sap-icon://hint" state="None"/>
+							<ObjectStatus visible="{= !!${ws>/case/submitHint} }" title="Submit for Review" text="{ws>/case/submitHint}" icon="sap-icon://hint" state="{= ${ws>/case/canSubmit} ? 'Warning' : 'None' }"/>
+							<ObjectStatus visible="{= !!${ws>/case/decideHint} }" title="Approve / Reject" text="{ws>/case/decideHint}" icon="sap-icon://hint" state="None"/>
+						</VBox>
 						<List headerText="Decision history" items="{ws>/decisions}" noDataText="No decisions yet. Decisions are recorded only by the review actions.">
 							<items>
 								<FeedListItem sender="{ws>actor}" icon="{= ${ws>action} === 'APPROVE' ? 'sap-icon://accept' : ${ws>action} === 'REJECT' ? 'sap-icon://decline' : 'sap-icon://paper-plane' }"

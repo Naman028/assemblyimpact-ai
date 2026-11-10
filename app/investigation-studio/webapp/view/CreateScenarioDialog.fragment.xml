@@ -6,19 +6,34 @@
 		<content>
 			<VBox>
 				<MessageStrip type="Information" showIcon="true" class="sapUiSmallMarginBottom"
-					text="Fictional data for demonstration only; it is never written to SAP S/4HANA. A component row with a current quantity belongs to revision A, with a proposed quantity to revision B. Use the same item number with a different material to model a replacement."/>
+					text="Fictional data for demonstration only; it is never written to SAP S/4HANA. A component row with a current quantity belongs to revision A, with a proposed quantity to revision B. Empty or 0 = not in that revision (0 in B removes a component, 0 in A adds one). Use the same item number with a different material to model a replacement."/>
+				<Panel headerText="1. Assembly: find an existing one or enter a new one" expandable="false" class="sapUiNoContentPadding sapUiSmallMarginBottom">
+					<HBox wrap="Wrap" alignItems="Center" class="sapUiTinyMarginTopBottom">
+						<SearchField id="assemblySearch" width="18rem" placeholder="Search assembly, e.g. PUMP-450" search=".onAssemblySearch" class="sapUiTinyMarginEnd"/>
+						<Button text="New assembly" icon="sap-icon://add" type="Transparent" press=".onAssemblyNew" tooltip="Enter an assembly that does not exist yet"/>
+						<ObjectStatus class="sapUiSmallMarginBegin" text="{= ${form>/existingAssembly} ? 'Existing assembly ' + ${form>/assemblyCode} + ' (revisions: ' + ${form>/existingRevisions}.join(', ') + ')' : 'Entering a new assembly' }"
+							state="{= ${form>/existingAssembly} ? 'Information' : 'None' }" icon="{= ${form>/existingAssembly} ? 'sap-icon://accept' : 'sap-icon://add-product' }"/>
+					</HBox>
+					<List id="assemblyHits" items="{form>/assemblyHits}" visible="{= ${form>/assemblySearched} === true }" mode="SingleSelectMaster" selectionChange=".onAssemblyPick"
+						noDataText="No assembly matches in your plants: enter a new one below." class="aiAssemblyHits">
+						<StandardListItem title="{form>assemblyCode} · {form>description}" description="Plant {form>plant} · revisions {form>revisions} · {form>cases} case(s)" type="Active" wrapping="true"/>
+					</List>
+				</Panel>
 				<f:SimpleForm editable="true" layout="ColumnLayout" columnsM="2" columnsL="3" columnsXL="3" labelSpanL="4" title="Engineering change">
 					<f:content>
-						<Label text="Assembly" required="true"/><Input value="{form>/assemblyCode}" maxLength="40" placeholder="e.g. PUMP-950"/>
-						<Label text="Assembly description" required="true"/><Input value="{form>/description}" maxLength="160"/>
-						<Label text="Plant" required="true"/><Input value="{form>/plant}" maxLength="4" width="6rem"/>
-						<Label text="Case number" required="true"/><Input value="{form>/caseNumber}" maxLength="20" placeholder="EC-000123"/>
-						<Label text="Change title" required="true"/><Input value="{form>/title}" maxLength="160"/>
-						<Label text="Review owner"/><Input value="{form>/owner}" maxLength="80"/>
-						<Label text="Production quantity" required="true"/><StepInput value="{form>/productionQuantity}" min="1" max="1000000" width="10rem"/>
-						<Label text="Revision A valid from" required="true"/><DatePicker value="{form>/currentValidFrom}" valueFormat="yyyy-MM-dd" displayFormat="yyyy-MM-dd"/>
-						<Label text="Revision B effective" required="true"/><DatePicker value="{form>/effectiveDate}" valueFormat="yyyy-MM-dd" displayFormat="yyyy-MM-dd"/>
-						<Label text="Work instruction"/><CheckBox selected="{form>/includeInstruction}" text="Create one assembly instruction referencing revision A"/>
+						<Label text="Assembly ID" required="true"/><Input value="{form>/assemblyCode}" maxLength="40" placeholder="e.g. PUMP-950" editable="{= !${form>/existingAssembly} }"
+							tooltip="Material number of the assembly in the plant (business key)"/>
+						<Label text="Assembly description" required="{= !${form>/existingAssembly} }"/><Input value="{form>/description}" maxLength="160" editable="{= !${form>/existingAssembly} }"/>
+						<Label text="Plant" required="true"/><Input value="{form>/plant}" maxLength="4" width="6rem" editable="{= !${form>/existingAssembly} }"/>
+						<Label text="Case number" required="true"/>
+						<!-- SimpleForm accepts only form content (no HBox): label followed by the controls of the field. -->
+						<Input value="{form>/caseNumber}" maxLength="9" placeholder="EC-000123"
+							tooltip="Identifies the review case; also recorded as change number on the proposed revision. Proposed by the server; you may change it before importing."/>
+						<Button icon="sap-icon://synchronize" text="Propose" type="Transparent" press=".onProposeCaseNumber" tooltip="Propose the next free case number"/>
+						<Label text="Revision ID, current" required="true"/>
+						<Input value="{form>/fromRevision}" maxLength="10" tooltip="BOM revision ID of the current state (e.g. A)"/>
+						<Label text="Revision ID, proposed" required="true"/>
+						<Input value="{form>/toRevision}" maxLength="10" tooltip="BOM revision ID of the proposed state (e.g. B)"/>
 					</f:content>
 				</f:SimpleForm>
 				<Table id="createComponents" items="{form>/components}" headerText="Components, prices and stock" class="sapUiSmallMarginTop" fixedLayout="false">
@@ -35,9 +50,9 @@
 						<Column width="9rem"><Text text="Material"/></Column>
 						<Column minScreenWidth="Desktop" demandPopin="true"><Text text="Description"/></Column>
 						<Column width="4.5rem"><Text text="Unit"/></Column>
-						<Column width="6rem" hAlign="End"><Text text="Qty A (current)"/></Column>
-						<Column width="6rem" hAlign="End"><Text text="Qty B (proposed)"/></Column>
-						<Column width="7rem" hAlign="End"><Text text="Unit price"/></Column>
+						<Column width="6rem" hAlign="End"><Text text="Qty A (current)" wrapping="true"/></Column>
+						<Column width="6rem" hAlign="End"><Text text="Qty B (proposed)" wrapping="true"/></Column>
+						<Column width="7rem" hAlign="End"><Text text="Unit price (empty = stored)" wrapping="true"/></Column>
 						<Column width="4.5rem"><Text text="Curr."/></Column>
 						<Column width="6rem" hAlign="End"><Text text="Stock"/></Column>
 						<Column width="3rem"/>
@@ -59,6 +74,8 @@
 						</ColumnListItem>
 					</items>
 				</Table>
+				<MessageStrip type="None" showIcon="false" class="sapUiSmallMarginTop"
+					text="Identifiers: Case number (EC-nnnnnn) = the review case; Change number = the case number recorded on the proposed BOM revision; Assembly ID = material number of the assembly in its plant; Revision ID = label of a BOM state (A, B, C …). Internal record IDs are generated and never edited. Existing assemblies, BOMs and prices are only referenced, never overwritten."/>
 			</VBox>
 		</content>
 		<beginButton>

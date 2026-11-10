@@ -73,7 +73,10 @@ test('edits are refused outside their scope', async () => {
   assert.equal((await revise(id, { kind: 'PROPOSED_QUANTITY', itemNo: '0040', value: 2 }, 'importer2000')).status, 404, 'foreign plant');
   for (const [body, code] of [
     [{ kind: 'DELETE_ALL', value: 1 }, 'INVALID_KIND'],
-    [{ kind: 'PROPOSED_QUANTITY', itemNo: '0040', value: 0 }, 'INVALID_VALUE'],
+    [{ kind: 'PROPOSED_QUANTITY', itemNo: '0040', value: -1 }, 'INVALID_VALUE'],
+    [{ kind: 'PROPOSED_QUANTITY', itemNo: '0040', value: 0.0001 }, 'INVALID_VALUE'],
+    [{ kind: 'PRICE', material: 'PSENS-700', value: -0.01 }, 'INVALID_VALUE'],
+    [{ kind: 'STOCK', material: 'FIT-700', value: 1.2345 }, 'INVALID_VALUE'],
     [{ kind: 'PROPOSED_QUANTITY', itemNo: '9999', value: 1 }, 'ITEM_NOT_FOUND'],
     [{ kind: 'PRICE', material: 'COOL-FAN-1', value: 1 }, 'MATERIAL_NOT_IN_CASE'],
     [{ kind: 'STOCK', material: 'FIT-700', value: -1 }, 'INVALID_VALUE'],
@@ -166,14 +169,21 @@ test('Scenario B: the Create Scenario form bundle passes server validation, impo
   vm.runInNewContext(readFileSync(join(import.meta.dirname, '..', 'app', 'investigation-studio', 'webapp', 'lib', 'scenarioBuilder.js'), 'utf8'),
     { sap: { ui: { define: (d, f) => { builder = f(); } } }, Date });
   const form = builder.example();
+  assert.equal(form.caseNumber, '', 'no hard-coded case number: the server proposes one');
+  assert(builder.check(form).includes('caseNumber is required'));
+  const next = await call('GET', '/nextCaseNumber()');
+  assert.equal(next.status, 200, JSON.stringify(next.data));
+  assert.equal(next.data.value, 'EC-000487', 'next after the highest number of the caller\'s plants (not after the plant-2000 mirror EC-2004xx)');
+  form.caseNumber = next.data.value;
+  assert.equal((await call('GET', '/nextCaseNumber()', { user: 'analyst' })).status, 403, 'only importers create cases');
   assert.equal(builder.check(form).length, 0, JSON.stringify(builder.check(form)));
   assert.equal(builder.check({ ...form, components: [], productionQuantity: 0 }).length, 3, 'empty form refused client-side');
   const content = JSON.stringify(builder.build(form));
-  const imp = (dryRun, user = 'importer') => call('POST', '/importScenario', { user, body: { fileName: 'form-EC-000495', format: 'json', content, dryRun } });
+  const imp = (dryRun, user = 'importer') => call('POST', '/importScenario', { user, body: { fileName: `form-${form.caseNumber}`, format: 'json', content, dryRun } });
   const dry = await imp(true);
   assert.equal(dry.status, 200, JSON.stringify(dry.data));
   assert.equal(dry.data.accepted, true, JSON.stringify(dry.data.errors));
-  assert.equal(dry.data.preview[0].caseNumber, 'EC-000495');
+  assert.equal(dry.data.preview[0].caseNumber, form.caseNumber);
   const done = await imp(false);
   assert.equal(done.status, 200, JSON.stringify(done.data));
   const caseID = done.data.caseIds[0];
@@ -183,6 +193,44 @@ test('Scenario B: the Create Scenario form bundle passes server validation, impo
   assert.equal(r.materialsShort, 2, 'MOT-950E needs 120 (60 in stock), SEAL-950 needs 240 (180)');
   assert(r.instructionFindings >= 1, 'work instruction still references the replaced motor');
   assert.equal((await imp(false)).status, 400, 'the same scenario cannot be imported twice');
+
+  // A second change of the now existing PUMP-950: found by search, referenced (not re-created), stored prices reused,
+  // quantity 0 = removed in B / added in A; the generated BOM revision IDs do not collide with the first case.
+  const found = (await call('GET', "/searchAssemblies(term='pump-9')", { user: 'analyst' })).data.value;
+  assert.deepEqual(found.map(a => a.assemblyCode), ['PUMP-950']);
+  assert.equal(found[0].cases, 1);
+  assert.equal(found[0].revisions, 'A, B');
+  { const o = await call('GET', "/searchAssemblies(term='pump-9')", { user: 'analyst2' }); assert.equal(o.status, 200); assert.equal(o.data.value.length, 0, 'other plants see nothing'); }
+  assert.equal((await call('GET', "/searchAssemblies(term='%3Cx%3E')", { user: 'analyst' })).status, 400);
+  const second = { ...form, existingAssembly: true, description: '', caseNumber: (await call('GET', '/nextCaseNumber()')).data.value,
+    title: 'Drop the housing bolts on PUMP-950', productionQuantity: 10, includeInstruction: false, existingRevisions: found[0].revisions.split(', '),
+    components: [
+      { itemNo: '0010', material: 'HSG-950', unit: 'PC', currentQty: '1', proposedQty: '1', price: '', stock: '' },
+      { itemNo: '0040', material: 'BLT-950', unit: 'PC', currentQty: '6', proposedQty: '0', price: '', stock: '' },
+      { itemNo: '0050', material: 'CLIP-950', unit: 'PC', currentQty: '0', proposedQty: '2', price: '0.10', stock: '5' }] };
+  assert.notEqual(second.caseNumber, form.caseNumber);
+  assert(builder.check(second).some(p => /revision A already exists/.test(p)), 'reusing revision IDs is caught in the form');
+  const sameRevs = await call('POST', '/importScenario', { body: { fileName: 'x', format: 'json', content: JSON.stringify(builder.build(second)), dryRun: true } });
+  assert(sameRevs.data.errors.some(e => e.code === 'REVISION_EXISTS'), 'and on the server');
+  Object.assign(second, { fromRevision: 'C', toRevision: 'D' });
+  assert.equal(builder.check(second).length, 0, JSON.stringify(builder.check(second)));
+  assert.equal(builder.check({ ...second, components: [{ ...second.components[0], proposedQty: '-1' }] }).filter(p => /proposedQty/.test(p)).length, 1);
+  assert.equal(builder.check({ ...second, components: [{ ...second.components[0], proposedQty: '1.2345' }] }).filter(p => /proposedQty/.test(p)).length, 1);
+  const bundle = builder.build(second);
+  assert.equal(bundle.assemblies.length, 0, 'existing assembly is referenced, not sent');
+  assert(!bundle.bomItems.some(i => Number(i.quantity) === 0), 'no quantity-0 lines');
+  const imported = await call('POST', '/importScenario', { body: { fileName: 'form-second', format: 'json', content: JSON.stringify(bundle), dryRun: false } });
+  assert.equal(imported.status, 200, JSON.stringify(imported.data));
+  const r2 = await run(imported.data.caseIds[0]);
+  // BLT-950 removed: -6 x 0.35 = -2.10; CLIP-950 added: +2 x 0.10 = +0.20; per assembly -1.90; x 10 = -19.00
+  assert.equal(money(r2.costDeltaTotal), '-19.00');
+  const lines = (await call('GET', `/ImpactRuns(${r2.ID})/comparisonLines`, { user: 'cviewer' })).data.value;
+  assert.deepEqual(lines.map(l => l.change).sort(), ['ADDED', 'REMOVED', 'UNCHANGED'].filter(c => lines.some(l => l.change === c)).sort());
+  assert(lines.some(l => l.change === 'REMOVED' && l.fromMaterial === 'BLT-950') && lines.some(l => l.change === 'ADDED' && l.toMaterial === 'CLIP-950'));
+  // Referencing an assembly of another plant is refused without revealing it.
+  const foreign = { ...bundle, reviewCases: [{ ...bundle.reviewCases[0], caseNumber: 'EC-999990' }] };
+  const asOther = await call('POST', '/importScenario', { user: 'importer2000', body: { fileName: 'x', format: 'json', content: JSON.stringify(foreign), dryRun: true } });
+  assert.equal(asOther.data.accepted ?? false, false);
 });
 
 test('Studio Edit Input: the quantity option lists revision B items and sends the item number (BAS walkthrough defect)', async () => {
@@ -204,22 +252,85 @@ test('Studio Edit Input: the quantity option lists revision B items and sends th
   class Control { constructor(s) { Object.assign(this, s); } addStyleClass() { return this; } }
   const stubs = { 'sap/ui/core/mvc/Controller': { extend: (n, def) => def }, 'sap/m/Select': Select, 'sap/ui/core/Item': Item, 'sap/m/Input': Input,
     'sap/m/MessageStrip': Control, 'sap/m/Label': Control, 'sap/m/MessageBox': { warning() {} }, 'sap/ui/core/library': { InvisibleMessageMode: {} } };
+  // The real formatter (not a mock): the dialog texts use format.quantity (CI failure on f52ab97 came from a missing injection).
+  let format;
+  vm.runInNewContext(readFileSync(join(import.meta.dirname, '..', 'app', 'investigation-studio', 'webapp', 'lib', 'format.js'), 'utf8'),
+    { sap: { ui: { define: (d, f) => { format = f(); } } } });
+  stubs['assemblyimpact/investigationstudio/lib/format'] = format;
   const ctrl = factory(...deps.map(d => stubs[d] ?? {}));
   let content, ok, executed;
   const self = Object.assign(Object.create(ctrl), {
     getView: () => ({ getModel: () => ({ getProperty: () => [
       { itemNo: '0020', fromMaterial: 'MOT-950', toMaterial: 'MOT-950E', toQuantity: '1', unit: 'PC' },
-      { itemNo: '0030', fromMaterial: 'SEAL-950', toMaterial: 'SEAL-950', toQuantity: '2', unit: 'PC' }] }) }),
+      { itemNo: '0030', fromMaterial: 'SEAL-950', toMaterial: 'SEAL-950', toQuantity: '2', unit: 'PC' },
+      { itemNo: '0040', fromMaterial: 'BLT-950', toMaterial: null, toQuantity: null, unit: 'PC' }] }) }),
     _dialog: (title, c, text, type, onOk) => { content = c; ok = onOk; },
     _execute: (action, params) => { executed = { action, params }; },
   });
   self.onEditInput();
   const [, , kind, , target, , value] = content;
   assert.equal(kind.getSelectedKey(), 'PROPOSED_QUANTITY');
-  assert.deepEqual(target.items.map(i => i.key), ['0020', '0030'], 'revision B item numbers, not materials');
+  assert.deepEqual(target.items.map(i => i.key), ['0020', '0030', '0040'], 'item numbers (B items plus the removed A item), not materials');
+  assert.equal(target.items[1].text, '0030 SEAL-950 (now 2 PC; 0 removes it)');
+  assert.equal(target.items[2].text, '0040 BLT-950 (removed in revision B; a quantity above 0 re-adds it)');
   target.setSelectedKey('0030'); value.setValue('3');
   ok();
   assert.equal(executed.action, 'reviseDemoInput');
   assert.equal(executed.params.itemNo, '0030');
   assert.equal(executed.params.kind, 'PROPOSED_QUANTITY');
+});
+
+test('quantity 0 removes a component from revision B; a positive quantity re-adds it (zero-quantity semantics)', async () => {
+  const id = idOf('EC-000485');
+  const before = await run(id);
+  const removed = await revise(id, { kind: 'PROPOSED_QUANTITY', itemNo: '0040', value: 0 });
+  assert.equal(removed.status, 200, JSON.stringify(removed.data));
+  const { BOMItems } = cds.entities('assemblyimpact');
+  const rc = seed.ReviewCases.find(c => c.caseNumber === 'EC-000485');
+  assert.equal(await SELECT.one.from(BOMItems).where({ bomState_ID: rc.toState_ID, itemNo: '0040' }), undefined, 'no quantity-0 line is stored');
+  const after = await run(id);
+  const fit = (await call('GET', `/ImpactRuns(${after.ID})/comparisonLines?$filter=fromMaterial eq 'FIT-700'`, { user: 'cviewer' })).data.value;
+  assert.equal(fit[0]?.change, 'REMOVED', JSON.stringify(fit));
+  const fitB = (await call('GET', `/ImpactRuns(${after.ID})/materialLines?$filter=material eq 'FIT-700'`, { user: 'cviewer' })).data.value;
+  assert(!fitB.length || Number(fitB[0].required) === 0, 'nothing required for a removed component');
+  assert.equal((await revise(id, { kind: 'PROPOSED_QUANTITY', itemNo: '0040', value: 0 })).data.error?.code, 'ALREADY_REMOVED');
+  const readded = await revise(id, { kind: 'PROPOSED_QUANTITY', itemNo: '0040', value: 7 });
+  assert.equal(readded.status, 200, JSON.stringify(readded.data));
+  const again = await run(id);
+  assert.equal(money(again.costDeltaTotal), money(before.costDeltaTotal), 're-adding restores the result exactly');
+  const audit = (await call('GET', `/DataImports?$filter=format eq 'edit'`, { user: 'cviewer' })).data.value;
+  assert(audit.some(a => /PROPOSED_QUANTITY 0040 7 -> 0/.test(a.source)) && audit.some(a => /PROPOSED_QUANTITY 0040 0 -> 7/.test(a.source)));
+});
+
+test('price 0 is a real price (free-issue part), distinct from a missing price', async () => {
+  const id = idOf('EC-000485');
+  const before = await run(id);
+  const r = await revise(id, { kind: 'PRICE', material: 'PSENS-700', value: 0 });
+  assert.equal(r.status, 200, JSON.stringify(r.data));
+  const after = await run(id);
+  assert.equal(after.status, before.status, 'a zero price does not make the run incomplete');
+  assert.notEqual(after.costDeltaTotal, null);
+  const line = (await call('GET', `/ImpactRuns(${after.ID})/materialLines?$filter=material eq 'PSENS-700'`, { user: 'cviewer' })).data.value[0];
+  assert.equal(Number(line.unitPrice), 0);
+  assert.equal((await revise(id, { kind: 'PRICE', material: 'PSENS-700', value: 80 })).status, 200, 'restored');
+});
+
+test('concurrent imports with the same case number: exactly one succeeds, no partial records', async () => {
+  const caseNumber = (await call('GET', '/nextCaseNumber()')).data.value;
+  const bundle = suffix => JSON.stringify({ datasetId: `DS-RACE-${suffix}`, synthetic: true,
+    assemblies: [{ assemblyCode: `RACE-${suffix}`, plant: '1000', description: 'race test' }],
+    bomStates: ['A', 'B'].map((rev, i) => ({ stateKey: `BOM-RACE-${suffix}-${rev}`, assemblyCode: `RACE-${suffix}`, plant: '1000', bomUsage: '1', alternative: '01',
+      revision: rev, validFrom: i ? '2027-01-01' : '2026-01-01', validTo: i ? '9999-12-31' : '2026-12-31', status: i ? 'PROPOSED' : 'RELEASED' })),
+    bomItems: ['A', 'B'].map((rev, i) => ({ stateKey: `BOM-RACE-${suffix}-${rev}`, itemNo: '0010', material: `RM-${suffix}`, quantity: String(i + 1), unit: 'PC' })),
+    costPrices: [{ material: `RM-${suffix}`, plant: '1000', price: '1.00', currency: 'EUR', priceUnit: 1, unit: 'PC', validFrom: '2026-01-01', validTo: '9999-12-31' }],
+    stockSnapshots: [], instructions: [], instructionReferences: [],
+    reviewCases: [{ caseNumber, title: 'race', assemblyCode: `RACE-${suffix}`, plant: '1000', fromStateKey: `BOM-RACE-${suffix}-A`, toStateKey: `BOM-RACE-${suffix}-B`, productionQuantity: 1 }] });
+  const results = await Promise.all(['X', 'Y', 'Z'].map(s => call('POST', '/importScenario', { body: { fileName: `race-${s}`, format: 'json', content: bundle(s), dryRun: false } })));
+  const ok = results.filter(r => r.status === 200);
+  assert.equal(ok.length, 1, JSON.stringify(results.map(r => [r.status, r.data.error?.code])));
+  for (const r of results.filter(x => x.status !== 200)) assert.match(r.data.error?.code ?? '', /IMPORT_CONFLICT|IMPORT_VALIDATION_FAILED/);
+  const { Assemblies, ReviewCases } = cds.entities('assemblyimpact');
+  assert.equal((await SELECT.from(ReviewCases).where({ caseNumber })).length, 1);
+  assert.equal((await SELECT.from(Assemblies).where({ assemblyCode: { like: 'RACE-%' } })).length, 1, 'losing imports left no partial records');
+  assert.notEqual((await call('GET', '/nextCaseNumber()')).data.value, caseNumber, 'the next proposal moves on');
 });

@@ -26,7 +26,9 @@ service EngineeringReview {
         { grant: 'submitForReview', to: 'ChangeAnalyst' },
         // Faculty demo: controlled edit of synthetic inputs (feature flag, OPEN synthetic cases only; checks in the handler).
         { grant: 'reviseDemoInput', to: 'DemoDataImporter' },
-        { grant: ['approve', 'rejectCase'], to: 'ChangeApprover' }
+        { grant: ['approve', 'rejectCase'], to: 'ChangeApprover' },
+        // Planning view (read-only; plant check in the handler, 404 for foreign cases).
+        { grant: 'materialCoverage', to: ['ChangeViewer', 'ChangeAnalyst', 'ChangeApprover'] }
     ]
     entity ReviewCases as projection on db.ReviewCases {
         key ID, caseNumber, title,
@@ -51,8 +53,16 @@ service EngineeringReview {
         virtual canRunImpact : Boolean,
         virtual canSubmit    : Boolean,
         virtual canDecide    : Boolean,
-        virtual submittedBy  : String(255)
+        virtual submittedBy  : String(255),
+        // Why an action is not available to the signed-in user (role, status, separation of duties, missing
+        // evidence); null when it is available. Advisory only, like the flags above.
+        virtual runImpactHint : String(200),
+        virtual submitHint    : String(200),
+        virtual decideHint    : String(200)
     } actions {
+        // Planning view, separate from the impact result: projects stock per day for the materials of the
+        // proposed BOM under the stored consumption rates (lib/coverage.js). Read-only; nothing is persisted.
+        function materialCoverage(startDate : Date @mandatory, horizonDays : Integer @mandatory) returns many MaterialCoverage;
         action runImpact(asOfDate : Date) returns ImpactRuns;
         // P2: explains the latest persisted run with SAP Generative AI Hub; answers are validated against the run's
         // evidence (citations, numbers) and withheld when ungrounded. 409 when no run exists or no provider is configured.
@@ -106,8 +116,44 @@ service EngineeringReview {
         changeNumber : String(20), caseNumber : String(20) @mandatory, title : String(160) @mandatory,
         productionQuantity : Integer @mandatory, dryRun : Boolean) returns ImportResult;
 
+    // Planning input: consumption rates per material and plant (rules in lib/coverage.js). Analysts enter rates;
+    // records are immutable: a wrong rate is withdrawn with a reason (deactivate) and a corrected one entered, so
+    // the planning basis stays auditable. Validation (negative values, decimals, real dates, overlaps) in the handler.
+    @restrict: [
+        { grant: 'READ', to: ['ChangeViewer', 'ChangeAnalyst', 'ChangeApprover'], where: 'plant = $user.plants' },
+        { grant: 'CREATE', to: 'ChangeAnalyst', where: 'plant = $user.plants' },
+        { grant: 'deactivate', to: 'ChangeAnalyst' }
+    ]
+    entity MaterialConsumptionRates as projection on db.MaterialConsumptionRates actions {
+        action deactivate(reason : String(200) @mandatory) returns MaterialConsumptionRates;
+    };
+    annotate MaterialConsumptionRates with {
+        active @readonly; deactivatedAt @readonly; deactivatedBy @readonly; deactivationReason @readonly;
+    };
+
+    type MaterialCoverage {
+        material : String(40); unit : String(3); status : String(14); // COVERED | SHORTAGE | INCOMPLETE | NO_STOCK | UNIT_MISMATCH
+        demandComplete : Boolean; exhaustionIsLatestPossible : Boolean; missingRanges : String(1000);
+        startDate : Date; endDate : Date; effectiveDate : Date; caseRequirement : Decimal(17, 3); requirementInHorizon : Boolean;
+        openingStock : Decimal(17, 3); stockSnapshotAt : Timestamp; dailyRateAtStart : Decimal(17, 3);
+        expectedDemand : Decimal(17, 3); projectedEndStock : Decimal(17, 3); shortageAtEnd : Decimal(17, 3);
+        coveredDays : Integer; exhaustionDate : Date; noRateDays : Integer;
+    }
+
+    // Case creation helpers: existing assemblies in the caller's plants (search by code or description) and the
+    // next free case number. Read-only; the import still re-checks everything.
+    type AssemblyHit { assemblyCode : String(40); plant : String(4); description : String(160); revisions : String(200); cases : Integer; }
+    @(requires: ['ChangeViewer', 'ChangeAnalyst', 'ChangeApprover', 'DemoDataImporter'])
+    function searchAssemblies(term : String(40)) returns many AssemblyHit;
+    @(requires: 'DemoDataImporter')
+    function nextCaseNumber() returns String(20);
+
     // M05: global UI capabilities of the signed-in user (no data access).
-    type Capabilities { canImport : Boolean; }
+    type Capabilities { canImport : Boolean; canMaintainRates : Boolean; }
+    // The signed-in user as the server sees it (own data only): id, application roles and authorised plants.
+    // Shown on Home so a demonstration makes clear which user and role is acting. Read-only, no secrets.
+    type UserInfo { id : String(255); roles : String(500); plants : String(200); authMode : String(12); }
+    function whoAmI() returns UserInfo;
     function myCapabilities() returns Capabilities;
 
     // Landing page: configured integration modes of this deployment (no data, no secrets).

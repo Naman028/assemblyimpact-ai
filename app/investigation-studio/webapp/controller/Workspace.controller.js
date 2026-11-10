@@ -3,9 +3,9 @@ sap.ui.define([
   "sap/m/MessageBox", "sap/m/MessageToast", "sap/m/Dialog", "sap/m/Button", "sap/m/TextArea", "sap/m/CheckBox", "sap/m/Label",
   "sap/m/MessageStrip", "sap/m/DatePicker", "sap/m/VBox", "sap/m/Text", "sap/f/library",
   "assemblyimpact/investigationstudio/lib/format", "assemblyimpact/investigationstudio/lib/schematic",
-  "sap/ui/core/InvisibleMessage", "sap/ui/core/library", "sap/m/Select", "sap/m/Input", "sap/ui/core/Item"
+  "sap/ui/core/InvisibleMessage", "sap/ui/core/library", "sap/m/Select", "sap/m/Input", "sap/ui/core/Item", "sap/ui/core/Messaging"
 ], function (Controller, JSONModel, Filter, FilterOperator, MessageBox, MessageToast, Dialog, Button, TextArea, CheckBox, Label,
-  MessageStrip, DatePicker, VBox, Text, fLibrary, format, schematic, InvisibleMessage, coreLibrary, Select, Input, Item) {
+  MessageStrip, DatePicker, VBox, Text, fLibrary, format, schematic, InvisibleMessage, coreLibrary, Select, Input, Item, Messaging) {
   "use strict";
   var InvisibleMessageMode = coreLibrary.InvisibleMessageMode;
 
@@ -21,7 +21,9 @@ sap.ui.define([
 
   function empty() {
     return { busy: false, tab: "assembly", view: "B", selected: null, detail: null, case: {}, run: null, lines: [], allMaterials: [],
-      materials: [], findings: [], decisions: [], runs: [], instructions: [], visualNote: "", explanation: null };
+      materials: [], findings: [], decisions: [], runs: [], instructions: [], visualNote: "", explanation: null,
+      cov: { startDate: new Date().toISOString().slice(0, 10), horizonDays: 30, rows: [], rates: [], materials: [], canEdit: false,
+        new: { material: "", period: "WEEK", quantity: "", validFrom: new Date().toISOString().slice(0, 10), validTo: new Date().getUTCFullYear() + "-12-31" } } };
   }
 
   return Controller.extend("assemblyimpact.investigationstudio.controller.Workspace", {
@@ -37,6 +39,16 @@ sap.ui.define([
       var caseId = event.getParameter("arguments").caseId;
       if (caseId !== this._caseId) {
         this.getView().getModel("ws").setData(empty());
+        // The diagram DOM can survive a case switch (same content): drop the old selection, states and focus.
+        var dom = this.byId("visual") && this.byId("visual").getDomRef();
+        if (dom) {
+          if (dom.contains(document.activeElement)) { document.activeElement.blur(); }
+          dom.querySelectorAll(".ai-component").forEach(function (g) {
+            g.classList.remove("ai-selected");
+            Object.keys(schematic.STATE_CLASS).forEach(function (k) { g.classList.remove(schematic.STATE_CLASS[k]); });
+            g.setAttribute("aria-pressed", "false");
+          });
+        }
       }
       this._caseId = caseId;
       this._load();
@@ -68,6 +80,7 @@ sap.ui.define([
         ws.setProperty("/findings", run ? run.findings : []);
         ws.setProperty("/decisions", data.decisions || []);
         ws.setProperty("/runs", data.runs || []);
+        that._loadRates().catch(function () { ws.setProperty("/cov/rates", []); });
         return that._loadInstructions(data, current);
       }).then(function () {
         if (!current()) { return null; }
@@ -155,6 +168,8 @@ sap.ui.define([
           ws.setProperty("/visualNote", "Hand-authored synthetic component diagram (not CAD). Revision shown: " + (view === "A" ? data.fromRevision : data.toRevision) + ".");
           html.setContent('<div class="aiVisual aiCurated" data-view="' + view + '">' + svg + "</div>");
           that._pendingStates = lines;
+          // Identical content is not re-rendered (no afterRendering): apply this case's states to the existing DOM.
+          setTimeout(function () { if (ws.getProperty("/case") === data) { that.onVisualRendered(); } }, 0);
         });
       }
       ws.setProperty("/visualNote", "Generated component schematic from the BOM (synthetic, illustrative layout, not CAD).");
@@ -378,7 +393,8 @@ sap.ui.define([
     // ------------------------------------------------------------ synthetic input edit (faculty demo, Scenario C)
     onEditInput: function () {
       var ws = this.getView().getModel("ws"), lines = ws.getProperty("/lines") || [];
-      var proposed = lines.filter(function (l) { return l.toMaterial; });
+      // Revision B items plus items only in revision A (removed), so a removed component can be re-added.
+      var proposed = lines.filter(function (l) { return l.toMaterial || l.fromMaterial; });
       var materials = [];
       lines.forEach(function (l) { [l.fromMaterial, l.toMaterial].forEach(function (m) { if (m && materials.indexOf(m) < 0) { materials.push(m); } }); });
       // selectedKey set explicitly: before rendering, getSelectedKey() is "" and the first fill() would list materials
@@ -387,11 +403,15 @@ sap.ui.define([
         new Item({ key: "PROPOSED_QUANTITY", text: "Proposed quantity of a revision B item" }),
         new Item({ key: "PRICE", text: "Unit price of a material" }),
         new Item({ key: "STOCK", text: "Available stock of a material (new snapshot)" })] });
-      var target = new Select({ width: "100%" }), value = new Input({ type: "Number", width: "100%" });
+      var target = new Select({ width: "100%" }), value = new Input({ type: "Number", width: "100%", placeholder: "0 or more; quantities up to 3 decimals, prices up to 4" });
       var fill = function () {
         target.destroyItems();
         if (kind.getSelectedKey() === "PROPOSED_QUANTITY") {
-          proposed.forEach(function (l) { target.addItem(new Item({ key: l.itemNo, text: l.itemNo + " " + l.toMaterial + " (now " + l.toQuantity + " " + (l.unit || "") + ")" })); });
+          proposed.forEach(function (l) {
+            target.addItem(new Item({ key: l.itemNo, text: l.toMaterial
+              ? l.itemNo + " " + l.toMaterial + " (now " + format.quantity(l.toQuantity) + " " + (l.unit || "") + "; 0 removes it)"
+              : l.itemNo + " " + l.fromMaterial + " (removed in revision B; a quantity above 0 re-adds it)" }));
+          });
         } else {
           materials.forEach(function (m) { target.addItem(new Item({ key: m, text: m })); });
         }
@@ -423,6 +443,96 @@ sap.ui.define([
       this.getView().addDependent(dialog);
       dialog.open();
       return dialog;
+    },
+
+    // ------------------------------------------------------------ consumption planning (lib: srv/lib/coverage.js)
+    // Same number format as the other quantity columns (found in the BAS walkthrough: "100.000" next to "80").
+    fmtDemand: function (value, complete) {
+      if (value === null || value === undefined) { return "—"; }
+      return (complete === false ? "at least " : "") + format.quantity(value);
+    },
+    fmtRequirement: function (value, inHorizon, date) {
+      if (value === null || value === undefined) { return "—"; }
+      return format.quantity(value) + (inHorizon ? " on " + date : " (outside horizon)");
+    },
+    fmtRate: function (value) { return value === null || value === undefined ? "no rate" : format.quantity(value); },
+
+    _loadRates: function () {
+      var ws = this.getView().getModel("ws"), c = ws.getProperty("/case"), model = this.getView().getModel();
+      var mats = {};
+      ((c.toState && c.toState.items) || []).forEach(function (i) { mats[i.material] = i.unit; });
+      var materials = Object.keys(mats).sort().map(function (m) { return { material: m, unit: mats[m] }; });
+      ws.setProperty("/cov/materials", materials);
+      if (!ws.getProperty("/cov/new/material") && materials[0]) { ws.setProperty("/cov/new/material", materials[0].material); }
+      model.bindContext("/myCapabilities()").requestObject().then(function (caps) {
+        ws.setProperty("/cov/canEdit", !!(caps && caps.canMaintainRates));
+        // Edit Input needs DemoDataImporter and the demo feature (found in the walkthrough: shown to approvers, then 403).
+        ws.setProperty("/canEditInput", !!(caps && caps.canImport));
+      }).catch(function () { /* read-only */ });
+      if (!materials.length) { ws.setProperty("/cov/rates", []); return Promise.resolve(); }
+      var list = model.bindList("/MaterialConsumptionRates", null, null,
+        [new Filter("plant", FilterOperator.EQ, c.plant), new Filter({ filters: materials.map(function (m) { return new Filter("material", FilterOperator.EQ, m.material); }), and: false })],
+        { $orderby: "material,validFrom" });
+      return list.requestContexts(0, 200).then(function (ctx) { ws.setProperty("/cov/rates", ctx.map(function (x) { return x.getObject(); })); list.destroy(); });
+    },
+
+    onCoverage: function () {
+      var ws = this.getView().getModel("ws"), cov = ws.getProperty("/cov");
+      var days = Number(cov.horizonDays);
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(cov.startDate || "") || !(days >= 1 && days <= 366)) { MessageBox.error("Enter a start date and a horizon of 1 to 366 days."); return; }
+      var fn = this.getView().getModel().bindList("/ReviewCases(" + this._caseId + ")/EngineeringReview.materialCoverage(startDate=" + cov.startDate + ",horizonDays=" + days + ")");
+      ws.setProperty("/busy", true);
+      Promise.all([fn.requestContexts(0, 200), this._loadRates()]).then(function (r) {
+        ws.setProperty("/cov/rows", r[0].map(function (x) { return x.getObject(); }));
+      }).catch(function (e) { MessageBox.error(e.message, { title: "Coverage not calculated" }); })
+        .finally(function () { ws.setProperty("/busy", false); fn.destroy(); });
+    },
+
+    onAddRate: function () {
+      var ws = this.getView().getModel("ws"), c = ws.getProperty("/case"), n = ws.getProperty("/cov/new"), that = this;
+      var unit = (ws.getProperty("/cov/materials").filter(function (m) { return m.material === n.material; })[0] || {}).unit;
+      if (!n.material || !unit || n.quantity === "" || !(Number(n.quantity) >= 0)) { MessageBox.error("Choose a material and enter a quantity of 0 or more."); return; }
+      // A refused POST must not stay queued: OData V4 keeps a failed create pending and repeats it with the next
+      // request (found in the BAS walkthrough: an overlapping rate failed silently). The create runs in its own
+      // group; on failure the server message is shown and the transient entry is discarded.
+      var model = this.getView().getModel(), group = "rateCreate";
+      var list = model.bindList("/MaterialConsumptionRates", null, null, null, { $$updateGroupId: group });
+      var before = Messaging.getMessageModel().getData().length;
+      list.attachEventOnce("createCompleted", function (event) {
+        if (event.getParameter("success")) {
+          MessageToast.show("Consumption rate saved.");
+          ws.setProperty("/cov/new/quantity", "");
+          that.onCoverage();
+          list.destroy();
+        } else {
+          var fresh = Messaging.getMessageModel().getData().slice(before).filter(function (m) { return m.getType() === "Error"; });
+          MessageBox.error(fresh.length ? fresh[fresh.length - 1].getMessage() : "The rate was not saved.", { title: "Rate not saved" });
+          Messaging.removeMessages(fresh);
+          event.getParameter("context").delete().catch(function () { /* transient entry discarded */ }).then(function () { list.destroy(); });
+        }
+      });
+      list.create({ material: n.material, plant: c.plant, period: n.period, quantity: String(n.quantity), unit: unit, validFrom: n.validFrom, validTo: n.validTo })
+        .created().catch(function () { /* handled in createCompleted */ });
+      model.submitBatch(group);
+    },
+
+    /** Rates are never deleted: withdrawal keeps the record (who, when, why) and excludes it from planning. */
+    onWithdrawRate: function (event) {
+      var rate = event.getSource().getBindingContext("ws").getObject(), that = this;
+      var reason = new TextArea({ width: "100%", rows: 2, placeholder: "Reason (required), e.g. wrong period entered", maxLength: 200 });
+      var dialog = new Dialog({ title: "Withdraw " + rate.period.toLowerCase() + " rate of " + rate.material, contentWidth: "28rem",
+        content: [new Label({ text: rate.validFrom + " – " + rate.validTo + ", " + rate.quantity + " " + rate.unit + ". The record stays visible as withdrawn.", wrapping: true }), reason],
+        beginButton: new Button({ text: "Withdraw", type: "Emphasized", press: function () {
+          var action = that.getView().getModel().bindContext("/MaterialConsumptionRates(" + rate.ID + ")/EngineeringReview.deactivate(...)");
+          action.setParameter("reason", reason.getValue());
+          action.execute().then(function () { MessageToast.show("Rate withdrawn."); dialog.close(); that.onCoverage(); })
+            .catch(function (e) { MessageBox.error(e.message, { title: "Rate not withdrawn" }); });
+        } }),
+        endButton: new Button({ text: "Cancel", press: function () { dialog.close(); } }),
+        afterClose: function () { dialog.destroy(); } });
+      this.getView().addDependent(dialog);
+      dialog.addStyleClass("sapUiContentPadding");
+      dialog.open();
     },
 
     onRunImpact: function () {

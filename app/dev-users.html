@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Development sign-in — AssemblyImpact AI</title>
+<!-- DEVELOPMENT ONLY. Served by the local CAP server (cds watch / npm start) from app/. It is not staged into the
+     app router (tools/btp/stage-ui.mjs) and the production CAP build does not serve app/, so it never exists on
+     Cloud Foundry, where XSUAA and role collections decide.
+     How it works: CAP "mocked" auth checks HTTP Basic credentials against the users in package.json
+     (cds.requires.[development].auth.users). The browser caches one Basic login per origin, so the launchpad's
+     Sign Out cannot switch users. This page asks the browser to replace the cached login by sending the chosen
+     user's credentials once (XMLHttpRequest with user/password); the server still validates them and computes the
+     roles. Nothing on the client decides a role. -->
+<style>
+  body { font-family: "72", Arial, sans-serif; background: #f5f6f7; color: #1d2d3e; margin: 0; padding: 2rem; }
+  main { max-width: 46rem; margin: 0 auto; }
+  h1 { font-size: 1.5rem; margin: 0 0 .25rem; }
+  .note { background: #fff8d6; border: 1px solid #e9cf72; padding: .75rem 1rem; border-radius: .5rem; margin: 1rem 0; }
+  .users { display: grid; grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr)); gap: .75rem; }
+  button { width: 100%; text-align: left; padding: .9rem 1rem; border: 1px solid #c3cbd3; border-radius: .5rem; background: #fff; cursor: pointer; font: inherit; }
+  button:hover, button:focus-visible { border-color: #0064d9; outline: 2px solid #0064d9; }
+  button b { display: block; font-size: 1.05rem; }
+  button span { color: #556b82; font-size: .85rem; }
+  #status { margin-top: 1rem; min-height: 1.5rem; }
+  .err { color: #aa0808; } .ok { color: #256f3a; }
+  a { color: #0064d9; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Development sign-in</h1>
+  <p>Local CAP server with mocked users (password <code>development-only</code>, defined in <code>package.json</code>). Not available on Cloud Foundry.</p>
+  <div class="note">For a two-person review demonstration, open the Analyst in one browser profile (or window) and the Approver in another
+    profile: both use the same server and the same data, each with its own login. A private window of the same profile shares the BAS preview login
+    but not this Basic login.</div>
+  <div class="users" id="users"></div>
+  <p id="status" role="status" aria-live="polite"></p>
+  <p><a href="launchpad.html">Open the launchpad with the current user</a> · <a href="#" id="signout">Forget the development login</a></p>
+</main>
+<script>
+  // Users of the development profile (package.json). Roles are listed for orientation; the server decides them.
+  var USERS = [
+    { id: "analyst", label: "Analyst", roles: "ChangeAnalyst, DemoDataImporter · plant 1000", intent: "#AssemblyImpact-overview" },
+    { id: "approver", label: "Approver", roles: "ChangeApprover · plant 1000", intent: "#AssemblyImpact-overview" },
+    { id: "cviewer", label: "Viewer", roles: "ChangeViewer (read only) · plant 1000", intent: "#AssemblyImpact-overview" },
+    { id: "analyst2000", label: "Analyst, plant 2000", roles: "ChangeAnalyst · plant 2000 (plant isolation)", intent: "#AssemblyImpact-overview" }
+  ];
+  var WHO = "/odata/v4/engineering-review/whoAmI()";
+  var status = document.getElementById("status");
+  function say(text, cls) { status.textContent = text; status.className = cls || ""; }
+  function send(user, password) {
+    return new Promise(function (resolve) {
+      var x = new XMLHttpRequest();
+      x.open("GET", WHO, true, user, password);
+      x.onload = function () { resolve({ status: x.status, body: x.responseText }); };
+      x.onerror = function () { resolve({ status: 0, body: "" }); };
+      x.send();
+    });
+  }
+  USERS.forEach(function (u) {
+    var b = document.createElement("button");
+    b.innerHTML = "<b></b><span></span>";
+    b.querySelector("b").textContent = u.label + " (" + u.id + ")";
+    b.querySelector("span").textContent = u.roles;
+    b.addEventListener("click", function () {
+      say("Signing in as " + u.id + " …");
+      send(u.id, "development-only").then(function (r) {
+        if (r.status !== 200) { say("Sign-in as " + u.id + " failed (HTTP " + r.status + "). Is the local server running with the development profile?", "err"); return; }
+        var me = JSON.parse(r.body);
+        say("Signed in as " + me.id + " — roles: " + (me.roles || "none") + "; plants: " + (me.plants || "none") + ". Opening the launchpad …", "ok");
+        window.location.href = "launchpad.html?as=" + encodeURIComponent(me.id) + u.intent;
+      });
+    });
+    document.getElementById("users").appendChild(b);
+  });
+  document.getElementById("signout").addEventListener("click", function (e) {
+    e.preventDefault();
+    // A deliberately invalid login makes the browser drop the cached one (the server answers 401).
+    send("signed-out", "invalid").then(function () { say("Development login forgotten. Choose a user above.", "ok"); });
+  });
+</script>
+</body>
+</html>
