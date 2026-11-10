@@ -154,12 +154,12 @@ test('server: the Studio is served, its case request works, and the worklist lin
 test('Fiori elements contract: review actions are availability-driven, default to the displayed run, refresh history', async () => {
   const model = await cds.load([join(ROOT, 'srv'), join(ROOT, 'app', 'case-worklist')]);
   const edmx = cds.compile.to.edmx(model, { service: 'EngineeringReview' });
-  for (const [action, path] of [['runImpact', 'in/canRunImpact'], ['submitForReview', 'in/canSubmit'], ['approve', 'in/canDecide'], ['reject', 'in/canDecide']]) {
+  for (const [action, path] of [['runImpact', 'in/canRunImpact'], ['submitForReview', 'in/canSubmit'], ['approve', 'in/canDecide'], ['rejectCase', 'in/canDecide']]) {
     const block = new RegExp(`<Annotations Target="EngineeringReview\\.${action}\\(EngineeringReview\\.ReviewCases\\)">[\\s\\S]*?</Annotations>`).exec(edmx)?.[0] ?? '';
     assert.match(block, new RegExp(`Core.OperationAvailable" Path="${path}"`), action);
     assert.match(block, /Common.SideEffects/, `${action} side effects`);
   }
-  for (const action of ['approve', 'reject']) {
+  for (const action of ['approve', 'rejectCase']) {
     const block = new RegExp(`<Annotations Target="EngineeringReview\\.${action}\\(EngineeringReview\\.ReviewCases\\)/basedOnRun">[\\s\\S]*?</Annotations>`).exec(edmx)?.[0] ?? '';
     assert.match(block, /UI.ParameterDefaultValue" Path="in\/latestRun_ID"/, action);
   }

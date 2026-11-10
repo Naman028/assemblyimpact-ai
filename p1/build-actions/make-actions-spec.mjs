@@ -6,6 +6,10 @@ import { readFileSync } from 'node:fs';
 const full = JSON.parse(readFileSync(process.argv[2], 'utf8'));
 const pick = (path, method, operationId, summary, description) => {
   const op = structuredClone(full.paths[path][method]);
+  // CAP declares the key (e.g. ID) at path level; SAP Build reads operation parameters only, so it lost the key.
+  const pathLevel = structuredClone(full.paths[path].parameters ?? []);
+  const own = new Set((op.parameters ?? []).map(x => `${x.in}:${x.name}`));
+  op.parameters = [...pathLevel.filter(x => !own.has(`${x.in}:${x.name}`)), ...(op.parameters ?? [])];
   Object.assign(op, { operationId, summary, description, tags: ['AssemblyImpact Engineering Actions'] });
   return [path, method, op];
 };

@@ -26,7 +26,7 @@ service EngineeringReview {
         { grant: 'submitForReview', to: 'ChangeAnalyst' },
         // Faculty demo: controlled edit of synthetic inputs (feature flag, OPEN synthetic cases only; checks in the handler).
         { grant: 'reviseDemoInput', to: 'DemoDataImporter' },
-        { grant: ['approve', 'reject'], to: 'ChangeApprover' }
+        { grant: ['approve', 'rejectCase'], to: 'ChangeApprover' }
     ]
     entity ReviewCases as projection on db.ReviewCases {
         key ID, caseNumber, title,
@@ -67,7 +67,8 @@ service EngineeringReview {
         // acknowledgeWarnings (M05): required true when basedOnRun has status COMPLETE_WITH_WARNINGS; recorded on the event.
         // Runs with status INCOMPLETE can never be approved (409 EVIDENCE_INCOMPLETE).
         action approve(comment : String(1000), basedOnRun : UUID @mandatory, acknowledgeWarnings : Boolean) returns ReviewCases;
-        action reject(comment : String(1000) @mandatory, basedOnRun : UUID) returns ReviewCases;
+        // Named rejectCase, not reject: an action called reject shadows ApplicationService.reject() (CAP startup warning).
+        action rejectCase(comment : String(1000) @mandatory, basedOnRun : UUID) returns ReviewCases;
     };
 
     // Supporting images per case. Read in the user's plants; analysts attach and remove them while the case is
@@ -108,6 +109,13 @@ service EngineeringReview {
     // M05: global UI capabilities of the signed-in user (no data access).
     type Capabilities { canImport : Boolean; }
     function myCapabilities() returns Capabilities;
+
+    // Landing page: configured integration modes of this deployment (no data, no secrets).
+    // dataSourceMode: MOCK | SANDBOX | S4HANA | NONE; genaiMode: FIXTURE | GENAI_HUB | NOT_CONFIGURED;
+    // jouleStatus: NOT_CONNECTED | CONFIGURED; authMode: DEVELOPMENT | PRODUCTION.
+    type SystemStatus { dataSourceMode : String(10); genaiMode : String(16); jouleStatus : String(16); demoImport : Boolean; authMode : String(12); }
+    @(requires: ['ChangeViewer', 'ChangeAnalyst', 'ChangeApprover'])
+    function systemStatus() returns SystemStatus;
 
     // ---- P1: read-only case lookup for Joule (ported from PR #11, without its technical identity) ----
     // Named parameters, so a skill maps its inputs directly instead of building an OData $filter string.

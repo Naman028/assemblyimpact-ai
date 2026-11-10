@@ -62,7 +62,7 @@ after(async () => {
 test('metadata: three bound actions, read-only DecisionEvents, decisions navigation, no version token', async () => {
   const metadata = await request('/$metadata', { user: 'cviewer' });
   assert.equal(metadata.status, 200);
-  for (const action of ['submitForReview', 'approve', 'reject'])
+  for (const action of ['submitForReview', 'approve', 'rejectCase'])
     assert.match(metadata.data, new RegExp(`Action Name="${action}" IsBound="true"`), action);
   const reviewCase = metadata.data.match(/<EntityType Name="ReviewCases">[\s\S]*?<\/EntityType>/)[0];
   assert.match(reviewCase, /NavigationProperty Name="decisions" Type="Collection\(EngineeringReview.DecisionEvents\)"/);
@@ -115,14 +115,14 @@ test('seeded demonstration cases start OPEN without history; submission creates 
 test('reject requires a non-blank comment; a refused attempt changes nothing', async () => {
   assert.equal((await act(OPEN.B, 'submitForReview', 'analyst')).status, 200);
   for (const body of [{}, { comment: '' }, { comment: '   ' }, { comment: null }]) {
-    const r = await act(OPEN.B, 'reject', 'approver', body);
+    const r = await act(OPEN.B, 'rejectCase', 'approver', body);
     assert.equal(r.status, 400, JSON.stringify(body));
     // Empty/missing values are caught by CAP's @mandatory check, blank text by the handler rule.
     assert(['ASSERT_MANDATORY', 'REJECTION_COMMENT_REQUIRED'].includes(errorCode(r)), `${JSON.stringify(body)} -> ${errorCode(r)}`);
   }
   assert.equal(await statusOf(OPEN.B), 'IN_REVIEW');
   assert.equal((await eventsOf(OPEN.B)).length, 1, 'only the SUBMIT event');
-  const rejected = await act(OPEN.B, 'reject', 'approver', { comment: ' Instruction WI-COOL-100 v1 must be revised first. ' });
+  const rejected = await act(OPEN.B, 'rejectCase', 'approver', { comment: ' Instruction WI-COOL-100 v1 must be revised first. ' });
   assert.equal(rejected.status, 200, JSON.stringify(rejected.data));
   assert.equal(rejected.data.status, 'REJECTED');
   const last = (await eventsOf(OPEN.B)).at(-1);
@@ -133,8 +133,8 @@ test('reject requires a non-blank comment; a refused attempt changes nothing', a
 test('invalid status transitions return 409 and write nothing', async () => {
   // OPEN.C is OPEN; OPEN.A is APPROVED and OPEN.B is REJECTED from the previous tests.
   const cases = [
-    [OPEN.C, 'approve', 'approver', { comment: 'x' }], [OPEN.C, 'reject', 'approver', { comment: 'x' }],
-    [OPEN.A, 'approve', 'approver', { comment: 'x' }], [OPEN.A, 'reject', 'approver', { comment: 'x' }], [OPEN.A, 'submitForReview', 'analyst', {}],
+    [OPEN.C, 'approve', 'approver', { comment: 'x' }], [OPEN.C, 'rejectCase', 'approver', { comment: 'x' }],
+    [OPEN.A, 'approve', 'approver', { comment: 'x' }], [OPEN.A, 'rejectCase', 'approver', { comment: 'x' }], [OPEN.A, 'submitForReview', 'analyst', {}],
     [OPEN.B, 'approve', 'approver', { comment: 'x' }], [OPEN.B, 'submitForReview', 'analyst', {}],
     [SEEDED_1000.ID, 'submitForReview', 'analyst', {}],
   ];
@@ -158,7 +158,7 @@ test('authorization: roles, plants, malformed memberships; foreign cases look mi
   assert.equal((await act(id, 'submitForReview', 'analyst')).status, 200);
   for (const user of ['cviewer', 'analyst', 'maintainer']) {
     assert.equal((await act(id, 'approve', user)).status, 403, `${user} may not approve`);
-    assert.equal((await act(id, 'reject', user, { comment: 'x' })).status, 403, `${user} may not reject`);
+    assert.equal((await act(id, 'rejectCase', user, { comment: 'x' })).status, 403, `${user} may not reject`);
   }
   assert.equal((await act(id, 'approve', 'approver2')).status, 404, 'plant-2000 approver cannot decide a plant-1000 case');
   assert.equal((await act(SEEDED_2000, 'approve', 'approver')).status, 404, 'plant-1000 approver cannot decide a plant-2000 case');
@@ -192,7 +192,7 @@ test('no self-decision: the submitter cannot approve or reject, even with both r
   const selfApprove = await act(OPEN.E, 'approve', 'dual', { comment: 'own case' });
   assert.equal(selfApprove.status, 403);
   assert.equal(errorCode(selfApprove), 'SELF_DECISION_NOT_ALLOWED');
-  assert.equal(errorCode(await act(OPEN.E, 'reject', 'dual', { comment: 'own case' })), 'SELF_DECISION_NOT_ALLOWED');
+  assert.equal(errorCode(await act(OPEN.E, 'rejectCase', 'dual', { comment: 'own case' })), 'SELF_DECISION_NOT_ALLOWED');
   assert.equal(await statusOf(OPEN.E), 'IN_REVIEW');
   await runFor(OPEN.E);
   assert.equal((await act(OPEN.E, 'approve', 'approver')).status, 200, 'an independent approver may decide');
@@ -203,10 +203,10 @@ test('no self-decision: the submitter cannot approve or reject, even with both r
 
 test('comment validation: length limit and type', async () => {
   assert.equal((await act(OPEN.F, 'submitForReview', 'analyst')).status, 200);
-  assert.equal((await act(OPEN.F, 'reject', 'approver', { comment: 'x'.repeat(1001) })).status, 400);
-  assert.equal((await act(OPEN.F, 'reject', 'approver', { comment: 42 })).status, 400);
+  assert.equal((await act(OPEN.F, 'rejectCase', 'approver', { comment: 'x'.repeat(1001) })).status, 400);
+  assert.equal((await act(OPEN.F, 'rejectCase', 'approver', { comment: 42 })).status, 400);
   assert.equal(await statusOf(OPEN.F), 'IN_REVIEW');
-  assert.equal((await act(OPEN.F, 'reject', 'approver', { comment: 'y'.repeat(1000) })).status, 200, 'exactly 1000 characters is allowed');
+  assert.equal((await act(OPEN.F, 'rejectCase', 'approver', { comment: 'y'.repeat(1000) })).status, 200, 'exactly 1000 characters is allowed');
 });
 
 test('concurrent decisions: exactly one wins, the other gets 409, one event is written', async () => {
@@ -214,7 +214,7 @@ test('concurrent decisions: exactly one wins, the other gets 409, one event is w
   const id = stableId('m04-2a:race');
   await INSERT.into(ReviewCases).entries({ ...SEEDED_1000, ID: id, caseNumber: 'EC-T2A-RACE', status: 'IN_REVIEW', version: cds.utils.uuid() });
   await runFor(id);
-  const results = await Promise.all([act(id, 'approve', 'approver', { comment: 'first' }), act(id, 'reject', 'dual', { comment: 'second' })]);
+  const results = await Promise.all([act(id, 'approve', 'approver', { comment: 'first' }), act(id, 'rejectCase', 'dual', { comment: 'second' })]);
   const statuses = results.map(r => r.status).sort();
   assert.deepEqual(statuses, [200, 409], JSON.stringify(results.map(r => r.data)));
   assert.equal((await eventsOf(id)).length, 1);
@@ -287,7 +287,7 @@ test('runImpact is allowed on OPEN and IN_REVIEW cases', async () => {
 });
 
 test('runImpact on APPROVED or REJECTED returns 409 and changes nothing', async () => {
-  for (const [id, decision, comment] of [[await newCase('approved', 'OPEN'), 'approve', 'ok'], [await newCase('rejected', 'OPEN'), 'reject', 'no']]) {
+  for (const [id, decision, comment] of [[await newCase('approved', 'OPEN'), 'approve', 'ok'], [await newCase('rejected', 'OPEN'), 'rejectCase', 'no']]) {
     assert.equal((await act(id, 'runImpact', 'analyst', { asOfDate: AS_OF })).status, 200, 'evidence before the decision');
     assert.equal((await act(id, 'submitForReview', 'analyst')).status, 200);
     assert.equal((await act(id, decision, 'approver', { comment })).status, 200);
@@ -422,7 +422,7 @@ test('stale evidence: approving an older run returns 409 STALE_EVIDENCE; the lat
 test('reject: run reference optional; when given it must be the latest run and is recorded', async () => {
   const noEvidence = await newCase('rej-none', 'OPEN');
   assert.equal((await act(noEvidence, 'submitForReview', 'analyst')).status, 200);
-  const r1 = await act(noEvidence, 'reject', 'approver', { comment: 'no impact calculation possible yet' });
+  const r1 = await act(noEvidence, 'rejectCase', 'approver', { comment: 'no impact calculation possible yet' });
   assert.equal(r1.status, 200, 'rejection does not require an impact run');
   assert.equal((await eventsOf(noEvidence)).at(-1).basedOnRun_ID, null);
 
@@ -430,9 +430,9 @@ test('reject: run reference optional; when given it must be the latest run and i
   assert.equal((await act(id, 'submitForReview', 'analyst')).status, 200);
   const runA = await runFor(id);
   const runB = await runFor(id);
-  const stale = await act(id, 'reject', 'approver', { comment: 'x', basedOnRun: runA });
+  const stale = await act(id, 'rejectCase', 'approver', { comment: 'x', basedOnRun: runA });
   assert.equal(errorCode(stale), 'STALE_EVIDENCE');
   assert.equal(await statusOf(id), 'IN_REVIEW');
-  assert.equal((await act(id, 'reject', 'approver', { comment: 'B shows a shortage', basedOnRun: runB })).status, 200);
+  assert.equal((await act(id, 'rejectCase', 'approver', { comment: 'B shows a shortage', basedOnRun: runB })).status, 200);
   assert.equal((await eventsOf(id)).at(-1).basedOnRun_ID, runB);
 });

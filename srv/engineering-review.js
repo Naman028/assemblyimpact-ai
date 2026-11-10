@@ -2,6 +2,7 @@ import cds from '@sap/cds';
 import { calculateImpact, ImpactRejection, RULESET } from './lib/impact-calculator.js';
 import { loadImpactInput, fingerprint, persistImpactRun, ConcurrentRunError, CaseDecidedError, IMPACT_ALLOWED_STATUSES } from './lib/impact-persistence.js';
 import { userPlants } from './lib/plants.js';
+import { systemStatus } from './lib/system-status.js';
 import { prepareAttachment, acceptUpload, checkRemoval, reviseInput, DemoDataError } from './lib/demo-data.js';
 import { decide, DecisionError, TRANSITIONS, submittersOf, availabilityFor } from './lib/review-decisions.js';
 import { parseImport, validateBundle, commitBundle, checksum, ImportFormatError, ImportConflictError } from './lib/scenario-import.js';
@@ -10,6 +11,9 @@ import { MappingError } from './integration/erp/s4-mapping.js';
 import { explain, providerFor, GenAiConfigError, GenAiTransportError } from './integration/genai/impact-explanation.js';
 
 // Calculations are deterministic server-side (lib/impact-calculator.js); no LLM is involved.
+/** OData action name -> review transition. The rejection action is 'rejectCase' (see engineering-review.cds). */
+export const DECISION_ACTIONS = Object.freeze({ submitForReview: TRANSITIONS.submitForReview, approve: TRANSITIONS.approve, rejectCase: TRANSITIONS.reject });
+
 export default class EngineeringReview extends cds.ApplicationService {
   init() {
     // Malformed or missing plant memberships never grant access (same rule as M03).
@@ -19,6 +23,7 @@ export default class EngineeringReview extends cds.ApplicationService {
     this.on('extractFromErp', req => this.#extractFromErp(req));
     this.after('READ', 'ReviewCases', (rows, req) => annotateAvailability(rows, req));
     this.on('myCapabilities', req => capabilitiesOf(req.user));
+    this.on('systemStatus', () => systemStatus());
     this.on('lookupCases', req => this.#lookupCases(req));
     // Faculty demo: supporting images and controlled synthetic input edits (lib/demo-data.js).
     const asReject = (req, error) => { if (error instanceof DemoDataError) return req.reject({ status: error.status, code: error.code, message: error.message }); throw error; };
@@ -45,7 +50,7 @@ export default class EngineeringReview extends cds.ApplicationService {
       return SELECT.one.from(this.entities.ReviewCases, caseID);
     });
     this.on('explainImpact', 'ReviewCases', req => this.#explainImpact(req));
-    for (const action of Object.keys(TRANSITIONS)) this.on(action, 'ReviewCases', req => this.#decide(req, TRANSITIONS[action]));
+    for (const [action, transition] of Object.entries(DECISION_ACTIONS)) this.on(action, 'ReviewCases', req => this.#decide(req, transition));
     return super.init();
   }
 

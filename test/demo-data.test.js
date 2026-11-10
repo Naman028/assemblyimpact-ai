@@ -151,7 +151,7 @@ test('supporting image: refused for viewers, other plants, wrong types, oversize
   assert.equal((await call('POST', `/ReviewCases(${decided})/EngineeringReview.submitForReview`, { user: 'analyst', body: {} })).status, 200);
   const inReview = await call('POST', '/CaseAttachments', { user: 'analyst', body: { ...body, reviewCase_ID: decided } });
   assert.equal(inReview.data.error?.code, 'CASE_IN_REVIEW', 'evidence cannot change while the approver reviews it');
-  const rej = await call('POST', `/ReviewCases(${decided})/EngineeringReview.reject`, { user: 'approver', body: { comment: 'Seal supplier not qualified', basedOnRun: r.ID } });
+  const rej = await call('POST', `/ReviewCases(${decided})/EngineeringReview.rejectCase`, { user: 'approver', body: { comment: 'Seal supplier not qualified', basedOnRun: r.ID } });
   assert.equal(rej.status, 200, JSON.stringify(rej.data));
   const late = await call('POST', '/CaseAttachments', { user: 'analyst', body: { ...body, reviewCase_ID: decided } });
   assert.equal(late.status, 409);

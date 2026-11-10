@@ -1,5 +1,5 @@
 <mvc:View controllerName="assemblyimpact.investigationstudio.controller.Workspace"
-	xmlns:mvc="sap.ui.core.mvc" xmlns="sap.m" xmlns:f="sap.f" xmlns:core="sap.ui.core" xmlns:l="sap.ui.layout" xmlns:card="sap.f.cards" xmlns:u="sap.ui.unified">
+	xmlns:mvc="sap.ui.core.mvc" xmlns="sap.m" xmlns:f="sap.f" xmlns:core="sap.ui.core" xmlns:l="sap.ui.layout" xmlns:card="sap.f.cards" xmlns:u="sap.ui.unified" xmlns:cssgrid="sap.ui.layout.cssgrid">
 	<f:DynamicPage id="wsPage" busy="{ws>/busy}" busyIndicatorDelay="0" headerExpanded="true" showFooter="false" class="aiWorkspace">
 		<f:title>
 			<f:DynamicPageTitle>
@@ -42,32 +42,32 @@
 						text="Latest run is incomplete ({ path: 'ws>/run/flags', formatter: '.fmt.flags' }). Values that depend on missing inputs are shown as 'Not calculable'; this run cannot be approved."/>
 					<MessageStrip visible="{= ${ws>/run/status} === 'COMPLETE_WITH_WARNINGS' &amp;&amp; ${ws>/case/status} !== 'APPROVED' &amp;&amp; ${ws>/case/status} !== 'REJECTED' }" type="Warning" showIcon="true" class="sapUiTinyMarginBottom"
 						text="Latest run has warnings ({ path: 'ws>/run/flags', formatter: '.fmt.flags' }). Approval requires an explicit acknowledgement."/>
-					<HBox wrap="Wrap" class="aiKpis">
+					<cssgrid:CSSGrid gridTemplateColumns="repeat(auto-fit, minmax(min(100%, 9.5rem), 1fr))" gridGap="0.75rem 1.5rem" class="aiKpis">
 						<VBox class="aiKpi">
-							<Label text="Revisions"/>
+							<Label wrapping="true" text="Revisions"/>
 							<Title text="{ parts: ['ws>/case/fromRevision', 'ws>/case/toRevision'], formatter: '.fmt.revisionPath' }" level="H3"/>
 						</VBox>
 						<VBox class="aiKpi">
-							<Label text="Estimated cost delta"/>
-							<ObjectNumber number="{ parts: ['ws>/run/costDeltaTotal', 'ws>/run/currency'], formatter: '.fmt.money' }" state="{ path: 'ws>/run/costDeltaTotal', formatter: '.fmt.deltaState' }" emphasized="true" class="aiKpiNumber"/>
-							<Label text="{ path: 'ws>/run/costDeltaPercent', formatter: '.fmt.percent' }"/>
+							<Label wrapping="true" text="Estimated cost delta"/>
+							<ObjectNumber number="{ parts: ['ws>/run/costDeltaTotal', 'ws>/run/currency', 'ws>/run/status'], formatter: '.fmt.runMoney' }" state="{ path: 'ws>/run/costDeltaTotal', formatter: '.fmt.deltaState' }" emphasized="true" class="aiKpiNumber"/>
+							<Label wrapping="true" text="{ path: 'ws>/run/costDeltaPercent', formatter: '.fmt.percent' }"/>
 						</VBox>
 						<VBox class="aiKpi">
-							<Label text="Materials short"/>
+							<Label wrapping="true" text="Materials short"/>
 							<ObjectNumber number="{= ${ws>/run} ? ${ws>/run/materialsShort} : '—' }" state="{ path: 'ws>/run/materialsShort', formatter: '.fmt.countState' }" emphasized="true" class="aiKpiNumber"/>
-							<Label text="{= ${ws>/run/materialsUnknown} > 0 ? ${ws>/run/materialsUnknown} + ' unknown' : '' }"/>
+							<Label wrapping="true" text="{= ${ws>/run/materialsUnknown} > 0 ? ${ws>/run/materialsUnknown} + ' unknown' : '' }"/>
 						</VBox>
 						<VBox class="aiKpi">
-							<Label text="Instruction findings"/>
+							<Label wrapping="true" text="Instruction findings"/>
 							<ObjectNumber number="{= ${ws>/run} ? ${ws>/run/instructionFindings} : '—' }" state="{ path: 'ws>/run/instructionFindings', formatter: '.fmt.countState' }" emphasized="true" class="aiKpiNumber"/>
-							<Label text="{= ${ws>/run} ? ${ws>/run/instructionsToUpdate} + ' instruction(s) to update' : '' }"/>
+							<Label wrapping="true" text="{= ${ws>/run} ? ${ws>/run/instructionsToUpdate} + ' instruction(s) to update' : '' }"/>
 						</VBox>
 						<VBox class="aiKpi">
-							<Label text="Impact run"/>
+							<Label wrapping="true" text="Impact run"/>
 							<ObjectStatus text="{ path: 'ws>/run/status', formatter: '.fmt.runStatus' }" state="{ path: 'ws>/run/status', formatter: '.fmt.runState' }" icon="sap-icon://measure" class="aiKpiStatus"/>
-							<Label text="{= ${ws>/run} ? 'as of ' + ${ws>/run/asOfDate} : '' }"/>
+							<Label wrapping="true" text="{= ${ws>/run} ? 'as of ' + ${ws>/run/asOfDate} : '' }"/>
 						</VBox>
-					</HBox>
+					</cssgrid:CSSGrid>
 				</VBox>
 			</f:DynamicPageHeader>
 		</f:header>
@@ -92,7 +92,7 @@
 									<ObjectStatus text="Quantity changed" state="Warning" icon="sap-icon://add-product" class="sapUiSmallMarginEnd"/>
 									<ObjectStatus text="Added" state="Success" icon="sap-icon://add" class="sapUiSmallMarginEnd"/>
 									<ObjectStatus text="Removed" state="None" icon="sap-icon://less" class="sapUiSmallMarginEnd"/>
-									<Label text="Select a component (click or Enter) to see its evidence."/>
+									<Label text="Select a component (click or Enter) to see its evidence." wrapping="true"/>
 								</HBox>
 							</VBox>
 							<VBox class="aiDetailPanel">
@@ -135,7 +135,7 @@
 												infoState="{ path: 'ws>severity', formatter: '.fmt.severityState' }" wrapping="true"/>
 										</items>
 									</List>
-									<List headerText="Work-instruction steps referencing this component" items="{ws>/detail/steps}" noDataText="No work-instruction step references this component." class="sapUiSmallMarginTop">
+									<List headerText="Instruction steps" items="{ws>/detail/steps}" noDataText="No work-instruction step references this component." class="sapUiSmallMarginTop">
 										<items>
 											<StandardListItem title="{ws>instructionId} v{ws>version} · step {ws>step}" description="{ws>text}" info="{= ${ws>outdated} ? 'Outdated' : 'Consistent' }"
 												infoState="{= ${ws>outdated} ? 'Error' : 'Success' }" icon="sap-icon://document-text" wrapping="true"/>
@@ -172,12 +172,11 @@
 							</items>
 						</Table>
 					</IconTabFilter>
-					<IconTabFilter key="materials" text="Materials &amp; Stock" icon="sap-icon://inventory" count="{= ${ws>/run/materialsShort} > 0 ? ${ws>/run/materialsShort} + ' short' : '' }">
-						<Toolbar style="Clear">
-							<Title text="Proposed revision requirements for {ws>/case/productionQuantity} assemblies" level="H3"/>
-							<ToolbarSpacer/>
+					<IconTabFilter key="materials" text="Materials" icon="sap-icon://inventory" count="{= ${ws>/run/materialsShort} > 0 ? ${ws>/run/materialsShort} + ' short' : '' }">
+						<HBox justifyContent="SpaceBetween" alignItems="Center" wrap="Wrap" class="sapUiTinyMarginBottom">
+							<Title text="Proposed revision requirements for {ws>/case/productionQuantity} assemblies" level="H3" wrapping="true" class="sapUiSmallMarginEnd"/>
 							<ToggleButton id="shortOnly" text="Shortages only" icon="sap-icon://filter" pressed="false" press=".onShortOnly"/>
-						</Toolbar>
+						</HBox>
 						<Table id="materialTable" items="{ws>/materials}" noDataText="Run the impact calculation to check stock." fixedLayout="false">
 							<columns>
 								<Column><Text text="Material"/></Column>
@@ -204,7 +203,12 @@
 						</Table>
 					</IconTabFilter>
 					<IconTabFilter key="cost" text="Cost" icon="sap-icon://lead">
-						<l:Grid defaultSpan="XL3 L3 M6 S12" class="sapUiSmallMarginTop">
+						<IllustratedMessage visible="{= !${ws>/run} }" illustrationType="sapIllus-NoData" illustrationSize="Spot" enableVerticalResponsiveness="true"
+							title="Not calculated yet" description="Run the impact calculation to see material cost per assembly and in total.">
+							<additionalContent><Button text="Run Impact" icon="sap-icon://simulate" type="Emphasized" press=".onRunImpact" visible="{= !!${ws>/case/canRunImpact} }"/></additionalContent>
+						</IllustratedMessage>
+						<VBox visible="{= !!${ws>/run} }" renderType="Bare">
+						<l:Grid defaultSpan="XL3 L6 M6 S12" containerQuery="true" class="sapUiSmallMarginTop">
 							<f:Card><f:header><card:Header title="Per assembly, current" subtitle="Revision {ws>/case/fromRevision}"/></f:header>
 								<f:content><ObjectNumber class="sapUiSmallMargin aiBigNumber" number="{ parts: ['ws>/run/fromCostPerAssembly', 'ws>/run/currency'], formatter: '.fmt.plainMoney' }"/></f:content></f:Card>
 							<f:Card><f:header><card:Header title="Per assembly, proposed" subtitle="Revision {ws>/case/toRevision}"/></f:header>
@@ -215,7 +219,8 @@
 								<f:content><ObjectNumber class="sapUiSmallMargin aiBigNumber" number="{ parts: ['ws>/run/costDeltaTotal', 'ws>/run/currency'], formatter: '.fmt.money' }" state="{ path: 'ws>/run/costDeltaTotal', formatter: '.fmt.deltaState' }"/></f:content></f:Card>
 						</l:Grid>
 						<MessageStrip class="sapUiSmallMarginTop" type="Information" showIcon="true"
-							text="Material cost from synthetic standard prices valid on the as-of date ({ws>/run/asOfDate}), calculated by the CAP ruleset {ws>/run/ruleset}. Labour and overhead are not included."/>
+							text="Material cost from synthetic standard prices valid on the as-of date {ws>/run/asOfDate}, calculated by the CAP ruleset {ws>/run/ruleset}. Labour and overhead are not included."/>
+						</VBox>
 					</IconTabFilter>
 					<IconTabFilter key="explain" text="AI Explanation" icon="sap-icon://ai">
 						<VBox class="sapUiSmallMargin">
@@ -290,7 +295,7 @@
 						<f:Card>
 							<f:header><card:Header title="Supporting images" subtitle="Engineering photos or drawings as evidence only; they are not inputs of the calculation" iconSrc="sap-icon://attachment-photo"/></f:header>
 							<f:content>
-								<VBox class="sapUiSmallMargin" width="100%">
+								<VBox class="sapUiSmallMargin">
 									<List items="{ws>/case/attachments}" noDataText="No images attached." showSeparators="Inner">
 										<CustomListItem>
 											<HBox alignItems="Center" class="sapUiTinyMargin">
@@ -307,14 +312,14 @@
 										</CustomListItem>
 									</List>
 									<HBox alignItems="End" wrap="Wrap" class="sapUiSmallMarginTop" visible="{= ${ws>/case/status} === 'OPEN' }">
-										<VBox class="sapUiSmallMarginEnd">
-											<Label text="Image (PNG or JPEG, max. 2 MB)" labelFor="attachFile"/>
-											<u:FileUploader id="attachFile" fileType="png,jpg,jpeg" mimeType="image/png,image/jpeg" maximumFileSize="2" sendXHR="false"
+										<VBox class="sapUiSmallMarginEnd aiField">
+											<Label text="Image (PNG or JPEG, max. 2 MB)" labelFor="attachFile" wrapping="true"/>
+											<u:FileUploader id="attachFile" width="100%" fileType="png,jpg,jpeg" mimeType="image/png,image/jpeg" maximumFileSize="2" sendXHR="false"
 												change=".onAttachFileChange" placeholder="Choose an image"/>
 										</VBox>
-										<VBox class="sapUiSmallMarginEnd">
+										<VBox class="sapUiSmallMarginEnd aiField">
 											<Label text="Description" labelFor="attachDescription"/>
-											<Input id="attachDescription" maxLength="300" width="18rem" placeholder="e.g. Seal drawing rev. B"/>
+											<Input id="attachDescription" maxLength="300" width="100%" placeholder="e.g. Seal drawing rev. B"/>
 										</VBox>
 										<Button text="Attach" icon="sap-icon://upload" press=".onAttachUpload"/>
 									</HBox>

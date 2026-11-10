@@ -3,7 +3,8 @@
 .aiCaseSide { flex: 0 0 auto; text-align: right; }
 .aiCaseTitle { margin: 0.125rem 0 0.25rem; }
 .aiKpis { margin-top: 0.5rem; }
-.aiKpi { min-width: 11rem; margin: 0 2rem 0.5rem 0; }
+.aiKpi { min-width: 0; }
+.aiField { flex: 1 1 14rem; min-width: 0; max-width: 24rem; }
 .aiKpiNumber .sapMObjectNumberText { font-size: 1.5rem; }
 .aiBigNumber .sapMObjectNumberText { font-size: 1.75rem; }
 .aiVisualPanel, .aiDetailPanel { padding: 0.25rem 0.5rem; }
@@ -33,7 +34,6 @@
 .aiVisual .ai-state-quantity-changed .ai-badge { fill: #fff3b8; } .aiVisual .ai-state-quantity-changed .ai-badge-text { fill: #a93e00; }
 .aiVisual .ai-state-added .ai-badge { fill: #f5fae5; } .aiVisual .ai-state-added .ai-badge-text { fill: #256f3a; }
 .aiVisual .ai-state-removed .ai-badge { fill: #eaecee; } .aiVisual .ai-state-removed .ai-badge-text { fill: #32363a; }
-@media (max-width: 600px) { .aiKpi { min-width: 8.5rem; margin-right: 1rem; } }
 /* Curated diagram: its parts carry their own stroke attributes in nested groups, so the state is shown
    as a coloured halo around the whole component (plus the legend / detail panel text). */
 .aiCurated .ai-state-replaced { filter: drop-shadow(0 0 2px #aa0808) drop-shadow(0 0 5px #aa0808); }

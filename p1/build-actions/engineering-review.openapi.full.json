@@ -4398,7 +4398,7 @@
         }
       }
     },
-    "/ReviewCases({ID})/EngineeringReview.reject": {
+    "/ReviewCases({ID})/EngineeringReview.rejectCase": {
       "post": {
         "summary": "Invokes action reject",
         "tags": [

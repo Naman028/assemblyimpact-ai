@@ -14,6 +14,12 @@ sap.ui.define([], function () {
   var FLAG = { STOCK_STALE: "stock snapshot older than 7 days", STOCK_UNKNOWN: "stock unknown for at least one material",
     STOCK_NON_COMPARABLE: "stock unit differs from BOM unit", COST_INCOMPLETE: "price missing or not comparable", NON_COMPARABLE_UNIT: "BOM units differ between revisions" };
   var num = function (v) { return v === null || v === undefined || v === "" ? null : Number(v); };
+  var money = function (v, currency) {
+    var n = num(v);
+    if (n === null) { return "Not calculable"; }
+    var s = Math.abs(n).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    return (n < 0 ? "−" : n > 0 ? "+" : "") + s + " " + (currency || "EUR");
+  };
   var pick = function (map, v, i) { return map[v] ? map[v][i] : (i === 0 ? (v || "") : "None"); };
 
   return {
@@ -34,11 +40,10 @@ sap.ui.define([], function () {
       return String(v).split(",").map(function (f) { return FLAG[f] || f; }).join("; ");
     },
     /** Money with 2 decimals and sign; null -> "Not calculable". */
-    money: function (v, currency) {
-      var n = num(v);
-      if (n === null) { return "Not calculable"; }
-      var s = Math.abs(n).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-      return (n < 0 ? "−" : n > 0 ? "+" : "") + s + " " + (currency || "EUR");
+    money: money,
+    /** Header KPI: before the first run there is nothing to show ("Not calculated"), not a missing input. */
+    runMoney: function (v, currency, runStatus) {
+      return runStatus ? money(v, currency) : "Not calculated";
     },
     plainMoney: function (v, currency) {
       var n = num(v);

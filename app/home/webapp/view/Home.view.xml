@@ -1,0 +1,122 @@
+<mvc:View controllerName="assemblyimpact.home.controller.Home" displayBlock="true"
+	xmlns:mvc="sap.ui.core.mvc" xmlns="sap.m" xmlns:core="sap.ui.core" xmlns:cssgrid="sap.ui.layout.cssgrid">
+	<!-- sap.m.Page instead of sap.f.DynamicPage: DynamicPage's content-fit logic switched its content container between
+	     absolute and static positioning every ~0.3 s when this page's height was close to the window height (measured in
+	     Chrome at 1848x1180: content 954 px <-> 16 px), which made the whole page flicker. sap.m.App gives the Page its full height (a Page alone in the view had 0 px). -->
+	<App id="homeApp" autoFocus="false">
+	<pages>
+	<Page id="homePage" showHeader="false" busy="{home>/busy}" busyIndicatorDelay="0" enableScrolling="true" class="aiHome sapUiResponsivePadding--content">
+		<content>
+			<VBox class="aiHomeHeader">
+				<HBox justifyContent="SpaceBetween" alignItems="Start" wrap="Wrap">
+					<Title text="AssemblyImpact AI" level="H1" wrapping="true" class="sapUiTinyMarginBottom aiHomeTitle"/>
+					<HBox wrap="Wrap" renderType="Bare" class="aiHomeActions">
+						<Button id="btnCreate" text="Create Scenario" icon="sap-icon://add-document" type="Emphasized" press=".onOpenCreate" visible="{home>/caps/canImport}"/>
+						<Button text="Refresh" icon="sap-icon://refresh" type="Transparent" press=".onRefresh" tooltip="Reload the figures"/>
+					</HBox>
+				</HBox>
+				<Text wrapping="true" class="aiHomeLead"
+					text="Engineering change impact for assemblies: compares BOM revisions, checks stock, cost and work instructions with a deterministic CAP ruleset, and supports a separated review and approval workflow."/>
+				<cssgrid:CSSGrid gridTemplateColumns="repeat(auto-fit, minmax(13rem, 1fr))" gridGap="0.75rem 1.5rem" class="aiStatusGrid sapUiSmallMarginTop">
+					<VBox class="aiStatusItem">
+						<Label text="Data source mode" labelFor="stDataSource"/>
+						<ObjectStatus id="stDataSource" text="{home>/status/dataSource/text}" state="{home>/status/dataSource/state}" inverted="true" icon="sap-icon://database"/>
+						<Text text="{home>/status/dataSource/description}" wrapping="true" class="aiStatusNote"/>
+					</VBox>
+					<VBox class="aiStatusItem">
+						<Label text="P1 Joule assistant" labelFor="stJoule"/>
+						<ObjectStatus id="stJoule" text="{home>/status/joule/text}" state="{home>/status/joule/state}" inverted="true" icon="sap-icon://da"/>
+						<Text text="{home>/status/joule/description}" wrapping="true" class="aiStatusNote"/>
+					</VBox>
+					<VBox class="aiStatusItem">
+						<Label text="AI explanations" labelFor="stGenai"/>
+						<ObjectStatus id="stGenai" text="{home>/status/genai/text}" state="{home>/status/genai/state}" inverted="true" icon="sap-icon://ai"/>
+						<Text text="{home>/status/genai/description}" wrapping="true" class="aiStatusNote"/>
+					</VBox>
+					<VBox class="aiStatusItem">
+						<Label text="Sign-in" labelFor="stAuth"/>
+						<ObjectStatus id="stAuth" text="{home>/status/auth/text}" state="{home>/status/auth/state}" inverted="true" icon="sap-icon://locked"/>
+						<Text text="{home>/status/auth/description}" wrapping="true" class="aiStatusNote"/>
+					</VBox>
+				</cssgrid:CSSGrid>
+			</VBox>
+			<VBox class="aiHomeContent">
+				<MessageStrip visible="{= !!${home>/error} }" text="{home>/error}" type="Error" showIcon="true" class="sapUiSmallMarginBottom"/>
+				<MessageStrip visible="{= !${home>/busy} &amp;&amp; !${home>/error} &amp;&amp; ${home>/realRecords} === 0 }" type="Information" showIcon="true" class="sapUiSmallMarginBottom"
+					text="All cases are demonstration data (fictional NovaMotion Manufacturing). None of them comes from an SAP S/4HANA system."/>
+
+				<Title text="Applications" level="H2" class="sapUiTinyMarginBottom"/>
+				<HBox wrap="Wrap" renderType="Bare" class="aiTiles">
+					<GenericTile header="Engineering Change Worklist" subheader="Find and review" press=".onOpenWorklist" ariaLabel="Open the Engineering Change Worklist">
+						<TileContent footer="{= ${home>/counts/total} === undefined ? '' : ${home>/counts/total} + ' cases' }"><ImageContent src="sap-icon://list"/></TileContent>
+					</GenericTile>
+					<GenericTile header="Investigation Studio" subheader="Impact and evidence" press=".onOpenStudio" ariaLabel="Open the Investigation Studio">
+						<TileContent footer="Calculate and explain"><ImageContent src="sap-icon://machine"/></TileContent>
+					</GenericTile>
+					<GenericTile header="Review queue" subheader="Awaiting decision" press=".onOpenStatus" ariaLabel="Open the cases in review">
+						<customData><core:CustomData key="status" value="IN_REVIEW"/></customData>
+						<TileContent footer="In review"><NumericContent class="aiTileValue" value="{home>/counts/inReview}" icon="sap-icon://approvals" withMargin="false"/></TileContent>
+					</GenericTile>
+					<GenericTile header="Create Scenario" subheader="Synthetic case" press=".onOpenCreate" visible="{home>/caps/canImport}" ariaLabel="Create a synthetic scenario">
+						<TileContent footer="Demo data only"><ImageContent src="sap-icon://add-document"/></TileContent>
+					</GenericTile>
+				</HBox>
+
+				<Title text="Engineering cases" level="H2" class="sapUiMediumMarginTop sapUiTinyMarginBottom"/>
+				<HBox wrap="Wrap" renderType="Bare" class="aiTiles">
+					<GenericTile header="Open" subheader="Analysis in progress" press=".onOpenStatus" ariaLabel="Open cases">
+						<customData><core:CustomData key="status" value="OPEN"/></customData>
+						<TileContent footer="{= ${home>/counts/notCalculated} === undefined ? '' : ${home>/counts/notCalculated} + ' not yet calculated' }">
+							<NumericContent class="aiTileValue" value="{home>/counts/open}" withMargin="false"/></TileContent>
+					</GenericTile>
+					<GenericTile header="In review" subheader="Submitted for approval" press=".onOpenStatus" ariaLabel="Cases in review">
+						<customData><core:CustomData key="status" value="IN_REVIEW"/></customData>
+						<TileContent><NumericContent class="aiTileValue" value="{home>/counts/inReview}" valueColor="Critical" withMargin="false"/></TileContent>
+					</GenericTile>
+					<GenericTile header="Decided" subheader="Approved or rejected" press=".onOpenStatus" ariaLabel="Decided cases">
+						<customData><core:CustomData key="status" value="DECIDED"/></customData>
+						<TileContent><NumericContent class="aiTileValue" value="{home>/counts/decided}" valueColor="Good" withMargin="false"/></TileContent>
+					</GenericTile>
+					<GenericTile header="Material shortages" subheader="In latest run" ariaLabel="Cases with shortages">
+						<TileContent footer="Cases"><NumericContent class="aiTileValue" value="{home>/counts/withShortages}" valueColor="Error" withMargin="false"/></TileContent>
+					</GenericTile>
+				</HBox>
+
+				<cssgrid:CSSGrid gridTemplateColumns="repeat(auto-fit, minmax(min(100%, 22rem), 1fr))" gridGap="1rem" class="sapUiMediumMarginTop">
+					<VBox>
+						<Table id="recentTable" headerText="Recently changed cases" items="{home>/recent}" itemPress=".onOpenCase" growing="false"
+							noDataText="No cases visible for your plants." fixedLayout="false" popinLayout="GridSmall">
+							<columns>
+								<Column><Text text="Case"/></Column>
+								<Column minScreenWidth="Tablet" demandPopin="true"><Text text="Status"/></Column>
+								<Column minScreenWidth="Tablet" demandPopin="true"><Text text="Latest calculation"/></Column>
+							</columns>
+							<items>
+								<ColumnListItem type="Navigation">
+									<cells>
+										<ObjectIdentifier title="{home>caseNumber} · {home>assemblyCode}" text="{home>title}"/>
+										<ObjectStatus text="{home>statusText}" state="{= ${home>status} === 'APPROVED' ? 'Success' : ${home>status} === 'REJECTED' ? 'Error' : ${home>status} === 'IN_REVIEW' ? 'Warning' : 'None' }"/>
+										<ObjectStatus text="{ path: 'home>latestRun', formatter: '.ov.latest' }" state="{ path: 'home>latestRun', formatter: '.ov.latestState' }"/>
+									</cells>
+								</ColumnListItem>
+							</items>
+						</Table>
+					</VBox>
+					<VBox>
+						<List id="sourceList" headerText="Data provenance" items="{home>/sources}" noDataText="No cases.">
+							<items>
+								<StandardListItem title="{home>text}" icon="{home>icon}" counter="{home>count}" wrapping="true"
+									info="{= ${home>real} ? 'Real ERP' : 'Not ERP data' }" infoState="{= ${home>real} ? 'Success' : 'Information' }"/>
+							</items>
+						</List>
+						<Text wrapping="true" class="sapUiTinyMarginTop aiStatusNote"
+							text="Every figure on this page is a live query of the CAP service for the plants you are authorised for. Impact values are calculated only by the CAP ruleset; Joule and the AI explanation never calculate."/>
+					</VBox>
+				</cssgrid:CSSGrid>
+			</VBox>
+		
+		</content>
+	</Page>
+	</pages>
+	</App>
+</mvc:View>

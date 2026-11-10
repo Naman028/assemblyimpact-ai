@@ -4,17 +4,30 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>AssemblyImpact AI</title>
-  <!-- One entry point for both UI apps (SAP Fiori launchpad sandbox). Intents:
+  <!-- One entry point for the UI apps (SAP Fiori launchpad sandbox). Intents:
+       AssemblyImpact-overview     -> landing page (root intent: the shell's Home button opens it)
        EngineeringCase-manage      -> Case Worklist (Fiori elements, P3)
        EngineeringCase-investigate -> Investigation Studio (SAPUI5, P4)
        Apps link to each other with these intents and an inner route (e.g. #EngineeringCase-investigate&/cases/<ID>),
        so the selected case stays open when switching. For a productive landscape, the same intents are configured
        in SAP Build Work Zone instead of this sandbox. -->
   <script>
+    // The landing page replaces the sandbox tile page, also for bookmarked or typed #Shell-home links.
+    (function () {
+      function toOverview() { if (/^#?(Shell-home)?$/.test(window.location.hash)) { window.location.replace("#AssemblyImpact-overview"); } }
+      toOverview();
+      window.addEventListener("hashchange", toOverview);
+    }());
+  </script>
+  <script>
     window["sap-ushell-config"] = {
       defaultRenderer: "fiori2",
-      renderers: { fiori2: { componentData: { config: { enableSearch: false, rootIntent: "Shell-home" } } } },
+      renderers: { fiori2: { componentData: { config: { enableSearch: false, rootIntent: "AssemblyImpact-overview" } } } },
       applications: {
+        "AssemblyImpact-overview": {
+          title: "AssemblyImpact AI", description: "Cases, provenance and integration status",
+          additionalInformation: "SAPUI5.Component=assemblyimpact.home", applicationType: "URL", url: "./home/webapp"
+        },
         "EngineeringCase-manage": {
           title: "Engineering Change Worklist", description: "Find and review engineering change cases",
           additionalInformation: "SAPUI5.Component=assemblyimpact.caseworklist", applicationType: "URL", url: "./case-worklist/webapp"
@@ -34,7 +47,7 @@
     data-sap-ui-compat-version="edge"
     data-sap-ui-async="true"
     data-sap-ui-frame-options="trusted"
-    data-sap-ui-resource-roots='{ "assemblyimpact.caseworklist": "./case-worklist/webapp", "assemblyimpact.investigationstudio": "./investigation-studio/webapp" }'></script>
+    data-sap-ui-resource-roots='{ "assemblyimpact.home": "./home/webapp", "assemblyimpact.caseworklist": "./case-worklist/webapp", "assemblyimpact.investigationstudio": "./investigation-studio/webapp" }'></script>
   <script>
     sap.ui.getCore().attachInit(function () {
       sap.ushell.Container.createRenderer("fiori2", true).then(function (renderer) { renderer.placeAt("content"); });

@@ -183,7 +183,7 @@ test('Studio start-up: CaseList reads the OData model from the component in onIn
   assert.equal(caps['/canImport'], true);
 });
 
-test('one application: the launchpad hosts both apps; intents match the apps\' inbounds and component IDs', () => {
+test('one application: the launchpad hosts the apps; intents match the apps\' inbounds and component IDs', () => {
   const root = join(import.meta.dirname, '..', 'app');
   const html = readFileSync(join(root, 'launchpad.html'), 'utf8');
   const config = JSON.parse(html.match(/window\["sap-ushell-config"\] = (\{[\s\S]*?\});\n/)[1]
@@ -193,7 +193,9 @@ test('one application: the launchpad hosts both apps; intents match the apps\' i
     assert.equal(app.additionalInformation, `SAPUI5.Component=${manifest['sap.app'].id}`, intent);
     assert(manifest['sap.app'].crossNavigation.inbounds[intent], `${intent} inbound in ${app.url}`);
   }
-  assert.deepEqual(Object.keys(config.applications).sort(), ['EngineeringCase-investigate', 'EngineeringCase-manage']);
+  assert.deepEqual(Object.keys(config.applications).sort(), ['AssemblyImpact-overview', 'EngineeringCase-investigate', 'EngineeringCase-manage']);
+  // The shell's Home opens the landing page.
+  assert.equal(config.renderers.fiori2.componentData.config.rootIntent, 'AssemblyImpact-overview');
   // Static assets must resolve to the app folder from both pages (standalone index.html and the launchpad);
   // a page-relative 'assets/...' broke the worklist thumbnails inside the launchpad (BAS walkthrough).
   for (const f of ['AssemblyIllustration', 'AssemblyThumbnail']) {
@@ -203,6 +205,6 @@ test('one application: the launchpad hosts both apps; intents match the apps\' i
   }
   // Fiori tools (BAS Storyboard / Application Info) find both apps.
   const pkg = JSON.parse(readFileSync(join(import.meta.dirname, '..', 'package.json'), 'utf8'));
-  assert.deepEqual(pkg.sapux, ['app/case-worklist', 'app/investigation-studio']);
-  for (const app of ['case-worklist', 'investigation-studio']) assert.match(readFileSync(join(root, app, 'ui5.yaml'), 'utf8'), /type: application/);
+  assert.deepEqual(pkg.sapux, ['app/case-worklist', 'app/investigation-studio', 'app/home']);
+  for (const app of ['case-worklist', 'investigation-studio', 'home']) assert.match(readFileSync(join(root, app, 'ui5.yaml'), 'utf8'), /type: application/);
 });

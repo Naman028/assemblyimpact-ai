@@ -1,0 +1,12 @@
+/* AssemblyImpact AI landing page — spacing only; colours come from the theme. */
+.aiHomeHeader { padding: 0.5rem 0 1rem; border-bottom: 1px solid var(--sapGroup_TitleBorderColor); margin-bottom: 1rem; }
+.aiHomeActions { gap: 0.5rem; }
+.aiHomeLead { max-width: 60rem; }
+.aiStatusItem { min-width: 0; }
+.aiStatusItem .sapMObjectStatus { margin: 0.25rem 0; }
+.aiStatusNote { color: var(--sapContent_LabelColor); font-size: var(--sapFontSmallSize); }
+.aiHomeContent { padding: 0 0 1rem; }
+.aiTiles { display: flex; flex-wrap: wrap; gap: 0.75rem; }
+@media (max-width: 599px) { .aiTiles > .sapMGT { flex: 1 1 9rem; } }
+/* NumericContent handles taps itself and swallowed the tile press (BAS walkthrough): the tile owns the click. */
+.aiTileValue { pointer-events: none; }
