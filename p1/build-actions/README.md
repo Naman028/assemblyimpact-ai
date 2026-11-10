@@ -1,17 +1,35 @@
 # P1 — SAP Build Actions and Joule (development)
 
-Status 2026-11-09: **Actions project created; execution blocked by connectivity** (no deployed, reachable
-AssemblyImpact backend). Joule project created; skills not yet configured (see "Joule").
+Status 2026-11-10: **both Actions projects released and published to the EU10 library (owner-approved);
+execution still blocked by connectivity** (no deployed, reachable AssemblyImpact backend, no destination).
+Joule skill *Engineering Case Lookup* configured and saved with 0 design errors; agent not deployed.
 
 ## What exists in SAP Build (EU10 trial tenant, shared)
 
 | Artifact | Type | ID / location | State |
 | --- | --- | --- | --- |
-| AssemblyImpact Engineering Actions | Actions project (source: uploaded OpenAPI) | `eu10.sap-build-eu10-trial-2-97yhudg4.assemblyimpactengineeringactions` | created, 3 actions, editable `main`, not released |
-| AssemblyImpact Engineering Assistant | Joule Agent and Skill project | `eu10.sap-build-eu10-trial-2-97yhudg4.assemblyimpactengineeringassistant` | created, empty; studio disclaimer awaiting owner acceptance |
+| AssemblyImpact Engineering Actions | Actions project (source: uploaded OpenAPI) | `eu10.sap-build-eu10-trial-2-97yhudg4.assemblyimpactengineeringactions` | 3 actions (find cases, get impact run, run impact); **Released + Published 1.0.0** |
+| AssemblyImpact Engineering Read Actions | Actions project (custom actions) | `eu10.sap-build-eu10-trial-2-97yhudg4.assemblyimpactengineeringreadactions` | 2 read-only actions; Published 1.0.0, **Published 1.0.1** (current) |
+| AssemblyImpact Engineering Assistant | Joule Agent and Skill project | `eu10.sap-build-eu10-trial-2-97yhudg4.assemblyimpactengineeringassistant` | skill *Engineering Case Lookup* configured (below); not released, not deployed |
 
-Members of both projects: owner only ("Me"). The tenant is a shared SAP trial tenant; other users'
-projects and destinations are visible and were not used.
+The trial editor allows **3 actions per project**, so the two read-only operations live in a second project.
+All five operations are discoverable in *Browse library* (search "AssemblyImpact").
+Spec check before publishing: no credentials, hosts, tokens or tenant URLs in either project (paths are relative
+to a destination). The publish dialog offered no LoB/Product fields on this trial tenant.
+
+Second project, actions (paths relative to the destination):
+
+| Action | HTTP | Path | Input | Output (`200`) |
+| --- | --- | --- | --- | --- |
+| Look up cases | GET | `/lookupCases` | query `caseNumber`, `status`, `assemblyCode` (optional, quoted OData strings, e.g. `'EC-000495'`) | `value[]`: ID, caseNumber, title, assemblyCode, plant, status, statusText, sourceType, latestRun_ID, latestRunStatus, latestRunAsOf, costDeltaTotal, currency, materialsShort, instructionFindings |
+| Get decisions | GET | `/ReviewCases({ID})/decisions` | path `ID` (mandatory) | `value[]`: ID, reviewCase_ID, action, fromStatus, toStatus, actor, comment, at, basedOnRun_ID, evidenceStatus, warningsAcknowledged |
+
+1.0.1 fix: in 1.0.0 the response schemas were stored under the editor's `default` response, which Joule treats
+as an error schema (step outputs empty). 1.0.1 declares them under `200`; no path or input change.
+`lookupCases` with the query-option form was verified against the running CAP service (`/lookupCases?caseNumber='EC-000495'`).
+
+Members: owner only, except project 1 which shows "Everyone" after publishing. The tenant is a shared SAP trial
+tenant; other users' projects and destinations are visible and were not used.
 
 ## Operation mapping
 
@@ -45,10 +63,26 @@ Rules carried into the Actions and the future Joule skills:
   destination (OAuth2 client credentials or user propagation) and select it in the Actions Test tab.
   Deployment needs separate approval.
 
-## Joule
+## Joule (status 2026-11-10)
 
-The project was created through *Create → Joule Agent and Skill* (Joule Studio, classic edition).
-Opening the studio shows a data-protection disclaimer that the owner must accept. Planned next steps:
+Skill **Engineering Case Lookup** in the existing project (no new assistant created), saved, Design Console 0 errors:
+
+1. Trigger inputs *Assembly Code*, *Case Status* (strings).
+2. Call Action **Look up cases** (Read Actions 1.0.1), destination variable `assemblyImpactBackend`
+   (project environment variable, not yet bound to a real destination); `assemblyCode ← Assembly Code`,
+   `status ← Case Status`.
+3. Branch **Default** (any non-2xx, including 401/403): Send Message "Engineering cases could not be retrieved",
+   telling the user that sign-in or an engineering role for the plant is required and that Joule cannot bypass
+   these checks.
+4. Branch **Success 2XX** → End; skill output **Cases** (type `get_lookupCases_200_output_schema`) bound to the
+   action result. Plant filtering is not done in the skill: the backend returns only the caller's plants.
+
+Not yet configured (open): decision-history step (needs the case `ID` from the lookup result, i.e. a list
+item selection), and the *Run engineering impact* skill with a *Send Confirmation Request* before the call.
+Live test: blocked — no deployed backend and no destination to bind to `assemblyImpactBackend`.
+Release/deploy of the Joule project: not done (separate approval).
+
+Original plan:
 1. Skill `Find engineering cases` using `FindEngineeringCases` (status/assembly filters).
 2. Skill `Explain case impact` using `GetEngineeringImpact` (findings, shortages, cost delta).
 3. Skill `Run engineering impact` using `RunEngineeringImpact`, with explicit user confirmation.
