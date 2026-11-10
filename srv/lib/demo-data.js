@@ -111,7 +111,11 @@ export async function reviseInput({ caseID, kind, itemNo, material, value }, { p
   if (!EDIT_KINDS.includes(kind)) fail(400, 'INVALID_KIND', `kind must be one of ${EDIT_KINDS.join(', ')}.`);
   let v;
   try { v = Exact.of(String(value)); } catch { fail(400, 'INVALID_VALUE', 'value must be a decimal number.'); }
-  if (v.cmp('0') < 0 || (kind !== 'STOCK' && v.cmp('0') === 0)) fail(400, 'INVALID_VALUE', kind === 'STOCK' ? 'Stock cannot be negative.' : 'The value must be greater than zero.');
+  // Zero rules: STOCK 0 = nothing on hand (valid); PROPOSED_QUANTITY 0 = the component is removed from revision B
+  // (valid, see below); PRICE 0 is refused (a free component is not a demo scenario). Negatives are always refused.
+  if (v.cmp('0') < 0) fail(400, 'INVALID_VALUE', kind === 'STOCK' ? 'Stock cannot be negative.' : 'The value cannot be negative.');
+  if (kind === 'PRICE' && v.cmp('0') === 0) fail(400, 'INVALID_VALUE', 'The price must be greater than zero.');
+  if (kind === 'PROPOSED_QUANTITY' && !v.isZero() && v.cmp('0.001') < 0) fail(400, 'INVALID_VALUE', 'Quantities have at most 3 decimals (min. 0.001).');
   if (v.cmp('1000000') > 0) fail(400, 'INVALID_VALUE', 'The value is unrealistically large (max. 1,000,000).');
   if (!plants) fail(404, 'NOT_FOUND', 'Not found.');
   const rc = await SELECT.one.from(ReviewCases).where({ ID: caseID, plant: { in: plants } });
@@ -127,9 +131,25 @@ export async function reviseInput({ caseID, kind, itemNo, material, value }, { p
     if (!/^\d{4}$/.test(String(itemNo ?? ''))) fail(400, 'ITEM_REQUIRED', 'itemNo of the proposed BOM item is required (e.g. 0020).');
     if (shared) fail(409, 'SHARED_RECORD', `The proposed BOM is also used by ${shared.caseNumber}; create a separate scenario instead.`);
     const item = await SELECT.one.from(BOMItems).where({ bomState_ID: rc.toState_ID, itemNo });
-    if (!item) fail(404, 'ITEM_NOT_FOUND', `Item ${itemNo} is not in the proposed BOM.`);
-    await UPDATE(BOMItems).set({ quantity: v.toPlain() }).where({ ID: item.ID });
-    change = { kind, itemNo, material: item.material, from: plain(item.quantity), to: v.toPlain() };
+    if (item && v.isZero()) {
+      // Quantity 0 means "not in revision B": the line is removed, so the comparison reports it as REMOVED.
+      // A BOM line with quantity 0 is never stored (the calculator rejects it). The audit record keeps the line.
+      const remaining = await SELECT.from(BOMItems).columns('ID').where({ bomState_ID: rc.toState_ID });
+      if (remaining.length <= 1) fail(409, 'LAST_ITEM', 'The proposed BOM needs at least one component; this is its last item.');
+      await DELETE.from(BOMItems).where({ ID: item.ID });
+      change = { kind, itemNo, material: item.material, from: plain(item.quantity), to: '0', removed: { unit: item.unit, evidenceRef: item.evidenceRef } };
+    } else if (item) {
+      await UPDATE(BOMItems).set({ quantity: v.toPlain() }).where({ ID: item.ID });
+      change = { kind, itemNo, material: item.material, from: plain(item.quantity), to: v.toPlain() };
+    } else {
+      // Not in revision B: a positive quantity re-adds a line of revision A (same item, material and unit).
+      const original = await SELECT.one.from(BOMItems).where({ bomState_ID: rc.fromState_ID, itemNo });
+      if (!original) fail(404, 'ITEM_NOT_FOUND', `Item ${itemNo} is in neither BOM revision of this case.`);
+      if (v.isZero()) fail(409, 'ALREADY_REMOVED', `Item ${itemNo} is already not part of the proposed BOM.`);
+      await INSERT.into(BOMItems).entries({ ID: cds.utils.uuid(), bomState_ID: rc.toState_ID, itemNo, material: original.material,
+        quantity: v.toPlain(), unit: original.unit, evidenceRef: `DEMO-EDIT/${rc.caseNumber}/bom/${itemNo}`.slice(0, 200) });
+      change = { kind, itemNo, material: original.material, from: '0', to: v.toPlain(), added: true };
+    }
   } else {
     if (!MATERIAL.test(String(material ?? ''))) fail(400, 'MATERIAL_REQUIRED', 'A material of this case is required.');
     const used = await SELECT.one.from(BOMItems).columns('ID').where({ bomState_ID: { in: states }, material });

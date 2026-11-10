@@ -65,6 +65,21 @@ entity StockSnapshots : cuid {
     evidenceRef       : EvidenceRef not null;
 }
 
+// Planning input (not an input of the impact calculation): expected consumption of a material in a plant,
+// per DAY, WEEK or MONTH, valid from..to (inclusive). Rules in srv/lib/coverage.js and
+// docs/business-rules/identifiers-quantities-and-planning.md. Validity periods of one material/plant never overlap.
+entity MaterialConsumptionRates : cuid, managed {
+    material    : MaterialId not null;
+    plant       : Plant not null;
+    period      : String(5) not null enum { DAY; WEEK; MONTH; };
+    quantity    : Quantity not null;
+    unit        : UnitCode not null;
+    validFrom   : Date not null;
+    validTo     : Date not null;
+    sourceType  : SourceType not null default 'MANUAL';
+    note        : String(200);
+}
+
 entity Instructions : cuid {
     instructionId     : String(40) not null;
     version           : Integer not null;

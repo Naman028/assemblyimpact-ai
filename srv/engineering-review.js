@@ -2,6 +2,7 @@ import cds from '@sap/cds';
 import { calculateImpact, ImpactRejection, RULESET } from './lib/impact-calculator.js';
 import { loadImpactInput, fingerprint, persistImpactRun, ConcurrentRunError, CaseDecidedError, IMPACT_ALLOWED_STATUSES } from './lib/impact-persistence.js';
 import { userPlants } from './lib/plants.js';
+import { caseCoverage, checkRate, searchAssemblies, nextCaseNumber, CoverageRejection } from './lib/planning.js';
 import { systemStatus } from './lib/system-status.js';
 import { prepareAttachment, acceptUpload, checkRemoval, reviseInput, DemoDataError } from './lib/demo-data.js';
 import { decide, DecisionError, TRANSITIONS, submittersOf, availabilityFor } from './lib/review-decisions.js';
@@ -50,6 +51,23 @@ export default class EngineeringReview extends cds.ApplicationService {
       return SELECT.one.from(this.entities.ReviewCases, caseID);
     });
     this.on('explainImpact', 'ReviewCases', req => this.#explainImpact(req));
+    // Planning view and case-creation helpers (lib/planning.js, rules in lib/coverage.js).
+    const asCoverageReject = (req, e) => { if (e instanceof CoverageRejection) return req.reject({ status: 400, code: e.code, message: e.message }); throw e; };
+    const unquote = v => (typeof v === 'string' && /^'.*'$/s.test(v) ? v.slice(1, -1).replace(/''/g, "'") : v);
+    this.on('materialCoverage', 'ReviewCases', async req => {
+      const key = req.params.at(-1); const caseID = typeof key === 'object' ? key.ID : key;
+      const horizonDays = Number(req.data.horizonDays);
+      try {
+        const rows = await caseCoverage(caseID, userPlants(req.user), { startDate: unquote(req.data.startDate), horizonDays });
+        return rows ?? req.reject(404);
+      } catch (e) { return asCoverageReject(req, e); }
+    });
+    for (const event of ['CREATE', 'UPDATE']) this.before(event, 'MaterialConsumptionRates', async req => {
+      const key = req.params?.at?.(-1); const ID = event === 'UPDATE' ? (typeof key === 'object' ? key.ID : key) : undefined;
+      try { await checkRate(req.data, userPlants(req.user), ID); } catch (e) { return asCoverageReject(req, e); }
+    });
+    this.on('searchAssemblies', async req => { try { return await searchAssemblies(unquote(req.data.term), userPlants(req.user)); } catch (e) { return asCoverageReject(req, e); } });
+    this.on('nextCaseNumber', async req => { try { return await nextCaseNumber(); } catch (e) { return asCoverageReject(req, e); } });
     for (const [action, transition] of Object.entries(DECISION_ACTIONS)) this.on(action, 'ReviewCases', req => this.#decide(req, transition));
     return super.init();
   }
@@ -242,7 +260,7 @@ export default class EngineeringReview extends cds.ApplicationService {
   }
 }
 
-const VIRTUAL_FLAGS = ['canRunImpact', 'canSubmit', 'canDecide', 'submittedBy'];
+const VIRTUAL_FLAGS = ['canRunImpact', 'canSubmit', 'canDecide', 'submittedBy', 'runImpactHint', 'submitHint', 'decideHint'];
 
 /**
  * M05: fills the virtual availability flags used by the UIs to show only meaningful actions — only those
@@ -256,20 +274,20 @@ async function annotateAvailability(result, req) {
     : VIRTUAL_FLAGS.filter(f => columns.some(c => c?.ref?.length === 1 && c.ref[0] === f));
   if (!selected.length) return;
   const { ReviewCases } = cds.entities('assemblyimpact');
-  const stored = new Map((await SELECT.from(ReviewCases).columns('ID', 'status', 'createdBy').where({ ID: { in: rows.map(r => r.ID) } }))
+  const stored = new Map((await SELECT.from(ReviewCases).columns('ID', 'status', 'createdBy', 'latestRun_ID').where({ ID: { in: rows.map(r => r.ID) } }))
     .map(r => [r.ID, r]));
   const inReview = [...stored.values()].filter(r => r.status === 'IN_REVIEW');
   const submitters = new Map((await submittersOf(inReview)).map((s, i) => [inReview[i].ID, s]));
   for (const row of rows) {
-    const status = stored.get(row.ID)?.status, submittedBy = submitters.get(row.ID) ?? null;
-    const flags = { ...availabilityFor({ status, submittedBy }, req.user, IMPACT_ALLOWED_STATUSES), submittedBy };
+    const { status, latestRun_ID } = stored.get(row.ID) ?? {}, submittedBy = submitters.get(row.ID) ?? null;
+    const flags = { ...availabilityFor({ status, submittedBy, latestRun_ID }, req.user, IMPACT_ALLOWED_STATUSES), submittedBy };
     for (const f of selected) row[f] = flags[f];
   }
 }
 
 /** M05: what the signed-in user may do globally (drives optional UI controls such as the import button). */
 function capabilitiesOf(user) {
-  return { canImport: !!cds.env.features?.demo_import && user.is('DemoDataImporter') };
+  return { canImport: !!cds.env.features?.demo_import && user.is('DemoDataImporter'), canMaintainRates: user.is('ChangeAnalyst') };
 }
 
 const caseDecided = status => ({ status: 409, code: 'CASE_ALREADY_DECIDED',

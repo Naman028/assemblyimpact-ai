@@ -194,11 +194,24 @@ export async function validateBundle(parsed, { plants, sourceType = 'DEMO_IMPORT
   dup('instructionReferences', r => `${r.instructionId}/${r.version}/${r.step}`, 'instruction step');
   dup('reviewCases', r => r.caseNumber, 'case number');
 
-  // 4) references inside the file
+  // 4) references inside the file. An assembly that is not in the file may be an existing assembly of the
+  // import plant (new engineering change for an assembly that is already maintained): it is referenced, never
+  // changed. Assemblies of plants outside the user's plants are not looked up (reported as unknown).
   const assemblies = new Map(plan.assemblies.map(a => [`${a.assemblyCode}/${a.plant}`, a]));
+  plan.existingAssemblies = [];
+  {
+    const referenced = [...plan.bomStates, ...plan.instructions, ...plan.reviewCases]
+      .filter(r => r.plant && plants?.includes(r.plant) && !assemblies.has(`${r.assemblyCode}/${r.plant}`));
+    const { Assemblies: A } = cds.entities('assemblyimpact');
+    for (const key of new Set(referenced.map(r => `${r.assemblyCode}/${r.plant}`))) {
+      const [assemblyCode, plant] = key.split('/');
+      const row = await SELECT.one.from(A).columns('ID').where({ assemblyCode, plant });
+      if (row) { assemblies.set(key, { assemblyCode, plant, _existing: row.ID }); plan.existingAssemblies.push({ assemblyCode, plant, ID: row.ID }); }
+    }
+  }
   const states = new Map(plan.bomStates.map(s => [s.stateKey, s]));
   const instructions = new Map(plan.instructions.map(i => [`${i.instructionId}/${i.version}`, i]));
-  for (const s of plan.bomStates) if (!assemblies.has(`${s.assemblyCode}/${s.plant}`)) err(s, 'assemblyCode', 'UNKNOWN_ASSEMBLY', `Assembly ${s.assemblyCode} (plant ${s.plant}) is not in the file.`);
+  for (const s of plan.bomStates) if (!assemblies.has(`${s.assemblyCode}/${s.plant}`)) err(s, 'assemblyCode', 'UNKNOWN_ASSEMBLY', `Assembly ${s.assemblyCode} (plant ${s.plant}) is not in the file or in plant ${s.plant}.`);
   for (const i of plan.bomItems) if (!states.has(i.stateKey)) err(i, 'stateKey', 'UNKNOWN_BOM_STATE', `BOM state ${i.stateKey} is not in the file.`);
   for (const s of plan.bomStates) if (!plan.bomItems.some(i => i.stateKey === s.stateKey)) err(s, 'stateKey', 'EMPTY_BOM', `BOM state ${s.stateKey} has no items.`);
   for (const i of plan.instructions) if (!assemblies.has(`${i.assemblyCode}/${i.plant}`)) err(i, 'assemblyCode', 'UNKNOWN_ASSEMBLY', `Assembly ${i.assemblyCode} (plant ${i.plant}) is not in the file.`);
@@ -252,6 +265,15 @@ export async function validateBundle(parsed, { plants, sourceType = 'DEMO_IMPORT
       if (await exists(entity, { [field]: value, plant: { in: plants } })) err(r, field, 'ALREADY_EXISTS', `${label} ${value} already exists.`);
       else if (await exists(entity, { [field]: value })) err(r, field, 'IDENTIFIER_NOT_AVAILABLE', `${label} ${value} cannot be used; choose another identifier.`);
     };
+    // A new revision must not overlap a stored revision with the same ID of the same assembly (the calculator would
+    // refuse the case as AMBIGUOUS_BOM_STATE later). Only existing assemblies of the import plant can be affected.
+    for (const s of plan.bomStates) {
+      const a = (plan.existingAssemblies ?? []).find(x => x.assemblyCode === s.assemblyCode && x.plant === s.plant);
+      if (!a) continue;
+      const clash = await SELECT.one.from(BOMStates).columns('stateKey').where({ assembly_ID: a.ID, plant: s.plant, bomUsage: s.bomUsage,
+        alternative: s.alternative, revision: s.revision, validFrom: { '<=': s.validTo }, validTo: { '>=': s.validFrom } });
+      if (clash) err(s, 'revision', 'REVISION_EXISTS', `Revision ${s.revision} of ${s.assemblyCode} already exists for this period (${clash.stateKey}); use a new revision ID.`);
+    }
     // BOM state keys are unique per plant (no information about other plants is involved).
     for (const s of plan.bomStates) {
       const existing = await SELECT.one.from(BOMStates).columns('ID').where({ stateKey: s.stateKey, plant: s.plant });
@@ -275,11 +297,19 @@ export async function validateBundle(parsed, { plants, sourceType = 'DEMO_IMPORT
 
   // 7) each case must be calculable in principle (same rules the engine applies; nothing is stored)
   if (!errors.length) {
+    // Existing prices and stock of the plant count too (a new change of an existing assembly reuses them).
+    const used = [...new Set(plan.bomItems.map(i => i.material))];
+    const [dbP, dbS] = used.length && plant ? await Promise.all([
+      SELECT.from(CostPrices).where({ plant, material: { in: used } }), SELECT.from(StockSnapshots).where({ plant, material: { in: used } })]) : [[], []];
+    const dbPrices2 = dbP.map(p => ({ material: p.material, plant: p.plant, price: String(p.price), currency: p.currency, priceUnit: String(p.priceUnit),
+      unit: p.unit, validFrom: day(p.validFrom), validTo: day(p.validTo), evidenceRef: p.evidenceRef }));
+    const dbStock = dbS.map(s => ({ material: s.material, plant: s.plant, availableQuantity: String(s.availableQuantity), unit: s.unit,
+      snapshotAt: new Date(s.snapshotAt).toISOString(), evidenceRef: s.evidenceRef }));
     for (const c of plan.reviewCases) {
       try {
         calculateImpact({ asOfDate: plan.bomStates.find(s => s.stateKey === c.toStateKey).validFrom,
           reviewCase: { caseNumber: c.caseNumber, assemblyCode: c.assemblyCode, plant: c.plant, fromStateKey: c.fromStateKey, toStateKey: c.toStateKey, productionQuantity: c.productionQuantity },
-          bomStates: plan.bomStates, bomItems: plan.bomItems, costPrices: plan.costPrices, stockSnapshots: plan.stockSnapshots,
+          bomStates: plan.bomStates, bomItems: plan.bomItems, costPrices: [...plan.costPrices, ...dbPrices2], stockSnapshots: [...plan.stockSnapshots, ...dbStock],
           instructions: plan.instructions, instructionReferences: plan.instructionReferences });
       } catch (e) {
         if (e instanceof ImpactRejection) err(c, null, `NOT_CALCULABLE_${e.code}`, `Case ${c.caseNumber} cannot be calculated: ${e.code} (${e.detail}).`);
@@ -376,7 +406,7 @@ export async function commitBundle(validated, { importId, user, fileName, format
     counts: JSON.stringify(validated.counts) });
 
   const label = { S4_IMPORT: 'S/4HANA extract', SANDBOX_IMPORT: 'SAP API sandbox extract - not business data' }[sourceType] ?? 'imported demo data';
-  const assemblyIds = new Map();
+  const assemblyIds = new Map((plan.existingAssemblies ?? []).map(a => [`${a.assemblyCode}/${a.plant}`, a.ID]));
   for (const a of plan.assemblies) {
     if (a._reuse) { assemblyIds.set(`${a.assemblyCode}/${a.plant}`, a._reuse); continue; }
     const ID = id(); assemblyIds.set(`${a.assemblyCode}/${a.plant}`, ID);
