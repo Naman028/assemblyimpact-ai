@@ -62,7 +62,7 @@ sap.ui.define([
     },
 
     onOpenWorklist: function () {
-      window.open("../../case-worklist/webapp/index.html", "_self");
+      window.open("../../launchpad.html#EngineeringCase-manage", "_self");
     },
 
     // ------------------------------------------------------------ import (M05)

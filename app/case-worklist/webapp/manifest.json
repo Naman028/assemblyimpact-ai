@@ -1,6 +1,7 @@
 {
   "_version": "1.65.0",
   "sap.app": {
+    "crossNavigation": { "inbounds": { "EngineeringCase-manage": { "semanticObject": "EngineeringCase", "action": "manage", "title": "Engineering Change Worklist", "signature": { "parameters": {}, "additionalParameters": "allowed" } } } },
     "id": "assemblyimpact.caseworklist",
     "type": "application",
     "i18n": "i18n/i18n.properties",

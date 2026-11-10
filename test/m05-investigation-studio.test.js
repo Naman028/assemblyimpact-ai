@@ -145,7 +145,10 @@ test('server: the Studio is served, its case request works, and the worklist lin
   // Foreign plant: the deep link reveals nothing.
   assert.equal((await request(`/odata/v4/engineering-review/ReviewCases(${id})`, 'cviewer2')).status, 404);
   const annotations = readFileSync(join(ROOT, 'app', 'case-worklist', 'annotations.cds'), 'utf8');
-  assert.match(annotations, /'\.\.\/\.\.\/investigation-studio\/webapp\/index\.html#\/cases\/'/);
+  assert.match(annotations, /'\.\.\/\.\.\/launchpad\.html#EngineeringCase-investigate&\/cases\/'/);
+  const launchpad = await request('/launchpad.html', null);
+  assert.equal(launchpad.status, 200, 'single entry point served');
+  for (const intent of ['EngineeringCase-manage', 'EngineeringCase-investigate']) assert.match(launchpad.text, new RegExp(intent));
 });
 
 test('Fiori elements contract: review actions are availability-driven, default to the displayed run, refresh history', async () => {

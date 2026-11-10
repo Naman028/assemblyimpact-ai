@@ -10,4 +10,6 @@ for (const app of ['case-worklist', 'investigation-studio']) {
   // Sample import files are development material; they are not shipped (the import action is disabled in production).
   cpSync(join(root, 'app', app, 'webapp'), join(target, app), { recursive: true, filter: src => !src.includes(`${app}/webapp/samples`) });
 }
+// Single entry point (launchpad sandbox with both apps) and the public signed-out page.
+for (const page of ['launchpad.html', 'logout.html']) cpSync(join(root, 'app', page), join(target, page));
 console.log(`staged UI apps into ${target}`);

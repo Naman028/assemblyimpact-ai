@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AssemblyImpact AI</title>
+  <!-- One entry point for both UI apps (SAP Fiori launchpad sandbox). Intents:
+       EngineeringCase-manage      -> Case Worklist (Fiori elements, P3)
+       EngineeringCase-investigate -> Investigation Studio (SAPUI5, P4)
+       Apps link to each other with these intents and an inner route (e.g. #EngineeringCase-investigate&/cases/<ID>),
+       so the selected case stays open when switching. For a productive landscape, the same intents are configured
+       in SAP Build Work Zone instead of this sandbox. -->
+  <script>
+    window["sap-ushell-config"] = {
+      defaultRenderer: "fiori2",
+      renderers: { fiori2: { componentData: { config: { enableSearch: false, rootIntent: "Shell-home" } } } },
+      applications: {
+        "EngineeringCase-manage": {
+          title: "Engineering Change Worklist", description: "Find and review engineering change cases",
+          additionalInformation: "SAPUI5.Component=assemblyimpact.caseworklist", applicationType: "URL", url: "./case-worklist/webapp"
+        },
+        "EngineeringCase-investigate": {
+          title: "Investigation Studio", description: "Components, evidence, impact and review of one case",
+          additionalInformation: "SAPUI5.Component=assemblyimpact.investigationstudio", applicationType: "URL", url: "./investigation-studio/webapp"
+        }
+      }
+    };
+  </script>
+  <script src="https://sapui5.hana.ondemand.com/1.149.0/test-resources/sap/ushell/bootstrap/sandbox.js"></script>
+  <script id="sap-ui-bootstrap"
+    src="https://sapui5.hana.ondemand.com/1.149.0/resources/sap-ui-core.js"
+    data-sap-ui-libs="sap.m, sap.ushell"
+    data-sap-ui-theme="sap_horizon"
+    data-sap-ui-compat-version="edge"
+    data-sap-ui-async="true"
+    data-sap-ui-frame-options="trusted"
+    data-sap-ui-resource-roots='{ "assemblyimpact.caseworklist": "./case-worklist/webapp", "assemblyimpact.investigationstudio": "./investigation-studio/webapp" }'></script>
+  <script>
+    sap.ui.getCore().attachInit(function () {
+      sap.ushell.Container.createRenderer("fiori2", true).then(function (renderer) { renderer.placeAt("content"); });
+    });
+  </script>
+</head>
+<body class="sapUiBody" id="content"></body>
+</html>

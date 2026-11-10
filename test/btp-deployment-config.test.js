@@ -74,10 +74,16 @@ test('mta.yaml: CAP service, HDI deployer, app router, HANA/XSUAA/destination re
 
 test('app router: every route authenticates with XSUAA; OData is forwarded with CSRF protection; both UIs served', () => {
   assert.equal(router.authenticationMethod, 'route');
-  for (const r of router.routes) assert.equal(r.authenticationType, 'xsuaa', r.source);
+  // Only the static signed-out page is public (so logout does not loop back into a login).
+  for (const r of router.routes) assert.equal(r.authenticationType, r.source === '^/logout\\.html$' ? 'none' : 'xsuaa', r.source);
+  assert.equal(router.logout.logoutPage, '/logout.html');
+  assert.doesNotMatch(read('app/logout.html'), /<script/i, 'signed-out page is static');
   const odata = router.routes.find(r => r.destination === 'srv-api');
   assert.equal(odata.csrfProtection, true);
-  assert.deepEqual(router.routes.filter(r => r.localDir).map(r => r.localDir).sort(), ['resources/case-worklist', 'resources/investigation-studio']);
+  assert.deepEqual(router.routes.filter(r => r.localDir).map(r => r.localDir).sort(), ['resources', 'resources', 'resources/case-worklist', 'resources/investigation-studio']);
+  // One entry point: the launchpad with both apps.
+  assert.equal(router.welcomeFile, '/launchpad.html');
+  assert.match(read('tools/btp/stage-ui.mjs'), /'launchpad\.html', 'logout\.html'/);
   // The UIs call relative OData URIs that the router forwards.
   for (const app of ['case-worklist', 'investigation-studio']) {
     const uri = JSON.parse(read('app', app, 'webapp', 'manifest.json'))['sap.app'].dataSources.mainService.uri;
