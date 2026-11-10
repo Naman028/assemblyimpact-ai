@@ -26,18 +26,14 @@
 						<Label text="Assembly description" required="{= !${form>/existingAssembly} }"/><Input value="{form>/description}" maxLength="160" editable="{= !${form>/existingAssembly} }"/>
 						<Label text="Plant" required="true"/><Input value="{form>/plant}" maxLength="4" width="6rem" editable="{= !${form>/existingAssembly} }"/>
 						<Label text="Case number" required="true"/>
-						<HBox alignItems="Center"><Input value="{form>/caseNumber}" maxLength="9" placeholder="EC-000123" width="9rem"
+						<!-- SimpleForm accepts only form content (no HBox): label followed by the controls of the field. -->
+						<Input value="{form>/caseNumber}" maxLength="9" placeholder="EC-000123"
 							tooltip="Identifies the review case; also recorded as change number on the proposed revision. Proposed by the server; you may change it before importing."/>
-							<Button icon="sap-icon://synchronize" type="Transparent" press=".onProposeCaseNumber" tooltip="Propose the next free case number"/></HBox>
-						<Label text="Revision IDs (current → proposed)" required="true"/>
-						<HBox alignItems="Center"><Input value="{form>/fromRevision}" maxLength="10" width="5rem" tooltip="BOM revision ID of the current state"/>
-							<Text text="→" class="sapUiTinyMarginBeginEnd"/><Input value="{form>/toRevision}" maxLength="10" width="5rem" tooltip="BOM revision ID of the proposed state"/></HBox>
-						<Label text="Change title" required="true"/><Input value="{form>/title}" maxLength="160"/>
-						<Label text="Review owner"/><Input value="{form>/owner}" maxLength="80"/>
-						<Label text="Production quantity" required="true"/><StepInput value="{form>/productionQuantity}" min="1" max="1000000" width="10rem"/>
-						<Label text="Revision A valid from" required="true"/><DatePicker value="{form>/currentValidFrom}" valueFormat="yyyy-MM-dd" displayFormat="yyyy-MM-dd"/>
-						<Label text="Revision B effective" required="true"/><DatePicker value="{form>/effectiveDate}" valueFormat="yyyy-MM-dd" displayFormat="yyyy-MM-dd"/>
-						<Label text="Work instruction"/><CheckBox selected="{form>/includeInstruction}" text="Create one assembly instruction referencing revision A"/>
+						<Button icon="sap-icon://synchronize" text="Propose" type="Transparent" press=".onProposeCaseNumber" tooltip="Propose the next free case number"/>
+						<Label text="Revision ID, current" required="true"/>
+						<Input value="{form>/fromRevision}" maxLength="10" tooltip="BOM revision ID of the current state (e.g. A)"/>
+						<Label text="Revision ID, proposed" required="true"/>
+						<Input value="{form>/toRevision}" maxLength="10" tooltip="BOM revision ID of the proposed state (e.g. B)"/>
 					</f:content>
 				</f:SimpleForm>
 				<Table id="createComponents" items="{form>/components}" headerText="Components, prices and stock" class="sapUiSmallMarginTop" fixedLayout="false">
