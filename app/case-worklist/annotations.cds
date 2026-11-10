@@ -46,17 +46,19 @@ annotate service.ReviewCases with @(
         status,
         sourceType
     ],
+    // Phone widths: High columns stay visible, the rest pop in below the row (FE responsive table).
     UI.LineItem           : [
-        {Value: assemblyCode},
-        {Value: caseNumber},
+        {Value: assemblyCode, ![@UI.Importance]: #High},
+        {Value: caseNumber, ![@UI.Importance]: #High},
         {Value: fromRevision},
         {Value: toRevision},
         {Value: latestRun.instructionFindings, Label: 'Instruction Findings'},
         {Value: latestRun.materialsShort, Label: 'Materials Short'},
-        {Value: latestRun.costDeltaTotal, Label: 'Estimated Cost Delta (EUR)'},
+        {Value: latestRun.costDeltaTotal, Label: 'Estimated Cost Delta (EUR)', ![@UI.Importance]: #Medium},
         {Value: sourceType},
         {
             Value      : status,
+            ![@UI.Importance]: #High,
             // Open neutral, In Review warning, Approved positive, Rejected negative.
             Criticality: {$edmJson: {$If: [
                 {$Eq: [{$Path: 'status'}, 'APPROVED']}, 3,
