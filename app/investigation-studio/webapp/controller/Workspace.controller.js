@@ -381,7 +381,9 @@ sap.ui.define([
       var proposed = lines.filter(function (l) { return l.toMaterial; });
       var materials = [];
       lines.forEach(function (l) { [l.fromMaterial, l.toMaterial].forEach(function (m) { if (m && materials.indexOf(m) < 0) { materials.push(m); } }); });
-      var kind = new Select({ width: "100%", items: [
+      // selectedKey set explicitly: before rendering, getSelectedKey() is "" and the first fill() would list materials
+      // instead of revision B items (found in the BAS walkthrough: "SEAL-950 is not a valid String(4)").
+      var kind = new Select({ width: "100%", selectedKey: "PROPOSED_QUANTITY", items: [
         new Item({ key: "PROPOSED_QUANTITY", text: "Proposed quantity of a revision B item" }),
         new Item({ key: "PRICE", text: "Unit price of a material" }),
         new Item({ key: "STOCK", text: "Available stock of a material (new snapshot)" })] });

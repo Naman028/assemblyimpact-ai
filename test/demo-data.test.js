@@ -162,3 +162,42 @@ test('Scenario B: the Create Scenario form bundle passes server validation, impo
   assert(r.instructionFindings >= 1, 'work instruction still references the replaced motor');
   assert.equal((await imp(false)).status, 400, 'the same scenario cannot be imported twice');
 });
+
+test('Studio Edit Input: the quantity option lists revision B items and sends the item number (BAS walkthrough defect)', async () => {
+  const { readFileSync } = await import('node:fs');
+  const { join } = await import('node:path');
+  const vm = await import('node:vm');
+  const src = readFileSync(join(import.meta.dirname, '..', 'app', 'investigation-studio', 'webapp', 'controller', 'Workspace.controller.js'), 'utf8');
+  let factory, deps;
+  vm.runInNewContext(src, { sap: { ui: { define: (d, f) => { deps = d; factory = f; } } } });
+  // Like sap.m.Select before rendering: getSelectedKey() is '' unless a key was set.
+  class Select {
+    constructor(s = {}) { this.key = s.selectedKey ?? ''; this.items = []; this.handlers = []; }
+    getSelectedKey() { return this.key; } setSelectedKey(k) { this.key = k; return this; }
+    addItem(i) { this.items.push(i); return this; } destroyItems() { this.items = []; return this; }
+    attachChange(f) { this.handlers.push(f); return this; }
+  }
+  class Item { constructor(s) { Object.assign(this, s); } }
+  class Input { constructor() { this.v = ''; } getValue() { return this.v; } setValue(v) { this.v = v; return this; } }
+  class Control { constructor(s) { Object.assign(this, s); } addStyleClass() { return this; } }
+  const stubs = { 'sap/ui/core/mvc/Controller': { extend: (n, def) => def }, 'sap/m/Select': Select, 'sap/ui/core/Item': Item, 'sap/m/Input': Input,
+    'sap/m/MessageStrip': Control, 'sap/m/Label': Control, 'sap/m/MessageBox': { warning() {} }, 'sap/ui/core/library': { InvisibleMessageMode: {} } };
+  const ctrl = factory(...deps.map(d => stubs[d] ?? {}));
+  let content, ok, executed;
+  const self = Object.assign(Object.create(ctrl), {
+    getView: () => ({ getModel: () => ({ getProperty: () => [
+      { itemNo: '0020', fromMaterial: 'MOT-950', toMaterial: 'MOT-950E', toQuantity: '1', unit: 'PC' },
+      { itemNo: '0030', fromMaterial: 'SEAL-950', toMaterial: 'SEAL-950', toQuantity: '2', unit: 'PC' }] }) }),
+    _dialog: (title, c, text, type, onOk) => { content = c; ok = onOk; },
+    _execute: (action, params) => { executed = { action, params }; },
+  });
+  self.onEditInput();
+  const [, , kind, , target, , value] = content;
+  assert.equal(kind.getSelectedKey(), 'PROPOSED_QUANTITY');
+  assert.deepEqual(target.items.map(i => i.key), ['0020', '0030'], 'revision B item numbers, not materials');
+  target.setSelectedKey('0030'); value.setValue('3');
+  ok();
+  assert.equal(executed.action, 'reviseDemoInput');
+  assert.equal(executed.params.itemNo, '0030');
+  assert.equal(executed.params.kind, 'PROPOSED_QUANTITY');
+});
