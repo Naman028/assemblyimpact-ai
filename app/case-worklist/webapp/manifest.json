@@ -117,7 +117,7 @@
                       },
                       "width": "4rem",
                       "horizontalAlign": "Center",
-                      "importance": "Low"
+                      "importance": "Medium"
                     }
                   }
                 }
