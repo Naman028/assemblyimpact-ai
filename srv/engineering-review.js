@@ -3,7 +3,7 @@ import { calculateImpact, ImpactRejection, RULESET } from './lib/impact-calculat
 import { loadImpactInput, fingerprint, persistImpactRun, ConcurrentRunError, CaseDecidedError, IMPACT_ALLOWED_STATUSES } from './lib/impact-persistence.js';
 import { userPlants } from './lib/plants.js';
 import { caseCoverage, checkRate, deactivateRate, searchAssemblies, nextCaseNumber, CoverageRejection } from './lib/planning.js';
-import { systemStatus } from './lib/system-status.js';
+import { systemStatus, allowedExtractMode } from './lib/system-status.js';
 import { prepareAttachment, acceptUpload, checkRemoval, reviseInput, DemoDataError } from './lib/demo-data.js';
 import { decide, DecisionError, TRANSITIONS, submittersOf, availabilityFor } from './lib/review-decisions.js';
 import { parseImport, validateBundle, commitBundle, checksum, ImportFormatError, ImportConflictError } from './lib/scenario-import.js';
@@ -72,7 +72,7 @@ export default class EngineeringReview extends cds.ApplicationService {
     const APP_ROLES = ['ChangeViewer', 'ChangeAnalyst', 'ChangeApprover', 'ImpactRunner', 'DemoDataImporter', 'ErpExtractor', 'AssemblyViewer', 'AssemblyMaintainer'];
     this.on('whoAmI', req => {
       const kind = cds.env.requires?.auth?.kind;
-      return { id: req.user.id, roles: APP_ROLES.filter(r => req.user.is(r)).join(', '), plants: userPlants(req.user).join(', '),
+      return { id: req.user.id, roles: APP_ROLES.filter(r => req.user.is(r)).join(', '), plants: [...new Set(userPlants(req.user))].join(', '),
         authMode: kind === 'xsuaa' || kind === 'ias' ? 'PRODUCTION' : 'DEVELOPMENT' };
     });
     this.on('searchAssemblies', async req => { try { return await searchAssemblies(unquote(req.data.term), userPlants(req.user)); } catch (e) { return asCoverageReject(req, e); } });
@@ -193,6 +193,13 @@ export default class EngineeringReview extends cds.ApplicationService {
     const { mode, material, plant, bomUsage = '1', alternative = '01', fromDate, toDate, changeNumber, caseNumber, title,
       productionQuantity, dryRun = true } = req.data;
     if (!(mode in MODE_SOURCE_TYPE)) return req.reject({ status: 400, code: 'INVALID_ERP_MODE', message: 'mode must be synthetic, sandbox or s4.' });
+    // The runtime environment selects one ERP source; a request for another one is refused (no silent switch).
+    const allowed = allowedExtractMode();
+    if (allowed && allowed !== mode) {
+      return req.reject({ status: 409, code: 'ERP_MODE_NOT_ACTIVE', message: allowed === 'none'
+        ? 'No ERP source is active in this deployment (erp-source.mode = NONE).'
+        : `The active ERP source of this deployment is ${allowed}; ${mode} is not enabled.` });
+    }
     if (!/^\d{1,2}$/.test(String(alternative))) return req.reject({ status: 400, code: 'INVALID_ALTERNATIVE', message: 'alternative must be a number of at most two digits.' });
     if (!userPlants(req.user).includes(plant)) return req.reject({ status: 403, code: 'PLANT_NOT_AUTHORIZED', message: `You are not authorized for plant ${plant}.` });
     let bundle;

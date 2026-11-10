@@ -131,7 +131,8 @@ test('CAP action: role and plant checks, dry run, commit with provenance, then r
   assert.equal((await request('/extractFromErp', { method: 'POST', user: 'analyst', body })).status, 403, 'role required');
   assert.equal((await request('/extractFromErp', { method: 'POST', body: { ...body, plant: '2000' } })).status, 403, 'plant');
   const s4 = await request('/extractFromErp', { method: 'POST', body: { ...body, mode: 's4' } });
-  assert.equal(s4.status, 409); assert.equal(s4.data.error.code, 'ERP_NOT_CONFIGURED');
+  // Development/test select FIXTURE explicitly (erp-source.mode): another mode is refused, not attempted.
+  assert.equal(s4.status, 409); assert.equal(s4.data.error.code, 'ERP_MODE_NOT_ACTIVE');
   const dry = await request('/extractFromErp', { method: 'POST', body });
   assert.equal(dry.status, 200, JSON.stringify(dry.data));
   assert.equal(dry.data.accepted, true, JSON.stringify(dry.data.errors));

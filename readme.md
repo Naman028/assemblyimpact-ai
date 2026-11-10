@@ -8,9 +8,9 @@ projects (P1 Joule, P2 S/4HANA + GenAI, P3 AI-assisted Fiori, P4 Fiori on BTP).
 All business data is **synthetic** (fictional company NovaMotion Manufacturing). No record comes from a real SAP
 S/4HANA system.
 
-> Status as of 2026-11-10. `main@ca75e77` is deployed to the SAP BTP US10 trial (Cloud Foundry, HANA Cloud, XSUAA).
-> PR #20 (deployment handover guide) and PR #21 (defect fixes, consumption planning, demo sign-in) are open and
-> **not merged or deployed**. Facts below say which state they describe.
+> Status as of 2026-11-10. `main@22158b7` (PRs #20 and #21 merged) is deployed to the SAP BTP US10 trial
+> (Cloud Foundry, HANA Cloud, XSUAA); evidence in `docs/btp/deployment-2026-11-10.md`. PR #22 (explicit ERP source
+> and database mode) is open and not deployed.
 
 ## Contents
 
@@ -52,7 +52,7 @@ S/4HANA system.
 | **P1 Joule Skills & Agent** | Two released SAP Build Actions projects in the shared EU10 trial (`AssemblyImpact Engineering Actions` 1.0.0, `AssemblyImpact Engineering Read Actions` 1.0.1) over the EngineeringReview OData service; Joule Studio classic project `AssemblyImpact Engineering Assistant` with the skill `Engineering Case Lookup` (not released); Actions contract tested locally | Partially implemented, **no live Joule execution** | EU10: shared trial tenant without destination administration; US10: no Joule Studio-capable SAP Build plan (section 10) |
 | **P2 S/4HANA + GenAI** | ERP adapter with `fixtures` / `sandbox` / `s4` modes and grounded explanation (`explainImpact`) | Implemented and tested with fixtures; sandbox, S/4 and SAP AI Core modes not run live | No authorized S/4HANA system or AI Core binding |
 | **P3 AI-assisted Fiori** | Case Worklist (Fiori elements V4) generated first with SAP Project Accelerator, then reviewed and adapted | Implemented; evidence `docs/evidence/p3-case-worklist/` | — |
-| **P4 Fiori on BTP** | Investigation Studio (SAPUI5) + CAP + HANA + XSUAA + app router on BTP | Deployed (`main@ca75e77`); PR #21 fixes not deployed | Approval for PR #21 deployment |
+| **P4 Fiori on BTP** | Investigation Studio (SAPUI5) + CAP + HANA + XSUAA + app router on BTP | Deployed (`main@22158b7`) | — |
 
 All four share one backend: Joule (P1) and the UIs (P3, P4) call the same CAP actions and business rules; no
 project duplicates the calculation.
@@ -178,7 +178,7 @@ correctly (section 2 of `docs/btp/PR21-deployment-assessment.md`).
 |---|---|---|
 | BAS local (`cds watch`, `npm start`, tests) | in-memory SQLite | `cds watch` log: `connect to db > sqlite { url: ':memory:' }` |
 | BAS hybrid (`--profile hybrid`) | would use HANA through `cds bind` | profile exists in `package.json`; **no binding was created** (not needed, and it would connect a dev session to business data) |
-| Deployed CAP | HDI container `assemblyimpact-db` on `assemblyimpact-hana` | `mta.yaml` bindings; PR #20 persistence check across a restart (7 cases, 1 run, 7 findings) |
+| Deployed CAP | HDI container `assemblyimpact-db` on `assemblyimpact-hana` | srv log `connect to db > hana` (container schema), record counts unchanged across deployment and restart (`docs/btp/deployment-2026-11-10.md`) |
 
 Changing source in BAS does not change HANA: only an MTA deployment runs the HDI deployer.
 
@@ -221,7 +221,7 @@ entitlement) and destination rights. Nothing in the application fakes a Joule co
 ## 14. Known limitations and next actions
 
 Blockers: live Joule (P1) needs a licensed tenant; live S/4HANA and SAP AI Core (P2) need authorized systems.
-Open: approve, merge and deploy PR #20/#21; create a second SAP ID user with the Approver role for the deployed demo;
+Open: review PR #22; create a second SAP ID user with the Approver role for the deployed demo;
 narrow-screen layout of the Studio not re-verified in a resized browser after PR #21.
 
 ## 15. GenAI assistance disclosure

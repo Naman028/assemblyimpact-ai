@@ -112,6 +112,9 @@
               }
             }
           }
+        },
+        "erp-source": {
+          "mode": "FIXTURE"
         }
       },
       "[demo]": {
@@ -421,7 +424,8 @@
           "sandbox": null,
           "s4": {
             "enabled": false
-          }
+          },
+          "mode": "NONE"
         },
         "db": {
           "kind": "hana"
@@ -448,7 +452,8 @@
           "fixtures": null,
           "s4": {
             "enabled": false
-          }
+          },
+          "mode": "NONE"
         }
       },
       "genai-hub": {
