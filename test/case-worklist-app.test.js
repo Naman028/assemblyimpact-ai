@@ -194,6 +194,13 @@ test('one application: the launchpad hosts both apps; intents match the apps\' i
     assert(manifest['sap.app'].crossNavigation.inbounds[intent], `${intent} inbound in ${app.url}`);
   }
   assert.deepEqual(Object.keys(config.applications).sort(), ['EngineeringCase-investigate', 'EngineeringCase-manage']);
+  // Static assets must resolve to the app folder from both pages (standalone index.html and the launchpad);
+  // a page-relative 'assets/...' broke the worklist thumbnails inside the launchpad (BAS walkthrough).
+  for (const f of ['AssemblyIllustration', 'AssemblyThumbnail']) {
+    const prefix = readFileSync(join(root, 'case-worklist', 'webapp', 'ext', 'fragment', `${f}.fragment.xml`), 'utf8').match(/src="\{= '([^']+)'/)[1];
+    for (const page of ['http://host/case-worklist/webapp/index.html', 'http://host/launchpad.html'])
+      assert.equal(new URL(prefix, page).pathname, '/case-worklist/webapp/assets/assemblies/', `${f} from ${page}`);
+  }
   // Fiori tools (BAS Storyboard / Application Info) find both apps.
   const pkg = JSON.parse(readFileSync(join(import.meta.dirname, '..', 'package.json'), 'utf8'));
   assert.deepEqual(pkg.sapux, ['app/case-worklist', 'app/investigation-studio']);

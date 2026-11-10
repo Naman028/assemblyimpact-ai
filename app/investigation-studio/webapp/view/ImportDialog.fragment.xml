@@ -9,8 +9,8 @@
 				<u:FileUploader id="importFile" visible="{= !${import>/fromForm} }" width="100%" fileType="json,csv" maximumFileSize="0.5" sendXHR="false" useMultipart="false"
 					change=".onImportFileChange" typeMissmatch=".onImportTypeMismatch" fileSizeExceed=".onImportTooLarge" placeholder="Choose a .json or .csv file"/>
 				<HBox class="sapUiTinyMarginTop" visible="{= !${import>/fromForm} }">
-					<Link text="Sample JSON" href="samples/scenario-import-sample.json" target="_blank" class="sapUiSmallMarginEnd"/>
-					<Link text="Sample CSV" href="samples/scenario-import-sample.csv" target="_blank"/>
+					<Link text="Sample JSON" href="../../investigation-studio/webapp/samples/scenario-import-sample.json" target="_blank" class="sapUiSmallMarginEnd"/>
+					<Link text="Sample CSV" href="../../investigation-studio/webapp/samples/scenario-import-sample.csv" target="_blank"/>
 				</HBox>
 				<MessageStrip visible="{import>/validated}" type="{= ${import>/accepted} ? 'Success' : 'Error' }" showIcon="true" class="sapUiSmallMarginTop"
 					text="{= ${import>/accepted} ? 'Validation passed: ' + ${import>/summary} + '. Review the preview and confirm the import.' : 'Validation failed: ' + ${import>/errors}.length + ' problem(s). Nothing was imported.' }"/>

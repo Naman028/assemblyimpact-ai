@@ -55,7 +55,7 @@ test('manifest wires the illustration section and thumbnail column to existing f
     const xml = readFileSync(fragmentFile(template), 'utf8');
     assert.doesNotMatch(xml, /core:require|formatter:/, `${template}: no formatter module (not loaded in FE custom columns)`);
     assert.deepEqual(availability(xml).sort(), Object.entries(available).flatMap(([c, rs]) => rs.map(r => `${c}-${r}`)).sort(), `${template} availability rule`);
-    assert.match(xml, /src="\{= 'assets\/assemblies\/' \+ \$\{assemblyCode\} \+ '-' \+ \$\{toRevision\} \+ '(-thumb)?\.svg' \}"/, `${template} image path`);
+    assert.match(xml, /src="\{= '\.\.\/\.\.\/case-worklist\/webapp\/assets\/assemblies\/' \+ \$\{assemblyCode\} \+ '-' \+ \$\{toRevision\} \+ '(-thumb)?\.svg' \}"/, `${template} image path`);
     assert.match(xml, /alt="\{= 'Synthetic illustration of assembly '/, `${template} has a text alternative`);
   }
   assert.ok(existsSync(join(WEBAPP, manifest['sap.ui5'].resources.css[0].uri)));
