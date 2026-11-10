@@ -6,7 +6,8 @@ Continues the existing SAP Build projects (**not recreated**): Actions project *
 | File | Purpose |
 | --- | --- |
 | `skills.json` | Agent instructions, four skills with inputs, action steps, outputs, error handling, the confirmation rule and the role collection each skill needs; identities. Checked by `test/p1-actions-contract.test.js`. |
-| `destination.template.json` | BTP destination template (placeholders only, no secrets) for the deployed CAP service. |
+| `destination.template.json` | OAuth2JWTBearer template. Valid only for a caller in the **same** subaccount as the CAP service. |
+| `destination.eu10-saml-bearer.template.json` | Template for the actual EU10 → US10 path (OAuth2SAMLBearerAssertion); see `ADMIN-HANDOFF-EU10-DESTINATION.md`. |
 | `../build-actions/*.openapi.json` | Actions spec. M05 change: `sourceType` enum gained `DEMO_IMPORT`, `SANDBOX_IMPORT` (additive). Re-upload the reduced spec in the existing Actions project (*Update API specification*), keep the existing operation IDs; the reconciliation adds `LookupEngineeringCases` and `GetDecisionHistory` (read-only, from PR #11). |
 
 ## What was verified here
@@ -31,6 +32,8 @@ destination), split into two role collections:
 
 Reading never carries the right to calculate, and neither collection can submit, approve, reject, import or extract
 from the ERP: the server refuses these (403), not only the skill text (`test/p1-actions-contract.test.js`).
+
+> **Correction (2026-11-11):** for the real EU10 → US10 path, the destination `scope` is **not** a control we can rely on. Permissions are restricted by assigning only the Joule role collections to users of the EU10 trust origin in US10 (`ADMIN-HANDOFF-EU10-DESTINATION.md`, step 8). The text below applies to a same-subaccount OAuth2JWTBearer setup only, and the claim that scopes are intersected is unverified.
 
 Enforcement layers (review finding): a token exchanged by `OAuth2JWTBearer` would otherwise carry **all** of the
 user's scopes, so a person holding `AssemblyImpact_Analyst` + `AssemblyImpact_JouleReader` could run calculations
