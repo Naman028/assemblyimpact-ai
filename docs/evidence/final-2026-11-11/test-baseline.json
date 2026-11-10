@@ -1,0 +1,10 @@
+{
+  "commit": "9e7547835e90cd52c0b57eb1509c0f5a672d82e4",
+  "date_utc": "2026-11-10T23:45Z",
+  "environment": "Local Node, cds test profile (in-memory SQLite test DB; production uses HANA Cloud)",
+  "suite": "npm test (23 files)",
+  "tests": 203, "pass": 203, "fail": 0, "skipped": 0,
+  "duration_ms": 18844,
+  "ci": "GitHub Actions 'M03 verification' run 42920441707 on main: success",
+  "note": "Functional, authorization (role/plant 403/404) and integration (OData via cds.test) tests. No penetration test was performed."
+}
