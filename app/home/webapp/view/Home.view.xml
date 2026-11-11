@@ -25,7 +25,7 @@
 						<Text text="{home>/status/database}" visible="{= !!${home>/status/database} }" wrapping="true" class="aiStatusNote"/>
 					</VBox>
 					<VBox class="aiStatusItem">
-						<Label text="P1 Joule assistant" labelFor="stJoule"/>
+						<Label text="P1 Engineering Actions" labelFor="stJoule"/>
 						<ObjectStatus id="stJoule" text="{home>/status/joule/text}" state="{home>/status/joule/state}" inverted="true" icon="sap-icon://da"/>
 						<Text text="{home>/status/joule/description}" wrapping="true" class="aiStatusNote"/>
 					</VBox>

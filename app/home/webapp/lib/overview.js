@@ -41,8 +41,15 @@ sap.ui.define([], function () {
     NOT_CONNECTED: ["Not connected", "Needs the deployed backend, a destination and the released SAP Build Actions project", "Warning"],
     CONFIGURED: ["Configured", "Declared by the deployment; verify the skill in Joule", "Success"]
   };
+  /** P1: the in-app Node.js agent (same skills and CAP operations as the EU10 Joule agent) needs a live or test model. */
+  var P1_AGENT = {
+    GEMINI: ["Agent ready", "P1 Actions button in the Investigation Studio: Joule skills and SAP Build Actions run by Gemini in the CAP backend. EU10 Joule itself: destination pending.", "Success"],
+    FIXTURE: ["Agent ready (test model)", "P1 Actions with the labelled rule-based test model. EU10 Joule itself: destination pending.", "Information"],
+    GENAI_HUB: ["Not available", "The P1 agent uses Gemini function calling; Generative AI Hub is used for P2 only.", "None"],
+    NOT_CONFIGURED: ["Not available", "Set GEMINI_API_KEY to enable the P1 agent. EU10 Joule itself: destination pending.", "None"]
+  };
   var AUTH = {
-    DEVELOPMENT: ["Development login", "Local test users — not for productive use", "Warning"],
+    DEVELOPMENT: ["Development login", "Local test users for the role demo (Analyst, Approver, Viewer); production uses SAP BTP sign-in", "Information"],
     PRODUCTION: ["SAP BTP sign-in", "XSUAA or SAP Cloud Identity", "Success"]
   };
   var pick = function (map, key) { var v = map[key] || ["Unknown", "Status not reported", "None"]; return { text: v[0], description: v[1], state: v[2] }; };
@@ -58,6 +65,8 @@ sap.ui.define([], function () {
     database: function (key) { return DATABASE[key] || ("Database: " + (key || "unknown")); },
     genai: function (key) { return pick(GENAI, key); },
     joule: function (key) { return pick(JOULE, key); },
+    /** P1 tile: the in-app agent when a model is configured, otherwise the EU10 Joule status. */
+    p1: function (genaiKey, jouleKey) { return jouleKey === "CONFIGURED" ? pick(JOULE, jouleKey) : pick(P1_AGENT, genaiKey); },
     auth: function (key) { return pick(AUTH, key); },
 
     /** Message for a failed load; the page stays visible (no reload, no hidden content). */

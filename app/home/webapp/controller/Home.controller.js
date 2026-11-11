@@ -53,7 +53,7 @@ sap.ui.define([
           recent: res[2].value || [],
           status: {
             dataSource: overview.dataSource(res[3].dataSourceMode), database: overview.database(res[3].databaseKind), genai: overview.genai(res[3].genaiMode),
-            joule: overview.joule(res[3].jouleStatus), auth: overview.auth(res[3].authMode), demoImport: !!res[3].demoImport
+            joule: overview.p1(res[3].genaiMode, res[3].jouleStatus), auth: overview.auth(res[3].authMode), demoImport: !!res[3].demoImport
           },
           caps: { canImport: !!(res[4] && res[4].canImport) },
           // Who is acting (server view). In development the user can be switched on /dev-users.html.
