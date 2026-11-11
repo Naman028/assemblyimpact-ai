@@ -505,16 +505,20 @@
 		</f:content>
 
 		<f:dependents>
-			<Dialog id="p1Agent" title="P1 Engineering Actions · Joule-equivalent agent" contentWidth="34rem" contentHeight="70vh" resizable="true" draggable="true"
-				horizontalScrolling="false" class="aiP1Agent" busy="{ws>/askBusy}" busyIndicatorDelay="0">
+			<Dialog id="p1Agent" title="P1 Engineering Actions · Joule-equivalent agent" contentWidth="34rem" contentHeight="78vh" resizable="true" draggable="true"
+				horizontalScrolling="false" verticalScrolling="false" class="aiP1Agent" busy="{ws>/askBusy}" busyIndicatorDelay="0">
 				<content>
-					<VBox class="sapUiSmallMargin">
-						<MessageStrip type="Information" showIcon="true" text="P1: the same skills as the EU10 SAP Build Joule agent (Engineering Case Lookup, Explain Case Impact, Review Decision History, Run Engineering Impact) and the same CAP operations as its Actions project, run by a Node.js agent in the CAP backend with Google Gemini function calling. Changes are only prepared; nothing is saved until you press Confirm, then the normal CAP action runs with your own roles and plants."/>
+					<FlexBox direction="Column" height="100%" renderType="Bare" class="aiAgentLayout">
+					<VBox class="aiAgentTop">
+						<MessageStrip type="Information" showIcon="true" class="sapUiTinyMarginBottom" text="Same skills and SAP Build Actions as the EU10 Joule agent, run by Gemini in the CAP backend. Changes are only prepared: nothing is saved until you press Confirm."/>
 						<Title text="Ask (read)" level="H4" class="sapUiSmallMarginTop sapUiTinyMarginBottom"/>
 						<HBox wrap="Wrap"><Button text="Open cases with shortages" icon="sap-icon://search" press=".onAsk" class="sapUiTinyMarginEnd sapUiTinyMarginBottom" app:question="Which open cases have material shortages?" app:send="yes" xmlns:app="http://schemas.sap.com/sapui5/extension/sap.ui.core.CustomData/1"/><Button text="Explain Case Impact" icon="sap-icon://lightbulb" press=".onAsk" class="sapUiTinyMarginEnd sapUiTinyMarginBottom" app:question="What is the impact of @CASE? Explain cost, shortages and work instructions." app:send="yes" xmlns:app="http://schemas.sap.com/sapui5/extension/sap.ui.core.CustomData/1"/><Button text="Review Decision History" icon="sap-icon://history" press=".onAsk" class="sapUiTinyMarginEnd sapUiTinyMarginBottom" app:question="Show the decision history of @CASE." app:send="yes" xmlns:app="http://schemas.sap.com/sapui5/extension/sap.ui.core.CustomData/1"/><Button text="P2 AI explanation" icon="sap-icon://ai" press=".onAsk" class="sapUiTinyMarginEnd sapUiTinyMarginBottom" app:question="Give me the AI explanation for @CASE." app:send="yes" xmlns:app="http://schemas.sap.com/sapui5/extension/sap.ui.core.CustomData/1"/></HBox>
 						<Title text="Change (prepared, you confirm)" level="H4" class="sapUiTinyMarginTop sapUiTinyMarginBottom"/>
 						<HBox wrap="Wrap"><Button text="Run Engineering Impact" icon="sap-icon://simulate" press=".onAsk" class="sapUiTinyMarginEnd sapUiTinyMarginBottom" app:question="Please run the impact for @CASE." app:send="yes" xmlns:app="http://schemas.sap.com/sapui5/extension/sap.ui.core.CustomData/1"/><Button text="Change a revision-B quantity…" icon="sap-icon://edit" press=".onAsk" class="sapUiTinyMarginEnd sapUiTinyMarginBottom" app:question="In @CASE set the revision B quantity of item 0010 to 2." app:send="no" xmlns:app="http://schemas.sap.com/sapui5/extension/sap.ui.core.CustomData/1"/><Button text="Add a consumption rate…" icon="sap-icon://line-chart-time-axis" press=".onAsk" class="sapUiTinyMarginEnd sapUiTinyMarginBottom" app:question="In @CASE add a consumption rate for material ENCL-400 of 2 per week from 2026-11-11 to 2026-12-31." app:send="no" xmlns:app="http://schemas.sap.com/sapui5/extension/sap.ui.core.CustomData/1"/><Button text="Import pasted scenario" icon="sap-icon://upload" press=".onAsk" class="sapUiTinyMarginEnd sapUiTinyMarginBottom" app:question="Import this scenario." app:send="yes" xmlns:app="http://schemas.sap.com/sapui5/extension/sap.ui.core.CustomData/1"/><Button text="Submit for review…" icon="sap-icon://paper-plane" press=".onAsk" class="sapUiTinyMarginEnd sapUiTinyMarginBottom" app:question="Submit @CASE for review with the comment: impact checked." app:send="no" xmlns:app="http://schemas.sap.com/sapui5/extension/sap.ui.core.CustomData/1"/><Button text="Approve / reject… (approver)" icon="sap-icon://approvals" press=".onAsk" class="sapUiTinyMarginEnd sapUiTinyMarginBottom" app:question="Approve @CASE with the comment: checked." app:send="no" xmlns:app="http://schemas.sap.com/sapui5/extension/sap.ui.core.CustomData/1"/></HBox>
-						<List id="assistantChat" items="{ws>/chat}" class="sapUiSmallMarginTop" noDataText="Pick a question above or type your own. Questions with … are filled in for you to edit before sending." showSeparators="Inner">
+					</VBox>
+					<ScrollContainer id="agentChatScroll" vertical="true" horizontal="false" height="100%" class="aiAgentChat">
+						<layoutData><FlexItemData growFactor="1" baseSize="0"/></layoutData>
+						<List id="assistantChat" items="{ws>/chat}" noDataText="Pick a question above or type your own. Questions with … are filled in for you to edit before sending." showSeparators="Inner">
 							<CustomListItem>
 								<VBox class="sapUiSmallMargin">
 									<Label text="{ws>who}" design="Bold"/>
@@ -523,6 +527,8 @@
 								</VBox>
 							</CustomListItem>
 						</List>
+					</ScrollContainer>
+					<VBox class="aiAgentBottom">
 						<MessageStrip visible="{= !!${ws>/proposal} }" type="Warning" showIcon="true" class="sapUiSmallMarginTop"
 							text="{= 'Prepared, not yet saved: ' + ${ws>/proposal/summary} }"/>
 						<HBox visible="{= !!${ws>/proposal} }" class="sapUiTinyMarginTop">
@@ -534,6 +540,7 @@
 							<TextArea value="{ws>/askFile}" rows="8" width="100%" growing="true" growingMaxLines="16" placeholder="Paste the scenario file here"/>
 						</Panel>
 					</VBox>
+					</FlexBox>
 				</content>
 				<footer>
 					<Toolbar>

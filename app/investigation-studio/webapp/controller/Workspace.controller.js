@@ -51,6 +51,12 @@ sap.ui.define([
 
     onCloseAgent: function () { this.byId("p1Agent").close(); },
 
+    /** Keeps the newest message in view; only the conversation area scrolls. */
+    _scrollChat: function () {
+      var scroll = this.byId("agentChatScroll");
+      setTimeout(function () { var dom = scroll && scroll.getDomRef(); if (dom) { dom.scrollTop = dom.scrollHeight; } }, 50);
+    },
+
     _onMatched: function (event) {
       var caseId = event.getParameter("arguments").caseId;
       if (caseId !== this._caseId) {
@@ -377,6 +383,7 @@ sap.ui.define([
         .slice(-8).map(function (m) { return { role: m.role, text: m.text }; });
       chat.push({ role: "user", who: "You", text: text, meta: "", ok: true });
       ws.setProperty("/chat", chat);
+      this._scrollChat();
       ws.setProperty("/askText", "");
       ws.setProperty("/askBusy", true);
       ws.setProperty("/proposal", null);
@@ -403,6 +410,7 @@ sap.ui.define([
         var next = ws.getProperty("/chat").slice();
         next.push({ role: "model", who: "Assistant", text: answer, meta: meta, ok: r.status === "ANSWERED" });
         ws.setProperty("/chat", next);
+        that._scrollChat();
         var proposal = null;
         try { proposal = r.proposal ? JSON.parse(r.proposal) : null; } catch (e) { proposal = null; }
         ws.setProperty("/proposal", proposal);
@@ -412,6 +420,7 @@ sap.ui.define([
         var next = ws.getProperty("/chat").slice();
         next.push({ role: "error", who: "Assistant", text: error.message || "The assistant is not available.", meta: "", ok: false });
         ws.setProperty("/chat", next);
+        that._scrollChat();
       }).finally(function () {
         if (caseId === that._caseId) { ws.setProperty("/askBusy", false); }
       });
@@ -444,6 +453,7 @@ sap.ui.define([
         var chat = ws.getProperty("/chat").slice();
         chat.push({ role: "model", who: "Assistant", text: "Confirmed by you and saved: " + proposal.summary, meta: "Executed by the CAP service with your permissions (" + proposal.action + ").", ok: false });
         ws.setProperty("/chat", chat);
+        that._scrollChat();
         if (proposal.action === "importScenario") { ws.setProperty("/askFile", ""); ws.setProperty("/askFileName", ""); }
         that._refreshList();
         return that._load(true);

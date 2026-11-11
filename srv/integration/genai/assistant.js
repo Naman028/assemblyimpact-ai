@@ -245,7 +245,17 @@ export function geminiAgentModel(env, environment = process.env, fetchImpl = glo
   if (!apiKey || !env.modelId) throw new GenAiConfigError(NOT_CONFIGURED_MESSAGE);
   const endpoint = (env.endpoint ?? 'https://generativelanguage.googleapis.com/v1beta').replace(/\/$/, '');
   const timeoutMs = Number(env.timeoutMs ?? 20000);
-  const model = async ({ system, contents, tools }) => {
+  // Gemini sometimes answers 500/503 (overloaded) for a moment: retry once after a short pause, never more.
+  const model = async (request, attempt = 1) => {
+    try { return await once(request); } catch (error) {
+      if (attempt === 1 && error instanceof GenAiTransportError && !(error instanceof GenAiTimeoutError) && [500, 503].includes(error.status)) {
+        await new Promise(resolve => setTimeout(resolve, Number(env.retryDelayMs ?? 1500)));
+        return model(request, 2);
+      }
+      throw error;
+    }
+  };
+  const once = async ({ system, contents, tools }) => {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), timeoutMs);
     let response;

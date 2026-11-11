@@ -244,3 +244,16 @@ test('exam demo scenario PUMP-950: imports through the agent and calculates the 
     ['66.20', '84.10', '17.90', '2148.00', '27.04', 2, run.data.instructionFindings]);
   assert(run.data.instructionFindings >= 1, 'IMP-950 and SCR-950 x6 in the work instruction no longer match revision B');
 });
+
+test('Gemini agent HTTP: one retry on a temporary 503, no retry on 400', async () => {
+  let calls = 0;
+  const flaky = async () => (++calls === 1 ? { ok: false, status: 503, json: async () => ({ error: { status: 'UNAVAILABLE' } }) }
+    : { ok: true, status: 200, json: async () => ({ candidates: [{ content: { parts: [{ text: 'ok' }] } }] }) });
+  const m = agent.geminiAgentModel({ modelId: 'x', apiKeyEnv: 'K', retryDelayMs: 1 }, { K: 'k' }, flaky);
+  assert.equal((await m({ system: '', contents: [], tools: [] })).parts[0].text, 'ok');
+  assert.equal(calls, 2);
+  let bad = 0;
+  const m400 = agent.geminiAgentModel({ modelId: 'x', apiKeyEnv: 'K', retryDelayMs: 1 }, { K: 'k' }, async () => { bad++; return { ok: false, status: 400, json: async () => ({}) }; });
+  await assert.rejects(m400({ system: '', contents: [], tools: [] }), e => e.status === 400);
+  assert.equal(bad, 1);
+});
