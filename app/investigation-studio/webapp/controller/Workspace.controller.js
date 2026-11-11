@@ -22,6 +22,7 @@ sap.ui.define([
   function empty() {
     return { busy: false, tab: "assembly", view: "B", selected: null, detail: null, case: {}, run: null, lines: [], allMaterials: [],
       materials: [], findings: [], decisions: [], runs: [], instructions: [], visualNote: "", explanation: null, explanationSections: null, explanationReferences: "", explanationError: null, explainBusy: false,
+      chat: [], askText: "", askBusy: false, proposal: null,
       cov: { startDate: new Date().toISOString().slice(0, 10), horizonDays: 30, rows: [], rates: [], materials: [], canEdit: false,
         new: { material: "", period: "WEEK", quantity: "", validFrom: new Date().toISOString().slice(0, 10), validTo: new Date().getUTCFullYear() + "-12-31" } } };
   }
@@ -341,6 +342,74 @@ sap.ui.define([
         if (caseId === that._caseId) { ws.setProperty("/explainBusy", false); that.byId("btnExplain").focus(); }
       });
     },
+
+    // ------------------------------------------------------------ P1 alternative: Node.js Engineering Assistant
+    /** Sends the question and the recent turns to askAssistant. The agent only reads; a run comes back as a proposal. */
+    onAsk: function (event) {
+      var ws = this.getView().getModel("ws"), that = this, caseId = this._caseId;
+      var preset = event && event.getSource && event.getSource().data && event.getSource().data("question");
+      var text = (preset ? preset.replace("@CASE", ws.getProperty("/case/caseNumber") || "") : ws.getProperty("/askText") || "").trim();
+      if (!text || ws.getProperty("/askBusy")) { return; }
+      var chat = ws.getProperty("/chat").slice();
+      var history = chat.filter(function (m) { return m.role === "user" || (m.role === "model" && m.ok); })
+        .slice(-8).map(function (m) { return { role: m.role, text: m.text }; });
+      chat.push({ role: "user", who: "You", text: text, meta: "", ok: true });
+      ws.setProperty("/chat", chat);
+      ws.setProperty("/askText", "");
+      ws.setProperty("/askBusy", true);
+      ws.setProperty("/proposal", null);
+      var url = this.getView().getModel().getServiceUrl() + "askAssistant";
+      this._csrf().then(function (token) {
+        return fetch(url, { method: "POST", credentials: "same-origin",
+          headers: { "Content-Type": "application/json", "Accept": "application/json", "X-CSRF-Token": token },
+          body: JSON.stringify({ message: text, history: JSON.stringify(history) }) });
+      }).then(function (response) {
+        if (!response.ok) { return that._failure(response, "The assistant is not available (HTTP " + response.status + ")."); }
+        return response.json();
+      }).then(function (r) {
+        if (caseId !== that._caseId) { return; }
+        var tools = [];
+        try { tools = JSON.parse(r.toolCalls || "[]"); } catch (e) { tools = []; }
+        var meta = (r.generatedBy === "FIXTURE_RULES" ? "Offline rule-based stand-in (no language model)" : "Google Gemini " + (r.model || "")) +
+          " · CAP operations used: " + (tools.length ? tools.map(function (t) { return t.tool + (t.ok ? "" : " (" + t.error + ")"); }).join(", ") : "none");
+        var answer = r.status === "ANSWERED" ? r.answer
+          : "The answer was withheld because it did not match the data the tools returned (" + (r.issues || "check failed") + "). Ask again or read the tabs directly.";
+        var next = ws.getProperty("/chat").slice();
+        next.push({ role: "model", who: "Assistant", text: answer, meta: meta, ok: r.status === "ANSWERED" });
+        ws.setProperty("/chat", next);
+        var proposal = null;
+        try { proposal = r.proposal ? JSON.parse(r.proposal) : null; } catch (e) { proposal = null; }
+        ws.setProperty("/proposal", proposal);
+        InvisibleMessage.getInstance().announce(answer, InvisibleMessageMode.Polite);
+      }).catch(function (error) {
+        if (caseId !== that._caseId) { return; }
+        var next = ws.getProperty("/chat").slice();
+        next.push({ role: "error", who: "Assistant", text: error.message || "The assistant is not available.", meta: "", ok: false });
+        ws.setProperty("/chat", next);
+      }).finally(function () {
+        if (caseId === that._caseId) { ws.setProperty("/askBusy", false); }
+      });
+    },
+
+    /** The user confirms the agent's proposal; the normal runImpact action runs with the user's own role check. */
+    onConfirmProposal: function () {
+      var ws = this.getView().getModel("ws"), proposal = ws.getProperty("/proposal"), that = this;
+      if (!proposal) { return; }
+      ws.setProperty("/proposal", null);
+      if (proposal.caseID === this._caseId) {
+        this._execute("runImpact", { asOfDate: undefined }, "Impact calculated for " + proposal.caseNumber + ".");
+        return;
+      }
+      var url = this.getView().getModel().getServiceUrl() + "ReviewCases(" + proposal.caseID + ")/EngineeringReview.runImpact";
+      this._csrf().then(function (token) {
+        return fetch(url, { method: "POST", credentials: "same-origin", headers: { "Content-Type": "application/json", "X-CSRF-Token": token }, body: "{}" });
+      }).then(function (response) {
+        if (!response.ok) { return that._failure(response, "The impact run was refused."); }
+        MessageToast.show("Impact calculated for " + proposal.caseNumber + ".");
+      }).catch(function (error) { MessageBox.error(error.message, { title: "Not calculated" }); });
+    },
+
+    onDismissProposal: function () { this.getView().getModel("ws").setProperty("/proposal", null); },
 
     // ------------------------------------------------------------ supporting images (faculty demo)
     attachmentUrl: function (id) { return id ? this.getView().getModel().getServiceUrl() + "CaseAttachments(" + id + ")/content" : ""; },

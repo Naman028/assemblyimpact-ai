@@ -58,3 +58,6 @@
   .aiCaseItem .sapMLIBContent > .sapMHBox { flex-wrap: wrap; }
   .aiCaseSide { text-align: left; align-items: flex-start !important; margin-top: 0.25rem; }
 }
+/* P1 Node.js assistant */
+.aiAssistantMeta { font-size: 0.75rem; color: var(--sapContent_LabelColor); }
+.aiAssistantError { color: var(--sapNegativeTextColor); }

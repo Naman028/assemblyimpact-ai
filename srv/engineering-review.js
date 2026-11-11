@@ -10,6 +10,7 @@ import { parseImport, validateBundle, commitBundle, checksum, ImportFormatError,
 import { extract, transportFor, ErpConfigError, ErpTransportError, MODE_SOURCE_TYPE } from './integration/erp/erp-source.js';
 import { MappingError } from './integration/erp/s4-mapping.js';
 import { explain, providerFor, GenAiConfigError, GenAiTransportError, GenAiTimeoutError, GenAiDataNotApprovedError } from './integration/genai/impact-explanation.js';
+import { assistantModelFor, runAssistant, toolsFor, parseHistory } from './integration/genai/assistant.js';
 
 // Calculations are deterministic server-side (lib/impact-calculator.js); no LLM is involved.
 /** OData action name -> review transition. The rejection action is 'rejectCase' (see engineering-review.cds). */
@@ -51,6 +52,7 @@ export default class EngineeringReview extends cds.ApplicationService {
       return SELECT.one.from(this.entities.ReviewCases, caseID);
     });
     this.on('explainImpact', 'ReviewCases', req => this.#explainImpact(req));
+    this.on('askAssistant', req => this.#askAssistant(req));
     // Planning view and case-creation helpers (lib/planning.js, rules in lib/coverage.js).
     const asCoverageReject = (req, e) => { if (e instanceof CoverageRejection) return req.reject({ status: 400, code: e.code, message: e.message }); throw e; };
     const unquote = v => (typeof v === 'string' && /^'.*'$/s.test(v) ? v.slice(1, -1).replace(/''/g, "'") : v);
@@ -107,6 +109,26 @@ export default class EngineeringReview extends cds.ApplicationService {
         const wait = error.retryAfter ? ` Retry after ${error.retryAfter} s.` : '';
         return req.reject({ status: 429, code: 'GENAI_RATE_LIMITED', message: error.message + wait });
       }
+      if (error instanceof GenAiTransportError) return req.reject({ status: 502, code: 'GENAI_UNAVAILABLE', message: error.message });
+      throw error;
+    }
+  }
+
+  // P1 alternative: Node.js agent with Gemini function calling. Tools call this service as the signed-in user.
+  async #askAssistant(req) {
+    const message = String(req.data.message ?? '').trim();
+    if (!message) return req.reject(400, 'Ask a question.');
+    if (!userPlants(req.user)) return req.reject(403, 'No plant is assigned to your user.');
+    let model;
+    try { model = assistantModelFor(); } catch (error) {
+      if (error instanceof GenAiConfigError) return req.reject({ status: 409, code: 'GENAI_NOT_CONFIGURED', message: error.message });
+      throw error;
+    }
+    try {
+      return await runAssistant({ message, history: parseHistory(req.data.history), tools: toolsFor(this, req.user, model.allowedSourceTypes), model });
+    } catch (error) {
+      if (error instanceof GenAiTimeoutError) return req.reject({ status: 504, code: 'GENAI_TIMEOUT', message: error.message });
+      if (error instanceof GenAiTransportError && error.status === 429) return req.reject({ status: 429, code: 'GENAI_RATE_LIMITED', message: error.message });
       if (error instanceof GenAiTransportError) return req.reject({ status: 502, code: 'GENAI_UNAVAILABLE', message: error.message });
       throw error;
     }
