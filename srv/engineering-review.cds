@@ -199,6 +199,23 @@ service EngineeringReview {
         materialsShort      : Integer;
         instructionFindings : Integer;
     }
+    // ---- P1 alternative: Engineering Assistant agent in Node.js with Gemini function calling (no Joule) ----
+    // Tools run through this service as the caller (roles, plants, separation of duties unchanged). The agent never
+    // writes: a requested impact run comes back as a proposal that the user confirms with the normal runImpact action.
+    type AssistantReply {
+        status      : String(12);    // ANSWERED | WITHHELD
+        answer      : LargeString;   // null when WITHHELD
+        issues      : String(1000);  // why an answer was withheld, ';'-separated
+        proposal    : LargeString;   // JSON {action:'runImpact', caseID, caseNumber, assemblyCode} or null
+        toolCalls   : LargeString;   // JSON [{tool, args, ok, error}] - which CAP operations the agent used
+        generatedBy : String(30);    // GOOGLE_GEMINI_API | FIXTURE_RULES
+        model       : String(100);
+        steps       : Integer;
+        generatedAt : Timestamp;
+    }
+    @restrict: [{ to: ['ChangeViewer', 'ChangeAnalyst', 'ChangeApprover'] }]
+    action askAssistant(message : String(1000) @mandatory, history : LargeString) returns AssistantReply;
+
     @restrict: [{ to: ['ChangeViewer', 'ChangeAnalyst', 'ChangeApprover'] }]
     function lookupCases(caseNumber : String(20), status : String(12), assemblyCode : String(40)) returns many CaseSummary;
 

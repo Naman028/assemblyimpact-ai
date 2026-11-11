@@ -332,6 +332,38 @@
 								text="{= 'Source: ' + ${ws>/explanation/generatedBy} + ' (' + ${ws>/explanation/model} + '), cites: ' + (${ws>/explanation/citations} || 'none') + '. Fact ids refer to the BOM, Materials and Findings of run ' + ${ws>/explanation/runID} + '.' }"/>
 						</VBox>
 					</IconTabFilter>
+					<IconTabFilter key="assistant" text="Assistant" icon="sap-icon://da">
+						<VBox class="sapUiSmallMargin" busy="{ws>/askBusy}" busyIndicatorDelay="0">
+							<MessageStrip type="Information" showIcon="true" text="P1 Engineering Assistant (Node.js agent in the CAP backend, Google Gemini function calling; alternative to the SAP Build Joule agent). The model only chooses which CAP operations to call: case lookup, impact, decision history. They run as you, with your roles and plants. It cannot submit, approve, reject or edit; a requested impact run is only prepared and needs your confirmation. Answers whose figures or case numbers are not in the returned data are withheld."/>
+							<HBox wrap="Wrap" class="sapUiSmallMarginTop">
+								<Button text="Explain this impact" icon="sap-icon://ai" press=".onAsk" class="sapUiTinyMarginEnd" app:question="What is the impact of @CASE? Explain cost, shortages and work instructions." xmlns:app="http://schemas.sap.com/sapui5/extension/sap.ui.core.CustomData/1"/>
+								<Button text="Decision history" icon="sap-icon://history" press=".onAsk" class="sapUiTinyMarginEnd" app:question="Show the decision history of @CASE." xmlns:app="http://schemas.sap.com/sapui5/extension/sap.ui.core.CustomData/1"/>
+								<Button text="Run impact (with confirmation)" icon="sap-icon://simulate" press=".onAsk" class="sapUiTinyMarginEnd" app:question="Please run the impact for @CASE." xmlns:app="http://schemas.sap.com/sapui5/extension/sap.ui.core.CustomData/1"/>
+								<Button text="Open cases with shortages" icon="sap-icon://search" press=".onAsk" app:question="Which open cases have material shortages?" xmlns:app="http://schemas.sap.com/sapui5/extension/sap.ui.core.CustomData/1"/>
+							</HBox>
+							<List id="assistantChat" items="{ws>/chat}" class="sapUiSmallMarginTop" noDataText="Ask about this case or any case in your plants, for example: Which open cases have shortages?" showSeparators="Inner">
+								<CustomListItem>
+									<VBox class="sapUiSmallMargin">
+										<Label text="{ws>who}" design="Bold"/>
+										<Text text="{ws>text}" wrapping="true" class="{= ${ws>role} === 'error' ? 'aiAssistantError' : ''}"/>
+										<Text text="{ws>meta}" wrapping="true" visible="{= !!${ws>meta} }" class="sapUiTinyMarginTop aiAssistantMeta"/>
+									</VBox>
+								</CustomListItem>
+							</List>
+							<MessageStrip visible="{= !!${ws>/proposal} }" type="Warning" showIcon="true" class="sapUiSmallMarginTop"
+								text="{= 'The assistant prepared an impact run for ' + ${ws>/proposal/caseNumber} + ' (' + ${ws>/proposal/assemblyCode} + '). Nothing has been calculated yet. Confirm to run the deterministic CAP calculation with your own permissions.' }"/>
+							<HBox visible="{= !!${ws>/proposal} }" class="sapUiTinyMarginTop">
+								<Button text="Run impact" type="Emphasized" press=".onConfirmProposal" class="sapUiTinyMarginEnd"/>
+								<Button text="Cancel" press=".onDismissProposal"/>
+							</HBox>
+							<HBox alignItems="Center" class="sapUiSmallMarginTop">
+								<Input id="askInput" value="{ws>/askText}" submit=".onAsk" placeholder="Ask the Engineering Assistant…" maxLength="1000" width="100%" class="sapUiTinyMarginEnd">
+									<layoutData><FlexItemData growFactor="1"/></layoutData>
+								</Input>
+								<Button text="Ask" type="Emphasized" icon="sap-icon://paper-plane" press=".onAsk" enabled="{= !${ws>/askBusy} }"/>
+							</HBox>
+						</VBox>
+					</IconTabFilter>
 					<IconTabFilter key="instructions" text="Work Instructions" icon="sap-icon://document-text" count="{= ${ws>/run/instructionFindings} > 0 ? ${ws>/run/instructionFindings} : '' }">
 						<List items="{ws>/instructions}" noDataText="No work instructions for this assembly.">
 							<items>
