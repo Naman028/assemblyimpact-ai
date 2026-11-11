@@ -257,3 +257,13 @@ test('Gemini agent HTTP: one retry on a temporary 503, no retry on 400', async (
   await assert.rejects(m400({ system: '', contents: [], tools: [] }), e => e.status === 400);
   assert.equal(bad, 1);
 });
+
+test('agent: a reply that claims a prepared change without a proposal in this turn is withheld', async () => {
+  const lazy = async () => ({ parts: [{ text: 'I have prepared the impact calculation for EC-000473. Please confirm.' }] });
+  lazy.generatedBy = 'x';
+  const r = await agent.runAssistant({ message: 'run EC-000473 again', tools: {}, model: lazy });
+  assert.deepEqual([r.status, r.issues, r.proposal], ['WITHHELD', 'CHANGE_CLAIMED_WITHOUT_PROPOSAL', null]);
+  const asks = async () => ({ parts: [{ text: 'Could you confirm the item number in EC-000473?' }] });
+  asks.generatedBy = 'x';
+  assert.equal((await agent.runAssistant({ message: 'change EC-000473', tools: {}, model: asks })).status, 'ANSWERED', 'a clarifying question is fine');
+});

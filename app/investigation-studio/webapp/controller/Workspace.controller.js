@@ -405,7 +405,8 @@ sap.ui.define([
         var meta = (r.generatedBy === "FIXTURE_RULES" ? "Offline rule-based stand-in (no language model)" : "Google Gemini " + (r.model || "")) +
           (usage.requests ? " · " + usage.requests + " model request(s), " + (usage.totalTokens || 0) + " tokens" : "") +
           " · Skills/Actions used: " + (tools.length ? tools.map(function (t) { return (t.skill ? t.skill + " → " : "") + (t.action || t.tool) + (t.ok ? "" : " (" + t.error + ")"); }).join("; ") : "none");
-        var answer = r.status === "ANSWERED" ? r.answer
+        var answer = r.status === "ANSWERED" ? String(r.answer).replace(/\*\*/g, "")
+          : /CHANGE_CLAIMED_WITHOUT_PROPOSAL/.test(r.issues || "") ? "Nothing was prepared this time. Please send the request again."
           : "The answer was withheld because it did not match the data the tools returned (" + (r.issues || "check failed") + "). Ask again or read the tabs directly.";
         var next = ws.getProperty("/chat").slice();
         next.push({ role: "model", who: "Assistant", text: answer, meta: meta, ok: r.status === "ANSWERED" });
