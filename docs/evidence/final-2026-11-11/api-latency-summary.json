@@ -1,0 +1,51 @@
+{
+  "environment": "BTP CF US10 trial, approuter -> srv (HANA Cloud HDI), production XSUAA session",
+  "measured_at_utc": "2026-11-10T23:39:07Z",
+  "client": "Chrome via fetch() from approuter origin, sequential, cache:no-store",
+  "deployed_build": "0c9c961 (UI asset byte match)",
+  "endpoints": {
+    "caseList": "ReviewCases?$select=ID,caseNumber,status,assemblyCode&$orderby=caseNumber&$count=true",
+    "impactRead": "ImpactRuns(<COOL-100 latest run>)",
+    "systemStatus": "systemStatus()",
+    "lookupCases": "lookupCases(caseNumber='EC-000473',status=null,assemblyCode=null)"
+  },
+  "note": "Includes network RTT from client to US10; first sample per endpoint is cold.",
+  "summary": {
+    "caseList": {
+      "n": 30,
+      "ok": 30,
+      "p50_ms": 133.5,
+      "p95_ms": 242.7,
+      "min_ms": 129.7,
+      "max_ms": 303.2,
+      "mean_ms": 147.7
+    },
+    "impactRead": {
+      "n": 30,
+      "ok": 30,
+      "p50_ms": 135.6,
+      "p95_ms": 145.7,
+      "min_ms": 128.7,
+      "max_ms": 200.5,
+      "mean_ms": 138.7
+    },
+    "systemStatus": {
+      "n": 30,
+      "ok": 30,
+      "p50_ms": 121.7,
+      "p95_ms": 128.7,
+      "min_ms": 118.0,
+      "max_ms": 132.9,
+      "mean_ms": 122.5
+    },
+    "lookupCases": {
+      "n": 30,
+      "ok": 30,
+      "p50_ms": 136.5,
+      "p95_ms": 158.2,
+      "min_ms": 130.5,
+      "max_ms": 286.0,
+      "mean_ms": 143.3
+    }
+  }
+}

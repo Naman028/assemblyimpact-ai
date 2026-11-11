@@ -213,7 +213,8 @@ test('a second engineering change of the same material, and shared components, a
   const transport = async path => (path.includes('A_ProductValuation') ? changed : fixtureTransport(DIR)(path));
   // Next calendar day (UTC), and less than 24 h ahead, i.e. within the validator's one-day clock tolerance.
   // (Was now + 20 h, which stays on the same date before 04:00 UTC and made the test fail at night.)
-  const midnight = new Date(); midnight.setUTCHours(24, 1, 0, 0);
+  // Exactly the next UTC midnight: always <= 24 h ahead. (00:01 failed in the first minute after midnight, CI 2026-11-11 00:00:03Z.)
+  const midnight = new Date(); midnight.setUTCHours(24, 0, 0, 0);
   const nextDay = midnight.toISOString();
   const bundle = await extract({ transport, mode: 'synthetic', selection: later, now: nextDay });
   const result = await cds.tx(async () => {
