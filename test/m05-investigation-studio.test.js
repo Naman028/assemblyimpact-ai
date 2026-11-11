@@ -174,3 +174,8 @@ test('instruction-step contract: the Studio parser matches the calculator text f
   const keys = result.findings.filter(f => f.type === 'OUTDATED_INSTRUCTION_REFERENCE').map(f => parse(f.details)).sort();
   assert.deepEqual(keys, ['WI-HYD-700-ASM/5/0020', 'WI-HYD-700-ASM/5/0030', 'WI-HYD-700-PRS/2/0010']);
 });
+
+test('Studio cost cards: big numbers are not clipped by ObjectNumber\'s 1rem line box', () => {
+  const css = read('css', 'style.css');
+  assert.match(css, /\.aiBigNumber \.sapMObjectNumberText, \.aiBigNumber \.sapMObjectNumberUnit,\s*\.aiKpiNumber \.sapMObjectNumberText, \.aiKpiNumber \.sapMObjectNumberUnit \{ line-height: 1\.25; height: auto; overflow: visible; \}/);
+});

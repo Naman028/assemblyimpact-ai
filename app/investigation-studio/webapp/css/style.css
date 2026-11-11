@@ -61,3 +61,8 @@
 /* P1 Node.js assistant */
 .aiAssistantMeta { font-size: 0.75rem; color: var(--sapContent_LabelColor); }
 .aiAssistantError { color: var(--sapNegativeTextColor); }
+/* Big money values: sap.m.ObjectNumber fixes line-height to 1rem with overflow hidden, which cut the 1.75rem digits
+   (scrollHeight 23px in a 16px box). Let the line grow with the font. */
+.aiBigNumber, .aiKpiNumber, .aiBigNumber .sapMObjectNumberInner, .aiKpiNumber .sapMObjectNumberInner { height: auto; line-height: 1.25; }
+.aiBigNumber .sapMObjectNumberText, .aiBigNumber .sapMObjectNumberUnit,
+.aiKpiNumber .sapMObjectNumberText, .aiKpiNumber .sapMObjectNumberUnit { line-height: 1.25; height: auto; overflow: visible; }
