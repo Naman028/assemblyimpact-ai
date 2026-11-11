@@ -40,6 +40,8 @@
 						<Text text="{home>/status/auth/description}" wrapping="true" class="aiStatusNote"/>
 						<Text text="Signed in as {home>/me/text}" visible="{= !!${home>/me/text} }" wrapping="true" class="aiStatusNote"/>
 						<Link text="Switch user (development)" href="/dev-users.html" visible="{= !!${home>/me/dev} }"/>
+						<Link text="Sign out / switch user" href="/do/logout" visible="{= !!${home>/me/text} &amp;&amp; !${home>/me/dev} }"
+							tooltip="Ends the SAP BTP session. Sign in again with another SAP account, e.g. the approver (best in a private window)."/>
 					</VBox>
 				</cssgrid:CSSGrid>
 			</VBox>
