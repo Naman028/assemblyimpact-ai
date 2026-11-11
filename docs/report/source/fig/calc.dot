@@ -1,0 +1,4 @@
+digraph G { rankdir=LR; graph [fontname="Inter" fontsize=11 nodesep=0.3]; node [shape=box style="rounded,filled" fillcolor="#f2f2f2" color="#4d4d4d" fontname="Inter" fontsize=10 penwidth=1.2]; edge [color="#555555" fontname="Inter" fontsize=9 fontcolor="#333333"];
+i [label="Case: assembly, rev A -> B,\nproduction qty, as-of date"]; b [label="BOM compare\nadded / removed /\nreplaced / qty changed"]; c [label="Cost\nsum(qty x price valid\non as-of date)\ndelta = (B-A) x qty"]; s [label="Stock\nrequired = qty x prod qty\nvs latest snapshot\n(stale > 7 days)"]; w [label="Work instructions\nreferences to removed /\nchanged parts"]; r [label="Immutable ImpactRun\nCOMPLETE / WITH_WARNINGS /\nINCOMPLETE + findings" fillcolor="#d9d9d9"];
+i -> b -> c -> r; b -> s -> r; b -> w -> r;
+}

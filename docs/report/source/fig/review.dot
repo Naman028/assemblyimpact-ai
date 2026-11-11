@@ -1,0 +1,6 @@
+digraph G { rankdir=LR; graph [fontname="Inter" fontsize=11]; node [shape=box style="rounded,filled" fillcolor="#f2f2f2" color="#4d4d4d" fontname="Inter" fontsize=10 penwidth=1.2]; edge [color="#555555" fontname="Inter" fontsize=9 fontcolor="#333333"];
+O [label="OPEN"]; R [label="IN_REVIEW"]; A [label="APPROVED" fillcolor="#d9d9d9"]; J [label="REJECTED" fillcolor="#d9d9d9"];
+O -> O [label="runImpact / edit input\n(Analyst)"]; O -> R [label="submitForReview\n(Analyst, run required)"];
+R -> A [label="approve\n(Approver != submitter,\nlatest run, warnings acknowledged)"]; R -> J [label="rejectCase\n(Approver, comment required)"];
+R -> R [label="runImpact\n(new evidence)"];
+}

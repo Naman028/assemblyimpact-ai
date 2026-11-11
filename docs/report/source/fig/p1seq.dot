@@ -1,0 +1,4 @@
+digraph G { rankdir=LR; graph [fontname="Inter" fontsize=11 nodesep=0.3 ranksep=0.5]; node [shape=box style="rounded,filled" fillcolor="#f2f2f2" color="#4d4d4d" fontname="Inter" fontsize=10 penwidth=1.2]; edge [color="#555555" fontname="Inter" fontsize=9 fontcolor="#333333"];
+u [label="User types request\n(e.g. 'run the impact\nfor EC-000501')"]; a [label="askAssistant\n(CAP, as the user)"]; g [label="Gemini chooses tool\n= Joule skill / Action"]; t [label="Tool runs through\nCAP @restrict\n(roles, plant 404)"]; c [label="Answer check\n(numbers, case numbers,\nno decision advice)"]; p [label="Proposal shown:\n'Prepared, not yet saved'"]; k [label="User presses Confirm"]; x [label="Normal CAP action\n(runImpact, reviseDemoInput,\nsubmit, approve...)" fillcolor="#e0e0e0"]; h [label="SAP HANA Cloud" shape=cylinder fillcolor="#d9d9d9"];
+u -> a; a -> g; g -> t [label="tool call"]; t -> g [label="result"]; g -> c [label="answer"]; c -> p -> k -> x -> h;
+}

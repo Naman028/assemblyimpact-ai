@@ -1,0 +1,17 @@
+digraph G { rankdir=TB; graph [fontname="Inter" fontsize=11 nodesep=0.35 ranksep=0.45 bgcolor="white"]; node [shape=box style="rounded,filled" fillcolor="#f2f2f2" color="#4d4d4d" fontname="Inter" fontsize=10 penwidth=1.2]; edge [color="#555555" fontname="Inter" fontsize=9 fontcolor="#333333"];
+subgraph cluster_u { label="Users (browser)"; style="dashed"; color="#999999"; fontname="Inter";
+ an [label="Change Analyst"]; ap [label="Change Approver"]; vw [label="Viewer"]; }
+subgraph cluster_ui { label="SAP Fiori launchpad (SAPUI5 1.149)"; color="#777777"; style="rounded"; fontname="Inter";
+ home [label="Home\n(status, KPIs)"]; wl [label="P3 Case Worklist\n(Fiori elements)"]; st [label="P4 Investigation Studio\n(freestyle UI5)"]; bot [label="P1 Actions bot\n(floating agent)"]; }
+ar [label="App router + XSUAA\n(SAP BTP sign-in, roles, plant attribute)" fillcolor="#e0e0e0"];
+subgraph cluster_cap { label="CAP service EngineeringReview (Node.js)"; color="#333333"; style="rounded,bold"; fontname="Inter";
+ calc [label="Impact ruleset\nrunImpact"]; rev [label="Review workflow\nsubmit / approve / reject"]; plan [label="Consumption Planning\nmaterialCoverage"]; imp [label="Import / Edit input\n(demo data)"]; erp [label="P2 ERP adapter\nextractFromErp"]; exp [label="P2 AI Explanation\nexplainImpact"]; agent [label="P1 agent\naskAssistant"]; }
+hana [label="SAP HANA Cloud\n(HDI container)" shape=cylinder fillcolor="#d9d9d9"];
+gem [label="Google Gemini API\n(gemini-3.5-flash-lite)" fillcolor="#ffffff" style="rounded,dashed"];
+s4 [label="SAP S/4HANA OData\n(contract + sandbox;\nno system available)" fillcolor="#ffffff" style="rounded,dashed"];
+joule [label="SAP Build (EU10)\nJoule skills + agent\nActions project" fillcolor="#ffffff" style="rounded,dashed"];
+an -> home; ap -> st; vw -> wl; home -> ar [style=invis]; wl -> ar; st -> ar; bot -> ar; home -> ar;
+ar -> calc [lhead=cluster_cap]; ar -> agent;
+calc -> hana; rev -> hana; plan -> hana; imp -> hana; erp -> s4 [style=dashed label="OData"]; exp -> gem [label="evidence only"]; agent -> gem [label="function calling"];
+joule -> ar [style=dashed label="destination\n(pending EU10 admin)"];
+}

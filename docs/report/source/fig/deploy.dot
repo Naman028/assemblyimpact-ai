@@ -1,0 +1,7 @@
+digraph G { rankdir=LR; graph [fontname="Inter" fontsize=11]; node [shape=box style="rounded,filled" fillcolor="#f2f2f2" color="#4d4d4d" fontname="Inter" fontsize=10 penwidth=1.2]; edge [color="#555555" fontname="Inter" fontsize=9 fontcolor="#333333"];
+gh [label="GitHub\nNaman028/assemblyimpact-ai\nPR + CI (npm test, lint)"]; bas [label="SAP Business Application\nStudio (dev space)\ncds watch / mbt build"]; mtar [label="MTA archive\n(mbt build)"];
+subgraph cluster_cf { label="SAP BTP Cloud Foundry (US10 trial, space dev)"; color="#333333"; style=rounded; fontname="Inter";
+ r [label="assemblyimpact-router\n(approuter)"]; s [label="assemblyimpact-srv\n(CAP Node.js, 512 MB)"]; d [label="assemblyimpact-db-deployer\n(HDI)"]; }
+x [label="XSUAA\nassemblyimpact-auth"]; h [label="HANA Cloud HDI\nassemblyimpact-db" shape=cylinder fillcolor="#d9d9d9"]; ds [label="Destination\nservice"];
+gh -> bas [label="git fetch"]; bas -> mtar -> r [label="cf deploy"]; mtar -> s; mtar -> d; r -> s; r -> x; s -> x; s -> h; d -> h; s -> ds;
+}
