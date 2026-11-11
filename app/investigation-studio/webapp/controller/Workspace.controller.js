@@ -370,8 +370,11 @@ sap.ui.define([
         if (caseId !== that._caseId) { return; }
         var tools = [];
         try { tools = JSON.parse(r.toolCalls || "[]"); } catch (e) { tools = []; }
+        var usage = {};
+        try { usage = JSON.parse(r.usage || "{}"); } catch (e) { usage = {}; }
         var meta = (r.generatedBy === "FIXTURE_RULES" ? "Offline rule-based stand-in (no language model)" : "Google Gemini " + (r.model || "")) +
-          " · CAP operations used: " + (tools.length ? tools.map(function (t) { return t.tool + (t.ok ? "" : " (" + t.error + ")"); }).join(", ") : "none");
+          (usage.requests ? " · " + usage.requests + " model request(s), " + (usage.totalTokens || 0) + " tokens" : "") +
+          " · Actions used (same operations as the EU10 Joule skills): " + (tools.length ? tools.map(function (t) { return (t.action || t.tool) + (t.ok ? "" : " (" + t.error + ")"); }).join(", ") : "none");
         var answer = r.status === "ANSWERED" ? r.answer
           : "The answer was withheld because it did not match the data the tools returned (" + (r.issues || "check failed") + "). Ask again or read the tabs directly.";
         var next = ws.getProperty("/chat").slice();
