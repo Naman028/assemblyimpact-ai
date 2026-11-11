@@ -14,6 +14,13 @@ replace or claim the Joule integration; both are documented separately.
 | Explain Case Impact | `getImpact` | `lookupCases` + read `ImpactRuns` with lines and findings |
 | Review Decision History | `getDecisionHistory` | `lookupCases` + read `DecisionEvents` |
 | Run Engineering Impact (confirmation) | `proposeRunImpact` | **no write**; the UI asks the user to confirm, then calls `runImpact` |
+| (P2) AI Explanation tab | `getAiExplanation` | the validated `explainImpact` result of the latest run |
+
+Each reply lists the SAP Build Action names it used (`LookupEngineeringCases`, `GetEngineeringImpact`, `GetDecisionHistory`, `RunEngineeringImpact`), i.e. the operations of `p1/build-actions/assemblyimpact-engineering-actions.openapi.json`, and the Gemini token usage reported by the API (`usageMetadata`).
+
+## Limits
+- Per question: at most 5 model requests and 8 tool calls; then the answer is given from the data so far, or withheld.
+- Gemini quotas are per Google project (requests/minute, input tokens/minute, requests/day; daily reset at midnight Pacific time). On the free tier Gemini 3.5 Flash-Lite is listed with about 10 requests/minute and 500/day. One assistant question uses 2-5 requests; `getAiExplanation` adds one more. Over quota, Gemini returns HTTP 429 and the tab shows "rate limit or quota reached".
 
 ## How it works
 1. UI: Investigation Studio, tab **Assistant** (also free-text questions about any case in the user's plants).

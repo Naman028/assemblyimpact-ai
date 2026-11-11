@@ -13,9 +13,16 @@
 // - The API key is read from the environment and sent as a header; it is never logged or returned.
 import cds from '@sap/cds';
 import { IMPACT_ALLOWED_STATUSES } from '../../lib/impact-persistence.js';
-import { GenAiConfigError, GenAiTransportError, GenAiTimeoutError, NOT_CONFIGURED_MESSAGE } from './impact-explanation.js';
+import { GenAiConfigError, GenAiTransportError, GenAiTimeoutError, GenAiDataNotApprovedError, NOT_CONFIGURED_MESSAGE, explain, providerFor } from './impact-explanation.js';
 
 export const MAX_STEPS = 5;
+export const MAX_TOOL_CALLS = 8;   // per question; bounds Gemini requests and tokens
+
+// Same operations as the SAP Build Actions project used by the EU10 Joule skills (p1/build-actions/*.openapi.json).
+export const ACTION_OF = Object.freeze({
+  lookupCases: 'LookupEngineeringCases', getImpact: 'GetEngineeringImpact', getDecisionHistory: 'GetDecisionHistory',
+  proposeRunImpact: 'RunEngineeringImpact (after your confirmation)', getAiExplanation: 'explainImpact (P2 AI Explanation)',
+});
 const MAX_HISTORY = 8;
 const CASE_NO = /\bEC-\d{6}\b/g;
 
@@ -23,7 +30,9 @@ export const ASSISTANT_PROMPT = [
   'You are the AssemblyImpact Engineering Assistant for manufacturing engineers reviewing engineering changes.',
   'Answer only from tool results. Never calculate, estimate, round or invent figures, materials, dates or case numbers.',
   'Use lookupCases to find cases (by case number like EC-000473, assembly code like COOL-100, or status OPEN, IN_REVIEW, APPROVED, REJECTED).',
+  'lookupCases already returns status, costDeltaTotal, materialsShort and instructionFindings per case: use it for lists and comparisons, and call getImpact only for the details of one case.',
   'Use getImpact for cost, shortages and work-instruction findings of a case; getDecisionHistory for review decisions.',
+  'Use getAiExplanation only when the user asks for the AI explanation (the validated structured explanation shown in the AI Explanation tab).',
   'If costDeltaAvailable is false, say the cost delta is not available; never say it is 0.',
   'If the user asks to run or recalculate the impact, call proposeRunImpact. It only prepares the run; the user must confirm it. Never claim a run was started or finished.',
   'You cannot submit, approve, reject or edit anything. Never recommend approving or rejecting; the reviewer decides.',
@@ -41,6 +50,8 @@ export const TOOL_DECLARATIONS = [
   { name: 'getImpact', description: 'Latest calculated impact run of one case: cost, shortages, findings.',
     parameters: { type: 'OBJECT', properties: { caseNumber: { type: 'STRING' } }, required: ['caseNumber'] } },
   { name: 'getDecisionHistory', description: 'Review decision history (submit, approve, reject) of one case.',
+    parameters: { type: 'OBJECT', properties: { caseNumber: { type: 'STRING' } }, required: ['caseNumber'] } },
+  { name: 'getAiExplanation', description: 'The validated P2 AI explanation of the latest impact run of one case (summary, verified impact, shortages, work instructions, next actions, warnings).',
     parameters: { type: 'OBJECT', properties: { caseNumber: { type: 'STRING' } }, required: ['caseNumber'] } },
   { name: 'proposeRunImpact', description: 'Prepare a new impact calculation for one case. The user must confirm it.',
     parameters: { type: 'OBJECT', properties: { caseNumber: { type: 'STRING' } }, required: ['caseNumber'] } },
@@ -95,6 +106,25 @@ export function toolsFor(srv, user, allowedSourceTypes) {
         .where({ reviewCase_ID: r.case.ID }).orderBy('at'));
       return { caseNumber, caseStatus: r.case.status, decisions: events.map(e => ({ action: e.action, from: e.fromStatus, to: e.toStatus, by: e.actor, comment: e.comment, at: e.at })) };
     },
+    async getAiExplanation({ caseNumber }) {
+      const r = await one(caseNumber); if (r.error) return r;
+      if (!r.case.latestRun_ID) return { caseNumber, explanation: null, message: 'No impact run exists for this case yet, so there is nothing to explain.' };
+      const { ImpactRuns } = cds.entities('assemblyimpact');   // case already resolved as the caller (plant-checked)
+      const run = await SELECT.one.from(ImpactRuns, r.case.latestRun_ID).columns(x => { x('*'), x.findings('*'), x.materialLines('*'), x.comparisonLines('*'); });
+      try {
+        const e = await explain({ ...r.case }, run, providerFor());
+        let sections = null;
+        try { sections = e.sections ? JSON.parse(e.sections) : null; } catch { sections = null; }
+        return { caseNumber, explanationStatus: e.status, generatedBy: e.generatedBy, model: e.model,
+          explanation: e.status === 'GROUNDED' ? (sections ? { summary: sections.summary, verifiedImpact: sections.verifiedImpact,
+            shortageAnalysis: sections.shortageAnalysis, workInstructionImplications: sections.workInstructionImplications,
+            nextActions: sections.nextActions, warnings: sections.warnings } : { text: e.text }) : null,
+          message: e.status === 'GROUNDED' ? null : `The AI explanation was withheld by the grounding check (${e.issues}).` };
+      } catch (error) {
+        if (error instanceof GenAiConfigError || error instanceof GenAiDataNotApprovedError || error instanceof GenAiTransportError) return { error: 'EXPLANATION_UNAVAILABLE', message: error.message };
+        throw error;
+      }
+    },
     async proposeRunImpact({ caseNumber }) {
       const r = await one(caseNumber); if (r.error) return r;
       if (!(user.is('ChangeAnalyst') || user.is('ImpactRunner'))) return { error: 'NOT_AUTHORIZED', message: 'Your role cannot run impact calculations.' };
@@ -135,7 +165,9 @@ export function geminiAgentModel(env, environment = process.env, fetchImpl = glo
       throw new GenAiTransportError(`The Gemini API answered HTTP ${response.status}${code} for model ${env.modelId}.`, response.status);
     }
     const body = await response.json().catch(() => null);
-    return { parts: body?.candidates?.[0]?.content?.parts ?? [], model: body?.modelVersion ?? env.modelId };
+    const u = body?.usageMetadata ?? {};
+    return { parts: body?.candidates?.[0]?.content?.parts ?? [], model: body?.modelVersion ?? env.modelId,
+      usage: { promptTokens: u.promptTokenCount ?? 0, outputTokens: (u.candidatesTokenCount ?? 0) + (u.thoughtsTokenCount ?? 0), totalTokens: u.totalTokenCount ?? 0 } };
   };
   model.generatedBy = 'GOOGLE_GEMINI_API';
   model.allowedSourceTypes = env.allowedSourceTypes ?? ['SYNTHETIC_FIXTURE', 'DEMO_IMPORT'];
@@ -155,7 +187,8 @@ export function fixtureAgentModel() {
       const caseNumber = text.match(/EC-\d{6}/)?.[0];
       const assemblyCode = text.match(/\b[A-Z]{2,}-\d{2,}\b/)?.[0];
       let call;
-      if (caseNumber && /\b(run|recalculat)/i.test(text)) call = { name: 'proposeRunImpact', args: { caseNumber } };
+      if (caseNumber && /\bai explanation\b/i.test(text)) call = { name: 'getAiExplanation', args: { caseNumber } };
+      else if (caseNumber && /\b(run|recalculat)/i.test(text)) call = { name: 'proposeRunImpact', args: { caseNumber } };
       else if (caseNumber && /\b(histor|decision|approv|reject)/i.test(text)) call = { name: 'getDecisionHistory', args: { caseNumber } };
       else if (caseNumber) call = { name: 'getImpact', args: { caseNumber } };
       else call = { name: 'lookupCases', args: assemblyCode ? { assemblyCode } : {} };
@@ -167,6 +200,7 @@ export function fixtureAgentModel() {
     else if (name === 'getImpact') text = !r.run ? r.message
       : `${r.caseNumber} (${r.assemblyCode}): run ${r.run.status} as of ${r.run.asOfDate}. Cost delta ${r.run.costDeltaAvailable ? `${r.run.costDeltaTotal} ${r.run.currency}` : 'not available'}, ${r.run.materialsShort} material(s) short, ${r.run.instructionFindings} instruction finding(s).`;
     else if (name === 'getDecisionHistory') text = r.decisions.length ? `${r.caseNumber} is ${r.caseStatus}. ` + r.decisions.map(d => `${d.action} by ${d.by}`).join('; ') + '.' : `${r.caseNumber} has no review decisions yet.`;
+    else if (name === 'getAiExplanation') text = r.explanation ? `AI explanation for ${r.caseNumber}: ${r.explanation.summary ?? r.explanation.text}` : r.message;
     else if (name === 'proposeRunImpact') text = `An impact run for ${r.proposal.caseNumber} is prepared. Confirm it to start the calculation.`;
     else text = r.count ? `${r.count} case(s): ` + r.cases.map(c => `${c.caseNumber} ${c.assemblyCode} ${c.status}`).join('; ') + '.' : 'No visible cases match.';
     return { parts: [{ text }], model: 'fixture-rules' };
@@ -220,19 +254,23 @@ export function parseHistory(raw) {
 export async function runAssistant({ message, history = [], tools, model }) {
   const contents = [...history, { role: 'user', parts: [{ text: message }] }];
   const trace = [], results = [];
+  const usage = { requests: 0, promptTokens: 0, outputTokens: 0, totalTokens: 0 };
   let proposal = null, text = null, modelName = null, steps = 0;
   while (steps < MAX_STEPS) {
     steps++;
     const res = await model({ system: ASSISTANT_PROMPT, contents, tools: TOOL_DECLARATIONS });
     modelName = res.model ?? modelName;
+    usage.requests++;
+    for (const k of ['promptTokens', 'outputTokens', 'totalTokens']) usage[k] += res.usage?.[k] ?? 0;
     const calls = res.parts.filter(p => p.functionCall);
     if (!calls.length) { text = res.parts.map(p => p.text ?? '').join('').trim(); break; }
     contents.push({ role: 'model', parts: res.parts });
     const responses = [];
     for (const { functionCall: call } of calls) {
       const fn = Object.hasOwn(tools, call.name) ? tools[call.name] : null;
-      const result = fn ? await fn(call.args ?? {}) : { error: 'UNKNOWN_TOOL', message: `No tool ${call.name}.` };
-      trace.push({ tool: call.name, args: call.args ?? {}, ok: !result.error, ...(result.error ? { error: result.error } : {}) });
+      const result = trace.length >= MAX_TOOL_CALLS ? { error: 'TOOL_BUDGET', message: 'Tool budget for this question used up; answer with the data already returned.' }
+        : fn ? await fn(call.args ?? {}) : { error: 'UNKNOWN_TOOL', message: `No tool ${call.name}.` };
+      trace.push({ tool: call.name, action: ACTION_OF[call.name] ?? null, args: call.args ?? {}, ok: !result.error, ...(result.error ? { error: result.error } : {}) });
       results.push(result);
       if (result.proposal) proposal = result.proposal;
       responses.push({ functionResponse: { name: call.name, response: result } });
@@ -240,7 +278,7 @@ export async function runAssistant({ message, history = [], tools, model }) {
     contents.push({ role: 'user', parts: responses });
   }
   const base = { toolCalls: JSON.stringify(trace), proposal: proposal ? JSON.stringify(proposal) : null,
-    generatedBy: model.generatedBy, model: modelName, steps, generatedAt: new Date().toISOString() };
+    generatedBy: model.generatedBy, model: modelName, steps, usage: JSON.stringify(usage), generatedAt: new Date().toISOString() };
   if (text === null) return { ...base, status: 'WITHHELD', answer: null, issues: 'MAX_STEPS' };
   const issues = checkAnswer(text, results, message);
   if (issues.length) return { ...base, status: 'WITHHELD', answer: null, issues: issues.join(';').slice(0, 1000) };

@@ -47,7 +47,7 @@ test('agent: plant isolation - a plant-2000 user cannot see EC-000473 through th
   const r = await ask('What is the impact of EC-000473?', 'analyst2');
   assert.equal(r.status, 200);
   assert.match(r.data.answer, /not found or is not visible/);
-  assert.deepEqual(JSON.parse(r.data.toolCalls)[0], { tool: 'getImpact', args: { caseNumber: 'EC-000473' }, ok: false, error: 'NOT_FOUND' });
+  assert.deepEqual(JSON.parse(r.data.toolCalls)[0], { tool: 'getImpact', action: 'GetEngineeringImpact', args: { caseNumber: 'EC-000473' }, ok: false, error: 'NOT_FOUND' });
 });
 
 test('agent: run impact is only proposed (no write); confirming uses the normal action and its role check', async () => {
@@ -85,10 +85,10 @@ test('agent loop with a Gemini-shaped model: multi-step tools, thought signature
   const seen = [];
   const model = async ({ contents, tools }) => {
     seen.push(structuredClone(contents));
-    assert.equal(tools.length, 4);
+    assert.equal(tools.length, 5);
     if (seen.length === 1) return { parts: [{ functionCall: { name: 'lookupCases', args: { assemblyCode: 'COOL-100' } }, thoughtSignature: 'sig-1' }], model: 'm' };
     if (seen.length === 2) return { parts: [{ functionCall: { name: 'getImpact', args: { caseNumber: 'EC-000473' } }, thoughtSignature: 'sig-2' }], model: 'm' };
-    return { parts: [{ text: 'EC-000473 on COOL-100 costs 1,200.00 EUR more; BRKT-01 is short by 50 PC.' }], model: 'm' };
+    return { parts: [{ text: 'EC-000473 on COOL-100 costs 1,200.00 EUR more; BRKT-01 is short by 50 PC.' }], model: 'm', usage: { promptTokens: 900, outputTokens: 40, totalTokens: 940 } };
   };
   model.generatedBy = 'GOOGLE_GEMINI_API';
   const tools = {
@@ -98,6 +98,8 @@ test('agent loop with a Gemini-shaped model: multi-step tools, thought signature
   const r = await agent.runAssistant({ message: 'cost of the COOL-100 change?', tools, model });
   assert.equal(r.status, 'ANSWERED', r.issues);
   assert.equal(r.steps, 3);
+  assert.deepEqual(JSON.parse(r.usage), { requests: 3, promptTokens: 900, outputTokens: 40, totalTokens: 940 });
+  assert.deepEqual(JSON.parse(r.toolCalls).map(t => t.action), ['LookupEngineeringCases', 'GetEngineeringImpact']);
   assert.deepEqual(seen[2].map(c => c.role), ['user', 'model', 'user', 'model', 'user']);
   assert.deepEqual([seen[2][1].parts[0].thoughtSignature, seen[2][3].parts[0].thoughtSignature], ['sig-1', 'sig-2'], 'model turns are sent back unchanged');
   assert.equal(seen[2].at(-1).parts[0].functionResponse.name, 'getImpact');
@@ -118,19 +120,42 @@ test('agent answer check: invented figures, unknown cases and decision advice ar
 
 test('Gemini agent HTTP: function declarations sent, key only as header, errors mapped without body text', async () => {
   let request;
-  const fetchOk = async (url, init) => { request = { url, init }; return { ok: true, status: 200, json: async () => ({ modelVersion: 'gemini-3.5-flash-lite', candidates: [{ content: { parts: [{ text: 'hi' }] } }] }) }; };
+  const fetchOk = async (url, init) => { request = { url, init }; return { ok: true, status: 200, json: async () => ({ modelVersion: 'gemini-3.5-flash-lite', candidates: [{ content: { parts: [{ text: 'hi' }] } }], usageMetadata: { promptTokenCount: 10, candidatesTokenCount: 2, thoughtsTokenCount: 1, totalTokenCount: 13 } }) }; };
   const model = agent.geminiAgentModel({ modelId: 'gemini-3.5-flash-lite', apiKeyEnv: 'K' }, { K: 'secret-key' }, fetchOk);
   const out = await model({ system: 's', contents: [{ role: 'user', parts: [{ text: 'q' }] }], tools: agent.TOOL_DECLARATIONS });
-  assert.deepEqual(out, { parts: [{ text: 'hi' }], model: 'gemini-3.5-flash-lite' });
+  assert.deepEqual(out, { parts: [{ text: 'hi' }], model: 'gemini-3.5-flash-lite', usage: { promptTokens: 10, outputTokens: 3, totalTokens: 13 } });
   assert.match(request.url, /models\/gemini-3\.5-flash-lite:generateContent$/);
   assert.equal(request.init.headers['x-goog-api-key'], 'secret-key');
   assert(!request.url.includes('secret-key'));
   const body = JSON.parse(request.init.body);
-  assert.deepEqual(body.tools[0].functionDeclarations.map(t => t.name), ['lookupCases', 'getImpact', 'getDecisionHistory', 'proposeRunImpact']);
+  assert.deepEqual(body.tools[0].functionDeclarations.map(t => t.name), ['lookupCases', 'getImpact', 'getDecisionHistory', 'getAiExplanation', 'proposeRunImpact']);
   assert.equal(body.generationConfig.temperature, 0);
   const fail = agent.geminiAgentModel({ modelId: 'x', apiKeyEnv: 'K' }, { K: 'k' }, async () => ({ ok: false, status: 404, json: async () => ({ error: { status: 'NOT_FOUND', message: 'secret details' } }) }));
   await assert.rejects(fail({ system: '', contents: [], tools: [] }), e => e.status === 404 && /HTTP 404 NOT_FOUND/.test(e.message) && !/secret/.test(e.message));
   assert.throws(() => agent.geminiAgentModel({ modelId: 'x', apiKeyEnv: 'K' }, {}), /not configured/);
   assert.deepEqual(agent.parseHistory(JSON.stringify([{ role: 'user', text: 'a' }, { role: 'system', text: 'x' }, { role: 'model', text: 'b' }])),
     [{ role: 'user', parts: [{ text: 'a' }] }, { role: 'model', parts: [{ text: 'b' }] }]);
+});
+
+test('agent: AI explanation tool reuses the validated P2 explanation (same plant check, no write)', async () => {
+  assert.equal((await call('POST', '/ReviewCases(08c74846-d7d2-55ff-ad09-c7ad9c4fa733)/EngineeringReview.runImpact', { body: {} })).status, 200);
+  const runs = await runCount();
+  const r = await ask('Give me the AI explanation for EC-000485');
+  assert.equal(r.status, 200, JSON.stringify(r.data));
+  assert.deepEqual(JSON.parse(r.data.toolCalls).map(t => [t.tool, t.action, t.ok]), [['getAiExplanation', 'explainImpact (P2 AI Explanation)', true]]);
+  assert.match(r.data.answer, /^(AI explanation for EC-000485: |The AI explanation was withheld by the grounding check \()/);
+  const missing = await ask('Give me the AI explanation for EC-000481');
+  assert.match(missing.data.answer, /nothing to explain/);
+  assert.equal(await runCount(), runs);
+  const foreign = await ask('Give me the AI explanation for EC-000473', 'analyst2');
+  assert.match(foreign.data.answer, /not found or is not visible/);
+});
+
+test('agent: tool budget stops runaway lookups', async () => {
+  const greedy = async () => ({ parts: Array.from({ length: 3 }, () => ({ functionCall: { name: 'lookupCases', args: {} } })) });
+  greedy.generatedBy = 'x';
+  let calls = 0;
+  const r = await agent.runAssistant({ message: 'q', tools: { lookupCases: async () => { calls++; return { count: 0, cases: [] }; } }, model: greedy });
+  assert.equal(calls, agent.MAX_TOOL_CALLS);
+  assert.equal(JSON.parse(r.toolCalls).filter(t => t.error === 'TOOL_BUDGET').length, 3 * agent.MAX_STEPS - agent.MAX_TOOL_CALLS);
 });
