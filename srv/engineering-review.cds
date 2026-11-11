@@ -211,6 +211,7 @@ service EngineeringReview {
         generatedBy : String(30);    // GOOGLE_GEMINI_API | FIXTURE_RULES
         model       : String(100);
         steps       : Integer;
+        usage       : String(200);   // JSON {requests, promptTokens, outputTokens, totalTokens} reported by Gemini
         generatedAt : Timestamp;
     }
     @restrict: [{ to: ['ChangeViewer', 'ChangeAnalyst', 'ChangeApprover'] }]
