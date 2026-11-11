@@ -1,0 +1,260 @@
+{
+  "datasetId": "DS-DEMO-PUMP-950",
+  "synthetic": true,
+  "description": "SYNTHETIC exam demo scenario - fictional NovaMotion coolant pump PUMP-950 (not SAP data)",
+  "assemblies": [
+    {
+      "assemblyCode": "PUMP-950",
+      "plant": "1000",
+      "description": "Coolant Pump"
+    }
+  ],
+  "bomStates": [
+    {
+      "stateKey": "BOM-PUMP-950-A",
+      "assemblyCode": "PUMP-950",
+      "plant": "1000",
+      "bomUsage": "1",
+      "alternative": "01",
+      "revision": "A",
+      "validFrom": "2026-01-01",
+      "validTo": "2026-11-30",
+      "status": "RELEASED"
+    },
+    {
+      "stateKey": "BOM-PUMP-950-B",
+      "assemblyCode": "PUMP-950",
+      "plant": "1000",
+      "bomUsage": "1",
+      "alternative": "01",
+      "revision": "B",
+      "validFrom": "2026-12-01",
+      "validTo": "9999-12-31",
+      "status": "PROPOSED",
+      "changeNumber": "EC-000501"
+    }
+  ],
+  "bomItems": [
+    {
+      "stateKey": "BOM-PUMP-950-A",
+      "itemNo": "0010",
+      "material": "HSG-950",
+      "quantity": "1",
+      "unit": "PC"
+    },
+    {
+      "stateKey": "BOM-PUMP-950-A",
+      "itemNo": "0020",
+      "material": "IMP-950",
+      "quantity": "1",
+      "unit": "PC"
+    },
+    {
+      "stateKey": "BOM-PUMP-950-A",
+      "itemNo": "0030",
+      "material": "SEAL-950",
+      "quantity": "2",
+      "unit": "PC"
+    },
+    {
+      "stateKey": "BOM-PUMP-950-A",
+      "itemNo": "0040",
+      "material": "SCR-950",
+      "quantity": "6",
+      "unit": "PC"
+    },
+    {
+      "stateKey": "BOM-PUMP-950-B",
+      "itemNo": "0010",
+      "material": "HSG-950",
+      "quantity": "1",
+      "unit": "PC"
+    },
+    {
+      "stateKey": "BOM-PUMP-950-B",
+      "itemNo": "0020",
+      "material": "IMP-950S",
+      "quantity": "1",
+      "unit": "PC"
+    },
+    {
+      "stateKey": "BOM-PUMP-950-B",
+      "itemNo": "0030",
+      "material": "SEAL-950",
+      "quantity": "2",
+      "unit": "PC"
+    },
+    {
+      "stateKey": "BOM-PUMP-950-B",
+      "itemNo": "0040",
+      "material": "SCR-950",
+      "quantity": "8",
+      "unit": "PC"
+    },
+    {
+      "stateKey": "BOM-PUMP-950-B",
+      "itemNo": "0050",
+      "material": "SENS-950",
+      "quantity": "1",
+      "unit": "PC"
+    }
+  ],
+  "costPrices": [
+    {
+      "material": "HSG-950",
+      "plant": "1000",
+      "price": "40.00",
+      "currency": "EUR",
+      "priceUnit": 1,
+      "unit": "PC",
+      "validFrom": "2026-01-01",
+      "validTo": "9999-12-31"
+    },
+    {
+      "material": "IMP-950",
+      "plant": "1000",
+      "price": "18.50",
+      "currency": "EUR",
+      "priceUnit": 1,
+      "unit": "PC",
+      "validFrom": "2026-01-01",
+      "validTo": "9999-12-31"
+    },
+    {
+      "material": "IMP-950S",
+      "plant": "1000",
+      "price": "24.00",
+      "currency": "EUR",
+      "priceUnit": 1,
+      "unit": "PC",
+      "validFrom": "2026-01-01",
+      "validTo": "9999-12-31"
+    },
+    {
+      "material": "SEAL-950",
+      "plant": "1000",
+      "price": "3.25",
+      "currency": "EUR",
+      "priceUnit": 1,
+      "unit": "PC",
+      "validFrom": "2026-01-01",
+      "validTo": "9999-12-31"
+    },
+    {
+      "material": "SCR-950",
+      "plant": "1000",
+      "price": "0.20",
+      "currency": "EUR",
+      "priceUnit": 1,
+      "unit": "PC",
+      "validFrom": "2026-01-01",
+      "validTo": "9999-12-31"
+    },
+    {
+      "material": "SENS-950",
+      "plant": "1000",
+      "price": "12.00",
+      "currency": "EUR",
+      "priceUnit": 1,
+      "unit": "PC",
+      "validFrom": "2026-01-01",
+      "validTo": "9999-12-31"
+    }
+  ],
+  "stockSnapshots": [
+    {
+      "material": "HSG-950",
+      "plant": "1000",
+      "availableQuantity": "200",
+      "unit": "PC",
+      "snapshotAt": "2026-11-10T08:00:00Z"
+    },
+    {
+      "material": "IMP-950",
+      "plant": "1000",
+      "availableQuantity": "150",
+      "unit": "PC",
+      "snapshotAt": "2026-11-10T08:00:00Z"
+    },
+    {
+      "material": "IMP-950S",
+      "plant": "1000",
+      "availableQuantity": "90",
+      "unit": "PC",
+      "snapshotAt": "2026-11-10T08:00:00Z"
+    },
+    {
+      "material": "SEAL-950",
+      "plant": "1000",
+      "availableQuantity": "400",
+      "unit": "PC",
+      "snapshotAt": "2026-11-10T08:00:00Z"
+    },
+    {
+      "material": "SCR-950",
+      "plant": "1000",
+      "availableQuantity": "2000",
+      "unit": "PC",
+      "snapshotAt": "2026-11-10T08:00:00Z"
+    },
+    {
+      "material": "SENS-950",
+      "plant": "1000",
+      "availableQuantity": "100",
+      "unit": "PC",
+      "snapshotAt": "2026-11-10T08:00:00Z"
+    }
+  ],
+  "instructions": [
+    {
+      "instructionId": "WI-PUMP-950-ASM",
+      "version": 1,
+      "assemblyCode": "PUMP-950",
+      "plant": "1000",
+      "title": "Assemble coolant pump",
+      "status": "RELEASED",
+      "validFrom": "2026-01-01"
+    }
+  ],
+  "instructionReferences": [
+    {
+      "instructionId": "WI-PUMP-950-ASM",
+      "version": 1,
+      "step": "0010",
+      "material": "HSG-950",
+      "quantity": "1",
+      "unit": "PC",
+      "text": "Mount housing HSG-950"
+    },
+    {
+      "instructionId": "WI-PUMP-950-ASM",
+      "version": 1,
+      "step": "0020",
+      "material": "IMP-950",
+      "quantity": "1",
+      "unit": "PC",
+      "text": "Press impeller IMP-950 onto shaft"
+    },
+    {
+      "instructionId": "WI-PUMP-950-ASM",
+      "version": 1,
+      "step": "0030",
+      "material": "SCR-950",
+      "quantity": "6",
+      "unit": "PC",
+      "text": "Tighten six bolts SCR-950 to 25 Nm"
+    }
+  ],
+  "reviewCases": [
+    {
+      "caseNumber": "EC-000501",
+      "title": "Stainless impeller and flow sensor on PUMP-950",
+      "assemblyCode": "PUMP-950",
+      "plant": "1000",
+      "fromStateKey": "BOM-PUMP-950-A",
+      "toStateKey": "BOM-PUMP-950-B",
+      "productionQuantity": 120,
+      "owner": "Engineering Reviewer 1"
+    }
+  ]
+}

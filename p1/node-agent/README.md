@@ -22,8 +22,21 @@ Each reply lists the SAP Build Action names it used (`LookupEngineeringCases`, `
 - Per question: at most 5 model requests and 8 tool calls; then the answer is given from the data so far, or withheld.
 - Gemini quotas are per Google project (requests/minute, input tokens/minute, requests/day; daily reset at midnight Pacific time). On the free tier Gemini 3.5 Flash-Lite is listed with about 10 requests/minute and 500/day. One assistant question uses 2-5 requests; `getAiExplanation` adds one more. Over quota, Gemini returns HTTP 429 and the tab shows "rate limit or quota reached".
 
+## Changes through the agent (like the EU10 Run Engineering Impact skill: prepare, confirm, execute)
+| Ask | Prepared proposal | Executed on Confirm (browser, your session, normal role checks) |
+|---|---|---|
+| "Run the impact for EC-…" | Run Engineering Impact | `POST ReviewCases(ID)/runImpact` |
+| "In EC-… set the revision B quantity of item 0010 to 2" (also PRICE / STOCK of a material) | Edit Input | `POST ReviewCases(ID)/reviseDemoInput` (DemoDataImporter, OPEN synthetic cases) |
+| "In EC-… add a consumption rate for ENCL-400 of 2 per week from … to …" | Consumption rate | `POST MaterialConsumptionRates` (ChangeAnalyst, own plant) |
+| paste a scenario file + "Import this scenario" | Import (dry run done) | `POST importScenario` with `dryRun:false` (DemoDataImporter) |
+| "Submit EC-… for review" | Submit | `POST ReviewCases(ID)/submitForReview` (ChangeAnalyst) |
+| Approver: "Approve / reject EC-… with the comment …" | Decision | `POST ReviewCases(ID)/approve` or `/rejectCase` (ChangeApprover; the submitter is refused) |
+
+Demo scenario: `app/investigation-studio/webapp/samples/pump-950-demo-scenario.json` (EC-000501, PUMP-950, 120 pumps):
+66.20 -> 84.10 EUR per pump, +17.90, **+2,148.00 EUR (+27.04 %)**, IMP-950S short 30, SENS-950 short 20, work instruction still references IMP-950 and 6 screws.
+
 ## How it works
-1. UI: Investigation Studio, tab **Assistant** (also free-text questions about any case in the user's plants).
+1. UI: Investigation Studio, floating button **P1 Actions** (bottom right) opens the agent with preset questions; free text works for any case in the user's plants.
 2. Browser → `POST /odata/v4/engineering-review/askAssistant { message, history }` (roles ChangeViewer/Analyst/Approver).
 3. CAP backend (`srv/integration/genai/assistant.js`) calls Gemini `generateContent` with four function declarations
    (temperature 0, max 5 steps). Gemini returns function calls; the backend runs each through the EngineeringReview

@@ -332,39 +332,6 @@
 								text="{= 'Source: ' + ${ws>/explanation/generatedBy} + ' (' + ${ws>/explanation/model} + '), cites: ' + (${ws>/explanation/citations} || 'none') + '. Fact ids refer to the BOM, Materials and Findings of run ' + ${ws>/explanation/runID} + '.' }"/>
 						</VBox>
 					</IconTabFilter>
-					<IconTabFilter key="assistant" text="Assistant" icon="sap-icon://da">
-						<VBox class="sapUiSmallMargin" busy="{ws>/askBusy}" busyIndicatorDelay="0">
-							<MessageStrip type="Information" showIcon="true" text="P1 Engineering Assistant (Node.js agent in the CAP backend, Google Gemini function calling; alternative to the SAP Build Joule agent). The model only chooses which CAP operations to call: the same operations as the EU10 SAP Build Actions (case lookup, impact, decision history, run impact) plus the P2 AI explanation. They run as you, with your roles and plants. It cannot submit, approve, reject or edit; a requested impact run is only prepared and needs your confirmation. Answers whose figures or case numbers are not in the returned data are withheld."/>
-							<HBox wrap="Wrap" class="sapUiSmallMarginTop">
-								<Button text="Explain this impact" icon="sap-icon://lightbulb" press=".onAsk" class="sapUiTinyMarginEnd" app:question="What is the impact of @CASE? Explain cost, shortages and work instructions." xmlns:app="http://schemas.sap.com/sapui5/extension/sap.ui.core.CustomData/1"/>
-								<Button text="AI explanation" icon="sap-icon://ai" press=".onAsk" class="sapUiTinyMarginEnd" app:question="Give me the AI explanation for @CASE." xmlns:app="http://schemas.sap.com/sapui5/extension/sap.ui.core.CustomData/1"/>
-								<Button text="Decision history" icon="sap-icon://history" press=".onAsk" class="sapUiTinyMarginEnd" app:question="Show the decision history of @CASE." xmlns:app="http://schemas.sap.com/sapui5/extension/sap.ui.core.CustomData/1"/>
-								<Button text="Run impact (with confirmation)" icon="sap-icon://simulate" press=".onAsk" class="sapUiTinyMarginEnd" app:question="Please run the impact for @CASE." xmlns:app="http://schemas.sap.com/sapui5/extension/sap.ui.core.CustomData/1"/>
-								<Button text="Open cases with shortages" icon="sap-icon://search" press=".onAsk" app:question="Which open cases have material shortages?" xmlns:app="http://schemas.sap.com/sapui5/extension/sap.ui.core.CustomData/1"/>
-							</HBox>
-							<List id="assistantChat" items="{ws>/chat}" class="sapUiSmallMarginTop" noDataText="Ask about this case or any case in your plants, for example: Which open cases have shortages?" showSeparators="Inner">
-								<CustomListItem>
-									<VBox class="sapUiSmallMargin">
-										<Label text="{ws>who}" design="Bold"/>
-										<Text text="{ws>text}" wrapping="true" class="{= ${ws>role} === 'error' ? 'aiAssistantError' : ''}"/>
-										<Text text="{ws>meta}" wrapping="true" visible="{= !!${ws>meta} }" class="sapUiTinyMarginTop aiAssistantMeta"/>
-									</VBox>
-								</CustomListItem>
-							</List>
-							<MessageStrip visible="{= !!${ws>/proposal} }" type="Warning" showIcon="true" class="sapUiSmallMarginTop"
-								text="{= 'The assistant prepared an impact run for ' + ${ws>/proposal/caseNumber} + ' (' + ${ws>/proposal/assemblyCode} + '). Nothing has been calculated yet. Confirm to run the deterministic CAP calculation with your own permissions.' }"/>
-							<HBox visible="{= !!${ws>/proposal} }" class="sapUiTinyMarginTop">
-								<Button text="Run impact" type="Emphasized" press=".onConfirmProposal" class="sapUiTinyMarginEnd"/>
-								<Button text="Cancel" press=".onDismissProposal"/>
-							</HBox>
-							<HBox alignItems="Center" class="sapUiSmallMarginTop">
-								<Input id="askInput" value="{ws>/askText}" submit=".onAsk" placeholder="Ask the Engineering Assistant…" maxLength="1000" width="100%" class="sapUiTinyMarginEnd">
-									<layoutData><FlexItemData growFactor="1"/></layoutData>
-								</Input>
-								<Button text="Ask" type="Emphasized" icon="sap-icon://paper-plane" press=".onAsk" enabled="{= !${ws>/askBusy} }"/>
-							</HBox>
-						</VBox>
-					</IconTabFilter>
 					<IconTabFilter key="instructions" text="Work Instructions" icon="sap-icon://document-text" count="{= ${ws>/run/instructionFindings} > 0 ? ${ws>/run/instructionFindings} : '' }">
 						<List items="{ws>/instructions}" noDataText="No work instructions for this assembly.">
 							<items>
@@ -536,5 +503,48 @@
 				</items>
 			</IconTabBar>
 		</f:content>
+
+		<f:dependents>
+			<Dialog id="p1Agent" title="P1 Engineering Actions · Joule-equivalent agent" contentWidth="34rem" contentHeight="70vh" resizable="true" draggable="true"
+				horizontalScrolling="false" class="aiP1Agent" busy="{ws>/askBusy}" busyIndicatorDelay="0">
+				<content>
+					<VBox class="sapUiSmallMargin">
+						<MessageStrip type="Information" showIcon="true" text="P1: the same skills as the EU10 SAP Build Joule agent (Engineering Case Lookup, Explain Case Impact, Review Decision History, Run Engineering Impact) and the same CAP operations as its Actions project, run by a Node.js agent in the CAP backend with Google Gemini function calling. Changes are only prepared; nothing is saved until you press Confirm, then the normal CAP action runs with your own roles and plants."/>
+						<Title text="Ask (read)" level="H4" class="sapUiSmallMarginTop sapUiTinyMarginBottom"/>
+						<HBox wrap="Wrap"><Button text="Open cases with shortages" icon="sap-icon://search" press=".onAsk" class="sapUiTinyMarginEnd sapUiTinyMarginBottom" app:question="Which open cases have material shortages?" app:send="yes" xmlns:app="http://schemas.sap.com/sapui5/extension/sap.ui.core.CustomData/1"/><Button text="Explain Case Impact" icon="sap-icon://lightbulb" press=".onAsk" class="sapUiTinyMarginEnd sapUiTinyMarginBottom" app:question="What is the impact of @CASE? Explain cost, shortages and work instructions." app:send="yes" xmlns:app="http://schemas.sap.com/sapui5/extension/sap.ui.core.CustomData/1"/><Button text="Review Decision History" icon="sap-icon://history" press=".onAsk" class="sapUiTinyMarginEnd sapUiTinyMarginBottom" app:question="Show the decision history of @CASE." app:send="yes" xmlns:app="http://schemas.sap.com/sapui5/extension/sap.ui.core.CustomData/1"/><Button text="P2 AI explanation" icon="sap-icon://ai" press=".onAsk" class="sapUiTinyMarginEnd sapUiTinyMarginBottom" app:question="Give me the AI explanation for @CASE." app:send="yes" xmlns:app="http://schemas.sap.com/sapui5/extension/sap.ui.core.CustomData/1"/></HBox>
+						<Title text="Change (prepared, you confirm)" level="H4" class="sapUiTinyMarginTop sapUiTinyMarginBottom"/>
+						<HBox wrap="Wrap"><Button text="Run Engineering Impact" icon="sap-icon://simulate" press=".onAsk" class="sapUiTinyMarginEnd sapUiTinyMarginBottom" app:question="Please run the impact for @CASE." app:send="yes" xmlns:app="http://schemas.sap.com/sapui5/extension/sap.ui.core.CustomData/1"/><Button text="Change a revision-B quantity…" icon="sap-icon://edit" press=".onAsk" class="sapUiTinyMarginEnd sapUiTinyMarginBottom" app:question="In @CASE set the revision B quantity of item 0010 to 2." app:send="no" xmlns:app="http://schemas.sap.com/sapui5/extension/sap.ui.core.CustomData/1"/><Button text="Add a consumption rate…" icon="sap-icon://line-chart-time-axis" press=".onAsk" class="sapUiTinyMarginEnd sapUiTinyMarginBottom" app:question="In @CASE add a consumption rate for material ENCL-400 of 2 per week from 2026-11-11 to 2026-12-31." app:send="no" xmlns:app="http://schemas.sap.com/sapui5/extension/sap.ui.core.CustomData/1"/><Button text="Import pasted scenario" icon="sap-icon://upload" press=".onAsk" class="sapUiTinyMarginEnd sapUiTinyMarginBottom" app:question="Import this scenario." app:send="yes" xmlns:app="http://schemas.sap.com/sapui5/extension/sap.ui.core.CustomData/1"/><Button text="Submit for review…" icon="sap-icon://paper-plane" press=".onAsk" class="sapUiTinyMarginEnd sapUiTinyMarginBottom" app:question="Submit @CASE for review with the comment: impact checked." app:send="no" xmlns:app="http://schemas.sap.com/sapui5/extension/sap.ui.core.CustomData/1"/><Button text="Approve / reject… (approver)" icon="sap-icon://approvals" press=".onAsk" class="sapUiTinyMarginEnd sapUiTinyMarginBottom" app:question="Approve @CASE with the comment: checked." app:send="no" xmlns:app="http://schemas.sap.com/sapui5/extension/sap.ui.core.CustomData/1"/></HBox>
+						<List id="assistantChat" items="{ws>/chat}" class="sapUiSmallMarginTop" noDataText="Pick a question above or type your own. Questions with … are filled in for you to edit before sending." showSeparators="Inner">
+							<CustomListItem>
+								<VBox class="sapUiSmallMargin">
+									<Label text="{ws>who}" design="Bold"/>
+									<Text text="{ws>text}" wrapping="true" class="{= ${ws>role} === 'error' ? 'aiAssistantError' : ''}"/>
+									<Text text="{ws>meta}" wrapping="true" visible="{= !!${ws>meta} }" class="sapUiTinyMarginTop aiAssistantMeta"/>
+								</VBox>
+							</CustomListItem>
+						</List>
+						<MessageStrip visible="{= !!${ws>/proposal} }" type="Warning" showIcon="true" class="sapUiSmallMarginTop"
+							text="{= 'Prepared, not yet saved: ' + ${ws>/proposal/summary} }"/>
+						<HBox visible="{= !!${ws>/proposal} }" class="sapUiTinyMarginTop">
+							<Button text="Confirm" type="Emphasized" icon="sap-icon://accept" press=".onConfirmProposal" class="sapUiTinyMarginEnd"/>
+							<Button text="Cancel" press=".onDismissProposal"/>
+						</HBox>
+						<Panel headerText="Scenario file (optional): paste JSON or CSV, then press Import pasted scenario" expandable="true" expanded="false" class="sapUiSmallMarginTop">
+							<Input value="{ws>/askFileName}" placeholder="File name, e.g. my-scenario.json" width="100%" class="sapUiTinyMarginBottom"/>
+							<TextArea value="{ws>/askFile}" rows="8" width="100%" growing="true" growingMaxLines="16" placeholder="Paste the scenario file here"/>
+						</Panel>
+					</VBox>
+				</content>
+				<footer>
+					<Toolbar>
+						<Input id="askInput" value="{ws>/askText}" submit=".onAsk" placeholder="Ask or instruct, e.g. Which open cases have shortages?" maxLength="1000" width="100%">
+							<layoutData><ToolbarLayoutData shrinkable="true"/></layoutData>
+						</Input>
+						<Button text="Send" type="Emphasized" icon="sap-icon://paper-plane" press=".onAsk" enabled="{= !${ws>/askBusy} }"/>
+						<Button text="Close" press=".onCloseAgent"/>
+					</Toolbar>
+				</footer>
+			</Dialog>
+		</f:dependents>
 	</f:DynamicPage>
 </mvc:View>
