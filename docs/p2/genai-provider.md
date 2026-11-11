@@ -91,6 +91,18 @@ cf restart assemblyimpact-srv
 This is needed **once**. `mta.yaml` sets `keep-existing: env: true` on `assemblyimpact-srv`, so later `cf deploy` runs keep
 the variable. Check presence without printing the value: `cf env assemblyimpact-srv | grep -c GEMINI_API_KEY` (expect `1`).
 
+### Live Gemini in BAS (optional)
+
+The plain `[development]` profile has no live provider (`AI explanations: Not configured`), so local work costs no tokens.
+For a live call in BAS, read the key into the shell without echoing it and start the opt-in profile:
+
+```sh
+read -rs GEMINI_API_KEY && export GEMINI_API_KEY   # paste the key, press Enter; nothing is shown or saved to history
+npm run dev:gemini                                 # = cds watch --profile development,gemini (SQLite + mocked users stay)
+```
+
+The key lives only in that terminal session. Closing it removes the key.
+
 Before doing this, check Google's terms. The Gemini API Additional Terms say only **Paid Services** may be used when
 making API clients available to users in the EEA, Switzerland or the UK. They also say content sent to Unpaid
 Services may be used to improve Google products and reviewed by humans, and must not be sensitive, confidential or

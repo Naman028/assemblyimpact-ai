@@ -109,3 +109,12 @@ test('production and hybrid profiles: XSUAA, SAP HANA, demo import and non-S/4 E
   const pkg = JSON.parse(read('package.json'));
   for (const dep of ['@cap-js/hana', '@sap/xssec']) assert(pkg.dependencies[dep], dep);
 });
+
+test('opt-in [gemini] profile: live Gemini in BAS only when asked for, never by default, key only from the environment', () => {
+  const pkg = JSON.parse(read('package.json'));
+  const req = pkg.cds.requires;
+  assert.deepEqual(req['[gemini]'].genai, { provider: 'gemini', modelId: 'gemini-3.5-flash-lite', apiKeyEnv: 'GEMINI_API_KEY', timeoutMs: 20000 });
+  assert.equal(req['[development]'].genai, undefined, 'plain development stays without a live provider');
+  assert.equal(pkg.scripts['dev:gemini'], 'cds watch --profile development,gemini');
+  assert.doesNotMatch(read('package.json'), /AIza[0-9A-Za-z_-]{20,}/, 'no key in the repository');
+});

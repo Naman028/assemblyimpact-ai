@@ -14,6 +14,7 @@
   "scripts": {
     "start": "cds-serve",
     "dev": "cds watch",
+    "dev:gemini": "cds watch --profile development,gemini",
     "demo:init": "cds deploy --to sqlite:db/demo.sqlite --no-save",
     "demo": "cds-serve --profile demo",
     "test": "node --test test/assembly-service.test.js test/impact-calculator.test.js test/engineering-review.test.js test/seed-data.test.js test/case-worklist-app.test.js test/m05-run-impact-ui.test.js test/assembly-visuals.test.js test/m04-review-decisions.test.js test/m05-review-workflow.test.js test/m05-scenarios.test.js test/m05-import.test.js test/m05-investigation-studio.test.js test/p2-erp-adapter.test.js test/p2-genai-explanation.test.js test/p2-gemini-provider.test.js test/p1-actions-contract.test.js test/p1-joule-mapping.test.js test/btp-deployment-config.test.js test/demo-data.test.js test/coverage.test.js test/planning-and-hints.test.js test/ui-landing-startup.test.js test/runtime-contract.test.js",
@@ -474,6 +475,14 @@
         "resourceGroup": null,
         "deploymentId": null,
         "apiVersion": "2024-02-01"
+      },
+      "[gemini]": {
+        "genai": {
+          "provider": "gemini",
+          "modelId": "gemini-3.5-flash-lite",
+          "apiKeyEnv": "GEMINI_API_KEY",
+          "timeoutMs": 20000
+        }
       }
     },
     "[development]": {
