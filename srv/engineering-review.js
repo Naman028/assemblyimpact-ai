@@ -125,7 +125,8 @@ export default class EngineeringReview extends cds.ApplicationService {
       throw error;
     }
     try {
-      return await runAssistant({ message, history: parseHistory(req.data.history), tools: toolsFor(this, req.user, model.allowedSourceTypes), model });
+      return await runAssistant({ message, history: parseHistory(req.data.history), tools: toolsFor(this, req.user, model.allowedSourceTypes,
+        { attachment: typeof req.data.attachment === 'string' && req.data.attachment.trim() ? req.data.attachment : null, attachmentName: req.data.attachmentName ?? null }), model });
     } catch (error) {
       if (error instanceof GenAiTimeoutError) return req.reject({ status: 504, code: 'GENAI_TIMEOUT', message: error.message });
       if (error instanceof GenAiTransportError && error.status === 429) return req.reject({ status: 429, code: 'GENAI_RATE_LIMITED', message: error.message });

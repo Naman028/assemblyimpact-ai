@@ -66,3 +66,7 @@
 .aiBigNumber, .aiKpiNumber, .aiBigNumber .sapMObjectNumberInner, .aiKpiNumber .sapMObjectNumberInner { height: auto; line-height: 1.25; }
 .aiBigNumber .sapMObjectNumberText, .aiBigNumber .sapMObjectNumberUnit,
 .aiKpiNumber .sapMObjectNumberText, .aiKpiNumber .sapMObjectNumberUnit { line-height: 1.25; height: auto; overflow: visible; }
+/* P1 agent floating button (bottom right) and dialog */
+.aiP1Fab { position: fixed; right: 1.5rem; bottom: 1.5rem; z-index: 60; box-shadow: var(--sapContent_Shadow2); border-radius: 1.5rem; }
+.aiP1Fab .sapMBtnInner { border-radius: 1.5rem; height: 2.75rem; padding: 0 1rem; }
+.aiP1Agent .sapMBarChild.sapMInputBase { flex: 1 1 auto; }

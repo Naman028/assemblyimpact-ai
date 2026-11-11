@@ -47,7 +47,7 @@ test('agent: plant isolation - a plant-2000 user cannot see EC-000473 through th
   const r = await ask('What is the impact of EC-000473?', 'analyst2');
   assert.equal(r.status, 200);
   assert.match(r.data.answer, /not found or is not visible/);
-  assert.deepEqual(JSON.parse(r.data.toolCalls)[0], { tool: 'getImpact', action: 'GetEngineeringImpact', args: { caseNumber: 'EC-000473' }, ok: false, error: 'NOT_FOUND' });
+  assert.deepEqual(JSON.parse(r.data.toolCalls)[0], { tool: 'getImpact', skill: 'Explain Case Impact', action: 'GetEngineeringImpact', args: { caseNumber: 'EC-000473' }, ok: false, error: 'NOT_FOUND' });
 });
 
 test('agent: run impact is only proposed (no write); confirming uses the normal action and its role check', async () => {
@@ -55,7 +55,8 @@ test('agent: run impact is only proposed (no write); confirming uses the normal 
   const r = await ask('Please run the impact for EC-000482');
   assert.equal(r.data.status, 'ANSWERED');
   const proposal = JSON.parse(r.data.proposal);
-  assert.deepEqual(proposal, { action: 'runImpact', caseID: '1e76023c-ed28-5b84-a7f2-2d11fe48e458', caseNumber: 'EC-000482', assemblyCode: 'CTRL-400' });
+  assert.deepEqual(proposal, { action: 'runImpact', caseID: '1e76023c-ed28-5b84-a7f2-2d11fe48e458', caseNumber: 'EC-000482', assemblyCode: 'CTRL-400', params: {},
+    summary: 'Run the impact calculation for EC-000482 (CTRL-400).' });
   assert.equal(await runCount(), runsBefore, 'the agent itself never runs the calculation');
   const confirmed = await call('POST', `/ReviewCases(${proposal.caseID})/EngineeringReview.runImpact`, { body: {} });
   assert.equal(confirmed.status, 200);
@@ -85,7 +86,7 @@ test('agent loop with a Gemini-shaped model: multi-step tools, thought signature
   const seen = [];
   const model = async ({ contents, tools }) => {
     seen.push(structuredClone(contents));
-    assert.equal(tools.length, 5);
+    assert.equal(tools.length, 10);
     if (seen.length === 1) return { parts: [{ functionCall: { name: 'lookupCases', args: { assemblyCode: 'COOL-100' } }, thoughtSignature: 'sig-1' }], model: 'm' };
     if (seen.length === 2) return { parts: [{ functionCall: { name: 'getImpact', args: { caseNumber: 'EC-000473' } }, thoughtSignature: 'sig-2' }], model: 'm' };
     return { parts: [{ text: 'EC-000473 on COOL-100 costs 1,200.00 EUR more; BRKT-01 is short by 50 PC.' }], model: 'm', usage: { promptTokens: 900, outputTokens: 40, totalTokens: 940 } };
@@ -128,7 +129,7 @@ test('Gemini agent HTTP: function declarations sent, key only as header, errors 
   assert.equal(request.init.headers['x-goog-api-key'], 'secret-key');
   assert(!request.url.includes('secret-key'));
   const body = JSON.parse(request.init.body);
-  assert.deepEqual(body.tools[0].functionDeclarations.map(t => t.name), ['lookupCases', 'getImpact', 'getDecisionHistory', 'getAiExplanation', 'proposeRunImpact']);
+  assert.deepEqual(body.tools[0].functionDeclarations.map(t => t.name), ['lookupCases', 'getImpact', 'getDecisionHistory', 'getAiExplanation', 'proposeRunImpact', 'proposeEditInput', 'proposeConsumptionRate', 'proposeSubmitForReview', 'proposeDecision', 'proposeImportScenario']);
   assert.equal(body.generationConfig.temperature, 0);
   const fail = agent.geminiAgentModel({ modelId: 'x', apiKeyEnv: 'K' }, { K: 'k' }, async () => ({ ok: false, status: 404, json: async () => ({ error: { status: 'NOT_FOUND', message: 'secret details' } }) }));
   await assert.rejects(fail({ system: '', contents: [], tools: [] }), e => e.status === 404 && /HTTP 404 NOT_FOUND/.test(e.message) && !/secret/.test(e.message));
@@ -158,4 +159,88 @@ test('agent: tool budget stops runaway lookups', async () => {
   const r = await agent.runAssistant({ message: 'q', tools: { lookupCases: async () => { calls++; return { count: 0, cases: [] }; } }, model: greedy });
   assert.equal(calls, agent.MAX_TOOL_CALLS);
   assert.equal(JSON.parse(r.toolCalls).filter(t => t.error === 'TOOL_BUDGET').length, 3 * agent.MAX_STEPS - agent.MAX_TOOL_CALLS);
+});
+
+// ---- write proposals (agent prepares, the user confirms through the normal CAP endpoints) ----
+const tool = (name, args, user, extra = {}) => call('POST', '/askAssistant', { user, body: { message: `#tool ${JSON.stringify({ name, args })}`, ...extra } });
+const proposalOf = r => JSON.parse(r.data.proposal);
+const confirm = (p, user) => p.action === 'createRate' ? call('POST', '/MaterialConsumptionRates', { user, body: p.params })
+  : p.action === 'importScenario' ? call('POST', '/importScenario', { user, body: p.params })
+  : call('POST', `/ReviewCases(${p.caseID})/EngineeringReview.${p.action}`, { user, body: p.params });
+
+test('agent write: edit input is only proposed; confirm applies it with the importer role; viewer gets nothing', async () => {
+  const item = () => cds.run(SELECT.one.from('assemblyimpact.BOMItems').columns('quantity').where({ bomState_ID: SELECT.one.from('assemblyimpact.ReviewCases').columns('toState_ID').where({ caseNumber: 'EC-000486' }), itemNo: '0010' }));
+  const before = Number((await item()).quantity);
+  const r = await tool('proposeEditInput', { caseNumber: 'EC-000486', kind: 'PROPOSED_QUANTITY', itemNo: '0010', value: before + 1 }, 'importer');
+  assert.equal(r.status, 200, JSON.stringify(r.data));
+  const p = proposalOf(r);
+  assert.deepEqual([p.action, p.params], ['reviseDemoInput', { kind: 'PROPOSED_QUANTITY', itemNo: '0010', value: String(before + 1) }]);
+  assert.equal(Number((await item()).quantity), before, 'nothing changed before confirmation');
+  assert.equal((await confirm(p, 'importer')).status, 200);
+  assert.equal(Number((await item()).quantity), before + 1);
+  assert.match((await tool('proposeEditInput', { caseNumber: 'EC-000486', kind: 'PRICE', material: 'X-1', value: 1 }, 'cviewer')).data.answer, /cannot edit/);
+  assert.equal((await confirm(p, 'cviewer')).status, 403, 'a forged confirmation still meets the role check');
+});
+
+test('agent write: consumption rate proposal takes unit and plant from the case; confirm creates the rate', async () => {
+  const r = await tool('proposeConsumptionRate', { caseNumber: 'EC-000482', material: 'ENCL-400', period: 'WEEK', quantity: 2, validFrom: '2026-11-11', validTo: '2026-12-31' }, 'analyst');
+  const p = proposalOf(r);
+  assert.deepEqual(p.params, { material: 'ENCL-400', plant: '1000', period: 'WEEK', quantity: '2', unit: 'PC', validFrom: '2026-11-11', validTo: '2026-12-31', note: 'Entered via Engineering Assistant for EC-000482' });
+  const created = await confirm(p, 'analyst');
+  assert.equal(created.status, 201, JSON.stringify(created.data));
+  assert.match((await tool('proposeConsumptionRate', { caseNumber: 'EC-000482', material: 'NOPE-1', period: 'WEEK', quantity: 2, validFrom: '2026-11-11', validTo: '2026-12-31' }, 'analyst')).data.answer, /not a component/);
+});
+
+test('agent write: scenario import is validated as a dry run, written only on confirmation', async () => {
+  const { readFileSync } = await import('node:fs');
+  const file = readFileSync(new URL('../app/investigation-studio/webapp/samples/scenario-import-sample.json', import.meta.url), 'utf8')
+    .replaceAll('BLOW-900', 'BLOW-901').replaceAll('EC-000490', 'EC-000590');
+  const cases = async () => (await cds.run(SELECT.one.from('assemblyimpact.ReviewCases').columns('count(1) as n'))).n;
+  const n = await cases();
+  const r = await tool('proposeImportScenario', {}, 'importer', { attachment: file, attachmentName: 'my-scenario.json' });
+  assert.equal(r.status, 200, JSON.stringify(r.data));
+  const p = proposalOf(r);
+  assert.equal(p.action, 'importScenario');
+  assert.equal(p.params.dryRun, false);
+  assert.match(p.summary, /EC-000590 BLOW-901/);
+  assert.equal(await cases(), n, 'dry run wrote nothing');
+  const done = await confirm(p, 'importer');
+  assert.equal(done.status, 200, JSON.stringify(done.data));
+  assert.equal(done.data.accepted, true);
+  assert.equal(await cases(), n + 1);
+  assert.match((await tool('proposeImportScenario', {}, 'importer')).data.answer, /Paste the scenario file/);
+  assert.match((await tool('proposeImportScenario', {}, 'analyst', { attachment: file })).data.answer, /cannot import/);
+});
+
+test('agent write: submit and decision proposals; the approver confirms; separation of duties still enforced', async () => {
+  const id = '7263f5aa-71cf-5325-8dd7-41ca2e1a0fd5';                       // EC-000473, has a run from the first test
+  const s = proposalOf(await tool('proposeSubmitForReview', { caseNumber: 'EC-000473', comment: 'via assistant' }, 'dual'));
+  assert.deepEqual([s.action, s.params], ['submitForReview', { comment: 'via assistant' }]);
+  assert.equal((await confirm(s, 'dual')).status, 200);
+  const own = proposalOf(await tool('proposeDecision', { caseNumber: 'EC-000473', decision: 'APPROVE' }, 'dual'));
+  assert.equal((await confirm(own, 'dual')).status, 403, 'the submitter cannot approve, assistant or not');
+  assert.match((await tool('proposeDecision', { caseNumber: 'EC-000473', decision: 'REJECT' }, 'approver')).data.answer, /needs a comment/);
+  assert.match((await tool('proposeDecision', { caseNumber: 'EC-000473', decision: 'APPROVE' }, 'analyst')).data.answer, /Only approvers/);
+  const a = proposalOf(await tool('proposeDecision', { caseNumber: 'EC-000473', decision: 'APPROVE', comment: 'ok' }, 'approver'));
+  assert.equal(a.action, 'approve');
+  const status = async () => (await cds.run(SELECT.one.from('assemblyimpact.ReviewCases').columns('status').where({ ID: id }))).status;
+  assert.equal(await status(), 'IN_REVIEW', 'nothing decided before confirmation');
+  const done = await confirm(a, 'approver');
+  assert.equal(done.status, 200, JSON.stringify(done.data));
+  assert.equal(await status(), 'APPROVED');
+});
+
+test('exam demo scenario PUMP-950: imports through the agent and calculates the documented figures', async () => {
+  const { readFileSync } = await import('node:fs');
+  const file = readFileSync(new URL('../app/investigation-studio/webapp/samples/pump-950-demo-scenario.json', import.meta.url), 'utf8');
+  const asked = await tool('proposeImportScenario', {}, 'importer', { attachment: file, attachmentName: 'pump-950-demo-scenario.json' });
+  assert(asked.data.proposal, JSON.stringify(asked.data));
+  const p = proposalOf(asked);
+  const done = await confirm(p, 'importer');
+  assert.equal(done.status, 200, JSON.stringify(done.data));
+  const run = await call('POST', `/ReviewCases(${done.data.caseIds[0]})/EngineeringReview.runImpact`, { user: 'importer', body: { asOfDate: '2026-12-01' } });
+  assert.equal(run.status, 200, JSON.stringify(run.data));
+  assert.deepEqual([run.data.fromCostPerAssembly, run.data.toCostPerAssembly, run.data.deltaPerAssembly, run.data.costDeltaTotal, run.data.costDeltaPercent, run.data.materialsShort, run.data.instructionFindings],
+    ['66.20', '84.10', '17.90', '2148.00', '27.04', 2, run.data.instructionFindings]);
+  assert(run.data.instructionFindings >= 1, 'IMP-950 and SCR-950 x6 in the work instruction no longer match revision B');
 });

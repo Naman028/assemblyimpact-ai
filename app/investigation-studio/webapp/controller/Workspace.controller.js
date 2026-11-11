@@ -3,9 +3,10 @@ sap.ui.define([
   "sap/m/MessageBox", "sap/m/MessageToast", "sap/m/Dialog", "sap/m/Button", "sap/m/TextArea", "sap/m/CheckBox", "sap/m/Label",
   "sap/m/MessageStrip", "sap/m/DatePicker", "sap/m/VBox", "sap/m/Text", "sap/f/library",
   "assemblyimpact/investigationstudio/lib/format", "assemblyimpact/investigationstudio/lib/schematic",
-  "sap/ui/core/InvisibleMessage", "sap/ui/core/library", "sap/m/Select", "sap/m/Input", "sap/ui/core/Item", "sap/ui/core/Messaging"
+  "sap/ui/core/InvisibleMessage", "sap/ui/core/library", "sap/m/Select", "sap/m/Input", "sap/ui/core/Item", "sap/ui/core/Messaging",
+  "sap/ui/core/StaticArea"
 ], function (Controller, JSONModel, Filter, FilterOperator, MessageBox, MessageToast, Dialog, Button, TextArea, CheckBox, Label,
-  MessageStrip, DatePicker, VBox, Text, fLibrary, format, schematic, InvisibleMessage, coreLibrary, Select, Input, Item, Messaging) {
+  MessageStrip, DatePicker, VBox, Text, fLibrary, format, schematic, InvisibleMessage, coreLibrary, Select, Input, Item, Messaging, StaticArea) {
   "use strict";
   var InvisibleMessageMode = coreLibrary.InvisibleMessageMode;
 
@@ -22,7 +23,7 @@ sap.ui.define([
   function empty() {
     return { busy: false, tab: "assembly", view: "B", selected: null, detail: null, case: {}, run: null, lines: [], allMaterials: [],
       materials: [], findings: [], decisions: [], runs: [], instructions: [], visualNote: "", explanation: null, explanationSections: null, explanationReferences: "", explanationError: null, explainBusy: false,
-      chat: [], askText: "", askBusy: false, proposal: null,
+      chat: [], askText: "", askBusy: false, proposal: null, askFile: "", askFileName: "",
       cov: { startDate: new Date().toISOString().slice(0, 10), horizonDays: 30, rows: [], rates: [], materials: [], canEdit: false,
         new: { material: "", period: "WEEK", quantity: "", validFrom: new Date().toISOString().slice(0, 10), validTo: new Date().getUTCFullYear() + "-12-31" } } };
   }
@@ -34,7 +35,21 @@ sap.ui.define([
       this.getView().setModel(new JSONModel(empty()), "ws");
       this._svgCache = {};
       this.getOwnerComponent().getRouter().getRoute("workspace").attachPatternMatched(this._onMatched, this);
+      // P1 agent: floating button at the bottom right (static area, so position:fixed is not affected by the page layout).
+      this._fab = new Button({ text: "P1 Actions", icon: "sap-icon://da", type: "Emphasized", tooltip: "P1 Engineering Actions (Joule-equivalent agent)",
+        press: this.onOpenAgent.bind(this) }).addStyleClass("aiP1Fab");
+      this._fab.placeAt(StaticArea.getDomRef());
     },
+
+    onExit: function () { if (this._fab) { this._fab.destroy(); } },
+
+    onOpenAgent: function () {
+      this.byId("p1Agent").open();
+      var input = this.byId("askInput");
+      setTimeout(function () { input.focus(); }, 300);
+    },
+
+    onCloseAgent: function () { this.byId("p1Agent").close(); },
 
     _onMatched: function (event) {
       var caseId = event.getParameter("arguments").caseId;
@@ -347,7 +362,14 @@ sap.ui.define([
     /** Sends the question and the recent turns to askAssistant. The agent only reads; a run comes back as a proposal. */
     onAsk: function (event) {
       var ws = this.getView().getModel("ws"), that = this, caseId = this._caseId;
-      var preset = event && event.getSource && event.getSource().data && event.getSource().data("question");
+      var source = event && event.getSource && event.getSource();
+      var preset = source && source.data && source.data("question");
+      if (preset && source.data("send") === "no") {
+        // Change requests are filled in for the user to adjust the values before sending.
+        ws.setProperty("/askText", preset.replace("@CASE", ws.getProperty("/case/caseNumber") || ""));
+        this.byId("askInput").focus();
+        return;
+      }
       var text = (preset ? preset.replace("@CASE", ws.getProperty("/case/caseNumber") || "") : ws.getProperty("/askText") || "").trim();
       if (!text || ws.getProperty("/askBusy")) { return; }
       var chat = ws.getProperty("/chat").slice();
@@ -362,7 +384,8 @@ sap.ui.define([
       this._csrf().then(function (token) {
         return fetch(url, { method: "POST", credentials: "same-origin",
           headers: { "Content-Type": "application/json", "Accept": "application/json", "X-CSRF-Token": token },
-          body: JSON.stringify({ message: text, history: JSON.stringify(history) }) });
+          body: JSON.stringify({ message: text, history: JSON.stringify(history),
+            attachment: ws.getProperty("/askFile") || undefined, attachmentName: ws.getProperty("/askFileName") || undefined }) });
       }).then(function (response) {
         if (!response.ok) { return that._failure(response, "The assistant is not available (HTTP " + response.status + ")."); }
         return response.json();
@@ -374,7 +397,7 @@ sap.ui.define([
         try { usage = JSON.parse(r.usage || "{}"); } catch (e) { usage = {}; }
         var meta = (r.generatedBy === "FIXTURE_RULES" ? "Offline rule-based stand-in (no language model)" : "Google Gemini " + (r.model || "")) +
           (usage.requests ? " · " + usage.requests + " model request(s), " + (usage.totalTokens || 0) + " tokens" : "") +
-          " · Actions used (same operations as the EU10 Joule skills): " + (tools.length ? tools.map(function (t) { return (t.action || t.tool) + (t.ok ? "" : " (" + t.error + ")"); }).join(", ") : "none");
+          " · Skills/Actions used: " + (tools.length ? tools.map(function (t) { return (t.skill ? t.skill + " → " : "") + (t.action || t.tool) + (t.ok ? "" : " (" + t.error + ")"); }).join("; ") : "none");
         var answer = r.status === "ANSWERED" ? r.answer
           : "The answer was withheld because it did not match the data the tools returned (" + (r.issues || "check failed") + "). Ask again or read the tabs directly.";
         var next = ws.getProperty("/chat").slice();
@@ -394,22 +417,40 @@ sap.ui.define([
       });
     },
 
-    /** The user confirms the agent's proposal; the normal runImpact action runs with the user's own role check. */
+    /** The user confirms the agent's proposal. The browser calls the normal CAP endpoint with the user's own session,
+     *  so every role, plant, status and separation-of-duties check runs exactly as for the buttons. */
     onConfirmProposal: function () {
       var ws = this.getView().getModel("ws"), proposal = ws.getProperty("/proposal"), that = this;
       if (!proposal) { return; }
       ws.setProperty("/proposal", null);
-      if (proposal.caseID === this._caseId) {
-        this._execute("runImpact", { asOfDate: undefined }, "Impact calculated for " + proposal.caseNumber + ".");
-        return;
-      }
-      var url = this.getView().getModel().getServiceUrl() + "ReviewCases(" + proposal.caseID + ")/EngineeringReview.runImpact";
+      var base = this.getView().getModel().getServiceUrl();
+      var path = proposal.action === "createRate" ? "MaterialConsumptionRates"
+        : proposal.action === "importScenario" ? "importScenario"
+        : "ReviewCases(" + proposal.caseID + ")/EngineeringReview." + proposal.action;
+      var body = {};
+      Object.keys(proposal.params || {}).forEach(function (k) { if (proposal.params[k] !== undefined && proposal.params[k] !== null) { body[k] = proposal.params[k]; } });
+      ws.setProperty("/busy", true);
       this._csrf().then(function (token) {
-        return fetch(url, { method: "POST", credentials: "same-origin", headers: { "Content-Type": "application/json", "X-CSRF-Token": token }, body: "{}" });
+        return fetch(base + path, { method: "POST", credentials: "same-origin",
+          headers: { "Content-Type": "application/json", "Accept": "application/json", "X-CSRF-Token": token }, body: JSON.stringify(body) });
       }).then(function (response) {
-        if (!response.ok) { return that._failure(response, "The impact run was refused."); }
-        MessageToast.show("Impact calculated for " + proposal.caseNumber + ".");
-      }).catch(function (error) { MessageBox.error(error.message, { title: "Not calculated" }); });
+        if (!response.ok) { return that._failure(response, "The change was refused (HTTP " + response.status + ")."); }
+        return response.json().catch(function () { return {}; });
+      }).then(function (result) {
+        if (proposal.action === "importScenario" && result && result.accepted === false) { throw new Error("The import was not accepted; nothing was written."); }
+        var done = { runImpact: "Impact calculated", reviseDemoInput: "Input changed", createRate: "Consumption rate added",
+          submitForReview: "Submitted for review", approve: "Approved", rejectCase: "Rejected", importScenario: "Scenario imported" }[proposal.action] || "Done";
+        MessageToast.show(done + (proposal.caseNumber ? " (" + proposal.caseNumber + ")." : "."));
+        var chat = ws.getProperty("/chat").slice();
+        chat.push({ role: "model", who: "Assistant", text: "Confirmed by you and saved: " + proposal.summary, meta: "Executed by the CAP service with your permissions (" + proposal.action + ").", ok: false });
+        ws.setProperty("/chat", chat);
+        if (proposal.action === "importScenario") { ws.setProperty("/askFile", ""); ws.setProperty("/askFileName", ""); }
+        that._refreshList();
+        return that._load(true);
+      }).catch(function (error) {
+        ws.setProperty("/busy", false);
+        MessageBox.error(error.message || "The change was refused.", { title: "Not saved" });
+      });
     },
 
     onDismissProposal: function () { this.getView().getModel("ws").setProperty("/proposal", null); },

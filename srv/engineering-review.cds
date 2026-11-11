@@ -215,7 +215,8 @@ service EngineeringReview {
         generatedAt : Timestamp;
     }
     @restrict: [{ to: ['ChangeViewer', 'ChangeAnalyst', 'ChangeApprover'] }]
-    action askAssistant(message : String(1000) @mandatory, history : LargeString) returns AssistantReply;
+    // attachment: optional scenario file (JSON/CSV) pasted in the Assistant tab, used only by proposeImportScenario (dry run).
+    action askAssistant(message : String(1000) @mandatory, history : LargeString, attachment : LargeString, attachmentName : String(120)) returns AssistantReply;
 
     @restrict: [{ to: ['ChangeViewer', 'ChangeAnalyst', 'ChangeApprover'] }]
     function lookupCases(caseNumber : String(20), status : String(12), assemblyCode : String(40)) returns many CaseSummary;
